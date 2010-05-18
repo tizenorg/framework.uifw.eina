@@ -1,0 +1,107 @@
+eina (0.0.2.062+svn20100304slp2) unstable; urgency=low
+
+  * change package version
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Thu, 25 Mar 2010 16:03:22 +0900
+
+eina (0.0.2.062+svn20100304-1) unstable; urgency=low
+
+  * EFL_update_revision_46864
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Fri, 05 Mar 2010 14:04:15 +0900
+
+eina (0.0.2.062+svn20100203-5) unstable; urgency=low
+
+  * enable debug-magic
+
+ -- Sangjin Lee <lsj119@samsung.com>  Wed, 24 Feb 2010 13:33:41 +0900
+
+eina (0.0.2.062+svn20100203-4) unstable; urgency=low
+
+  * apply upstream revision 46374
+
+ -- Sangjin Lee <lsj119@samsung.com>  Tue, 23 Feb 2010 17:11:11 +0900
+
+eina (0.0.2.062+svn20100203-3) unstable; urgency=low
+
+  * repack
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Thu, 04 Feb 2010 20:16:02 +0900
+
+eina (0.0.2.062+svn20100203-2) unstable; urgency=low
+
+  * repack
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Thu, 04 Feb 2010 19:03:26 +0900
+
+eina (0.0.2.062+svn20100203-1) unstable; urgency=low
+
+  * EFL_update_revision_45828
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Wed, 03 Feb 2010 16:39:17 +0900
+
+eina (0.0.2.062+svn20100119-1) unstable; urgency=low
+
+  * EFL_update_revision_45322
+
+ -- Jihoon Kim <jihoon48.kim@samsung.com>  Tue, 19 Jan 2010 20:44:45 +0900
+
+eina (0.0.2.062+svn20100111-3) unstable; urgency=low
+
+  * reupload EFL i686
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Tue, 12 Jan 2010 17:35:18 +0900
+
+eina (0.0.2.062+svn20100111-2) unstable; urgency=low
+
+  * reupload EFL
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Mon, 11 Jan 2010 22:27:18 +0900
+
+eina (0.0.2.062+svn20100111-1) unstable; urgency=low
+
+  * update EFL revision 45026
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Mon, 11 Jan 2010 13:28:00 +0900
+
+eina (0.0.2.062+svn20091229-1) unstable; urgency=low
+
+  * update EFL
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Tue, 29 Dec 2009 14:27:00 +0900
+
+eina (0.0.2.062+svn20091112-3) unstable; urgency=low
+
+  * change arch to any
+
+ -- Youmin Ha <youmin.ha@samsung.com>  Fri, 27 Nov 2009 16:28:16 +0900
+
+eina (0.0.2.062+svn20091112-2) unstable; urgency=low
+
+  * stable svn version
+
+ -- Sangho Park <sangho.g.park@samsung.com>  Thu, 19 Nov 2009 17:25:30 +0900
+
+eina (0.0.2.062+svn20091112-1) unstable; urgency=low
+
+  * Updated version
+
+ -- Sangho Park <sangho.g.park@samsung.com>  Thu, 12 Nov 2009 18:44:22 +0900
+
+eina (0.0.2.062+svnYYYYMMDD-1) unstable; urgency=low
+
+  * Updated version
+
+ -- Simon Horman <horms@debian.org>  Thu, 10 Sep 2009 12:30:32 +1000
+
+eina (0.0.2.060+svnYYYYMMDD-1) unstable; urgency=low
+
+  * Updated version
+
+ -- quaker <quaker66@gmail.com>  Thu, 22 Apr 2009 18:24:44 +0100
+
+eina (0.0.1+svnYYYYMMDD-1) unstable; urgency=low
+
+  * Clean up changelog
+
+ -- quaker <quaker66@gmail.com>  Tue, 21 Apr 2009 19:12:20 +0100
