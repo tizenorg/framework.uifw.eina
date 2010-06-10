@@ -1,3 +1,11 @@
+eina (0.0.2.062+svn.49540slp2+1) unstable; urgency=low
+
+  * Packaging.
+  * Git: 165.213.180.234:/git/slp2.0/slp2.0-pkgs/EFL-pkgs/eina
+  * Tag: eina_0.0.2.062+svn.49540slp2+1
+
+ -- Daniel Juyung Seo <juyung.seo@samsung.net>  Thu, 10 Jun 2010 20:28:10 +0900
+
 eina (0.0.2.062+svn.49540slp2+0) unstable; urgency=low
 
   * Update opensource EFL from SVN
