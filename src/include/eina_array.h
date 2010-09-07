@@ -65,30 +65,41 @@ typedef void **Eina_Array_Iterator;
  */
 struct _Eina_Array
 {
-   void		**data;   /**< Pointer to a vector of pointer to payload */
-   unsigned int   total;  /**< Total number of slot in the vector */
-   unsigned int   count;  /**< Number of activ slot in the vector */
-   unsigned int	  step;   /**< How much must we grow the vector when it is full */
+#define EINA_ARRAY_VERSION 1
+   int version; /**< Should match EINA_ARRAY_VERSION used when compiled your apps, provided for ABI compatibility */
 
+   void **data; /**< Pointer to a vector of pointer to payload */
+   unsigned int total; /**< Total number of slots in the vector */
+   unsigned int count; /**< Number of active slots in the vector */
+   unsigned int step; /**< How much must we grow the vector when it is full */
    EINA_MAGIC
 };
 
-EAPI Eina_Array  *eina_array_new      (unsigned int step) EINA_WARN_UNUSED_RESULT EINA_MALLOC EINA_WARN_UNUSED_RESULT;
-EAPI void         eina_array_free     (Eina_Array *array) EINA_ARG_NONNULL(1);
-EAPI void         eina_array_step_set (Eina_Array *array, unsigned int step) EINA_ARG_NONNULL(1);
-EAPI void         eina_array_clean    (Eina_Array *array) EINA_ARG_NONNULL(1);
-EAPI void         eina_array_flush    (Eina_Array *array) EINA_ARG_NONNULL(1);
-EAPI Eina_Bool    eina_array_remove   (Eina_Array *array, Eina_Bool (*keep)(void *data, void *gdata), void *gdata) EINA_ARG_NONNULL(1, 2);
-
-static inline Eina_Bool     eina_array_push  (Eina_Array *array, const void *data) EINA_ARG_NONNULL(1, 2);
-static inline void         *eina_array_pop   (Eina_Array *array) EINA_ARG_NONNULL(1);
-static inline void         *eina_array_data_get (const Eina_Array *array, unsigned int idx) EINA_ARG_NONNULL(1);
-static inline void          eina_array_data_set (const Eina_Array *array, unsigned int idx, const void *data) EINA_ARG_NONNULL(1, 3);
-static inline unsigned int  eina_array_count_get (const Eina_Array *array) EINA_ARG_NONNULL(1);
-
-EAPI Eina_Iterator *eina_array_iterator_new (const Eina_Array *array) EINA_MALLOC EINA_ARG_NONNULL(1) EINA_WARN_UNUSED_RESULT;
-EAPI Eina_Accessor *eina_array_accessor_new (const Eina_Array *array) EINA_MALLOC EINA_ARG_NONNULL(1) EINA_WARN_UNUSED_RESULT;
-
+EAPI Eina_Array *               eina_array_new(unsigned int step) EINA_WARN_UNUSED_RESULT EINA_MALLOC EINA_WARN_UNUSED_RESULT;
+EAPI Eina_Array *               eina_array_threadsafe_new(unsigned int step) EINA_WARN_UNUSED_RESULT EINA_MALLOC EINA_WARN_UNUSED_RESULT;
+EAPI void                       eina_array_free(Eina_Array *array) EINA_ARG_NONNULL(1);
+EAPI void                       eina_array_step_set(Eina_Array *array,
+                                                    unsigned int sizeof_eina_array,
+                                                    unsigned int step) EINA_ARG_NONNULL(1);
+EAPI void                       eina_array_clean(Eina_Array *array) EINA_ARG_NONNULL(1);
+EAPI void                       eina_array_flush(Eina_Array *array) EINA_ARG_NONNULL(1);
+EAPI Eina_Bool                  eina_array_remove(Eina_Array *array,
+                                                  Eina_Bool(*keep)(void *data, void *gdata),
+                                                  void *gdata) EINA_ARG_NONNULL(1, 2);
+static inline Eina_Bool         eina_array_push(Eina_Array *array,
+                                                const void *data) EINA_ARG_NONNULL(1, 2);
+static inline void *            eina_array_pop(Eina_Array *array) EINA_ARG_NONNULL(1);
+static inline void *            eina_array_data_get(const Eina_Array *array,
+                                                    unsigned int idx) EINA_ARG_NONNULL(1);
+static inline void              eina_array_data_set(const Eina_Array *array,
+                                                    unsigned int idx,
+                                                    const void *data) EINA_ARG_NONNULL(1, 3);
+static inline unsigned int      eina_array_count_get(const Eina_Array *array) EINA_ARG_NONNULL(1);
+EAPI Eina_Iterator *            eina_array_iterator_new(const Eina_Array *array) EINA_MALLOC EINA_ARG_NONNULL(1) EINA_WARN_UNUSED_RESULT;
+EAPI Eina_Accessor *            eina_array_accessor_new(const Eina_Array *array) EINA_MALLOC EINA_ARG_NONNULL(1) EINA_WARN_UNUSED_RESULT;
+static inline Eina_Bool		eina_array_foreach(Eina_Array *array,
+                                                   Eina_Each_Cb cb,
+                                                   void *data);
 /**
  * @def EINA_ARRAY_ITER_NEXT
  * @brief Macro to iterate over an array easily.
@@ -98,9 +109,9 @@ EAPI Eina_Accessor *eina_array_accessor_new (const Eina_Array *array) EINA_MALLO
  * @param item The data
  * @param iterator The iterator
  *
- * This macro allow the iteration over @p array in an easy way. It
+ * This macro allows the iteration over @p array in an easy way. It
  * iterates from the first element to the last one. @p index is an
- * integer that increase from 0 to the number of elements. @p item is
+ * integer that increases from 0 to the number of elements. @p item is
  * the data of each element of @p array, so it is a pointer to a type
  * chosen by the user. @p iterator is of type #Eina_Array_Iterator.
  *
@@ -122,7 +133,7 @@ EAPI Eina_Accessor *eina_array_accessor_new (const Eina_Array *array) EINA_MALLO
  * @endcode
  */
 #define EINA_ARRAY_ITER_NEXT(array, index, item, iterator)		\
-  for (index = 0, iterator = (array)->data; \
+  for (index = 0, iterator = (array)->data;				\
        (index < eina_array_count_get(array)) && ((item = *((iterator)++))); \
        ++(index))
 

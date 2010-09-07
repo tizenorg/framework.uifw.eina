@@ -1,6 +1,3 @@
-/*
- * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
- */
 /* EINA - EFL data type library
  * Copyright (C) 2008 Cedric Bail
  *
@@ -138,29 +135,29 @@ static const char EINA_MAGIC_ARRAY_STR[] = "Eina Array";
 static const char EINA_MAGIC_ARRAY_ITERATOR_STR[] = "Eina Array Iterator";
 static const char EINA_MAGIC_ARRAY_ACCESSOR_STR[] = "Eina Array Accessor";
 
-#define EINA_MAGIC_CHECK_ARRAY(d)			\
-  do {							\
-     if (!EINA_MAGIC_CHECK(d, EINA_MAGIC_ARRAY))	\
-       EINA_MAGIC_FAIL(d, EINA_MAGIC_ARRAY);		\
-  } while (0)
+#define EINA_MAGIC_CHECK_ARRAY(d)                       \
+   do {                                                  \
+        if (!EINA_MAGIC_CHECK(d, EINA_MAGIC_ARRAY)) {        \
+             EINA_MAGIC_FAIL(d, EINA_MAGIC_ARRAY); }            \
+     } while (0)
 
-#define EINA_MAGIC_CHECK_ARRAY_ITERATOR(d, ...)			\
-  do {								\
-     if (!EINA_MAGIC_CHECK(d, EINA_MAGIC_ARRAY_ITERATOR))	\
-       {							\
-          EINA_MAGIC_FAIL(d, EINA_MAGIC_ARRAY_ITERATOR);	\
-          return __VA_ARGS__;					\
-       }							\
-  } while (0)
+#define EINA_MAGIC_CHECK_ARRAY_ITERATOR(d, ...)                 \
+   do {                                                          \
+        if (!EINA_MAGIC_CHECK(d, EINA_MAGIC_ARRAY_ITERATOR))       \
+          {                                                        \
+             EINA_MAGIC_FAIL(d, EINA_MAGIC_ARRAY_ITERATOR);        \
+             return __VA_ARGS__;                                   \
+          }                                                        \
+     } while (0)
 
-#define EINA_MAGIC_CHECK_ARRAY_ACCESSOR(d, ...)			\
-  do {								\
-     if (!EINA_MAGIC_CHECK(d, EINA_MAGIC_ARRAY_ACCESSOR))	\
-       {							\
-          EINA_MAGIC_FAIL(d, EINA_MAGIC_ACCESSOR);		\
-          return __VA_ARGS__;					\
-       }							\
-  } while (0)
+#define EINA_MAGIC_CHECK_ARRAY_ACCESSOR(d, ...)                 \
+   do {                                                          \
+        if (!EINA_MAGIC_CHECK(d, EINA_MAGIC_ARRAY_ACCESSOR))       \
+          {                                                        \
+             EINA_MAGIC_FAIL(d, EINA_MAGIC_ACCESSOR);              \
+             return __VA_ARGS__;                                   \
+          }                                                        \
+     } while (0)
 
 
 typedef struct _Eina_Iterator_Array Eina_Iterator_Array;
@@ -194,13 +191,16 @@ static int _eina_array_log_dom = -1;
 #endif
 #define DBG(...) EINA_LOG_DOM_DBG(_eina_array_log_dom, __VA_ARGS__)
 
-static void eina_array_iterator_free(Eina_Iterator_Array *it) EINA_ARG_NONNULL(1);
+static void        eina_array_iterator_free(Eina_Iterator_Array *it) EINA_ARG_NONNULL(1);
 static Eina_Array *eina_array_iterator_get_container(Eina_Iterator_Array *it) EINA_ARG_NONNULL(1);
-static Eina_Bool eina_array_iterator_next(Eina_Iterator_Array *it, void **data) EINA_ARG_NONNULL(1);
+static Eina_Bool   eina_array_iterator_next(Eina_Iterator_Array *it,
+                                            void **data) EINA_ARG_NONNULL(1);
 
-static Eina_Bool eina_array_accessor_get_at(Eina_Accessor_Array *it, unsigned int idx, void **data) EINA_ARG_NONNULL(1);
+static Eina_Bool   eina_array_accessor_get_at(Eina_Accessor_Array *it,
+                                              unsigned int idx,
+                                              void **data) EINA_ARG_NONNULL(1);
 static Eina_Array *eina_array_accessor_get_container(Eina_Accessor_Array *it) EINA_ARG_NONNULL(1);
-static void eina_array_accessor_free(Eina_Accessor_Array *it) EINA_ARG_NONNULL(1);
+static void        eina_array_accessor_free(Eina_Accessor_Array *it) EINA_ARG_NONNULL(1);
 
 static Eina_Bool
 eina_array_iterator_next(Eina_Iterator_Array *it, void **data)
@@ -208,9 +208,11 @@ eina_array_iterator_next(Eina_Iterator_Array *it, void **data)
    EINA_MAGIC_CHECK_ARRAY_ITERATOR(it, EINA_FALSE);
 
    if (!(it->index < eina_array_count_get(it->array)))
-     return EINA_FALSE;
+      return EINA_FALSE;
+
    if (data)
-     *data = eina_array_data_get(it->array, it->index);
+      *data = eina_array_data_get(it->array, it->index);
+
    it->index++;
    return EINA_TRUE;
 }
@@ -219,7 +221,7 @@ static Eina_Array *
 eina_array_iterator_get_container(Eina_Iterator_Array *it)
 {
    EINA_MAGIC_CHECK_ARRAY_ITERATOR(it, NULL);
-   return (Eina_Array *) it->array;
+   return (Eina_Array *)it->array;
 }
 
 static void
@@ -230,14 +232,18 @@ eina_array_iterator_free(Eina_Iterator_Array *it)
 }
 
 static Eina_Bool
-eina_array_accessor_get_at(Eina_Accessor_Array *it, unsigned int idx, void **data)
+eina_array_accessor_get_at(Eina_Accessor_Array *it,
+                           unsigned int idx,
+                           void **data)
 {
    EINA_MAGIC_CHECK_ARRAY_ACCESSOR(it, EINA_FALSE);
 
    if (!(idx < eina_array_count_get(it->array)))
-     return EINA_FALSE;
+      return EINA_FALSE;
+
    if (data)
-     *data = eina_array_data_get(it->array, idx);
+      *data = eina_array_data_get(it->array, idx);
+
    return EINA_TRUE;
 }
 
@@ -245,7 +251,7 @@ static Eina_Array *
 eina_array_accessor_get_container(Eina_Accessor_Array *it)
 {
    EINA_MAGIC_CHECK_ARRAY_ACCESSOR(it, NULL);
-   return (Eina_Array *) it->array;
+   return (Eina_Array *)it->array;
 }
 
 static void
@@ -261,16 +267,18 @@ eina_array_grow(Eina_Array *array)
    void **tmp;
    unsigned int total;
 
-   EINA_MAGIC_CHECK_ARRAY(array);
    EINA_SAFETY_ON_NULL_RETURN_VAL(array, EINA_FALSE);
 
+   EINA_MAGIC_CHECK_ARRAY(array);
+
    total = array->total + array->step;
-   eina_error_set(0);
-   tmp = realloc(array->data, sizeof (void*) * total);
-   if (EINA_UNLIKELY(!tmp)) {
-      eina_error_set(EINA_ERROR_OUT_OF_MEMORY);
-      return 0;
-   }
+        eina_error_set(0);
+   tmp = realloc(array->data, sizeof (void *) * total);
+   if (EINA_UNLIKELY(!tmp))
+     {
+        eina_error_set(EINA_ERROR_OUT_OF_MEMORY);
+        return 0;
+     }
 
    array->total = total;
    array->data = tmp;
@@ -301,14 +309,15 @@ eina_array_grow(Eina_Array *array)
 Eina_Bool
 eina_array_init(void)
 {
-   _eina_array_log_dom = eina_log_domain_register("eina_array", EINA_LOG_COLOR_DEFAULT);
+   _eina_array_log_dom = eina_log_domain_register("eina_array",
+                                                  EINA_LOG_COLOR_DEFAULT);
    if (_eina_array_log_dom < 0)
      {
-	EINA_LOG_ERR("Could not register log domain: eina_array");
-	return EINA_FALSE;
+        EINA_LOG_ERR("Could not register log domain: eina_array");
+        return EINA_FALSE;
      }
 
-#define EMS(n) eina_magic_string_static_set(n, n##_STR)
+#define EMS(n) eina_magic_string_static_set(n, n ## _STR)
    EMS(EINA_MAGIC_ARRAY);
    EMS(EINA_MAGIC_ARRAY_ITERATOR);
    EMS(EINA_MAGIC_ARRAY_ACCESSOR);
@@ -398,19 +407,19 @@ eina_array_new(unsigned int step)
 
    eina_error_set(0);
    array = malloc(sizeof (Eina_Array));
-   if (!array) {
-      eina_error_set(EINA_ERROR_OUT_OF_MEMORY);
-      return NULL;
-   }
+   if (!array)
+     {
+        eina_error_set(EINA_ERROR_OUT_OF_MEMORY);
+        return NULL;
+     }
 
    EINA_MAGIC_SET(array, EINA_MAGIC_ARRAY);
 
+   array->version = EINA_ARRAY_VERSION;
    array->data = NULL;
    array->total = 0;
    array->count = 0;
    array->step = step;
-
-   DBG("array=%p", array);
 
    return array;
 }
@@ -421,7 +430,7 @@ eina_array_new(unsigned int step)
  * @param array The array to free.
  *
  * This function frees @p array. It calls first eina_array_flush() then
- * free the memory of the pointeur. It does not free the memory
+ * free the memory of the pointer. It does not free the memory
  * allocated for the elements of @p array. To free them, use
  * #EINA_ARRAY_ITER_NEXT. For performance reasons, there is no check
  * of @p array.
@@ -431,9 +440,8 @@ eina_array_free(Eina_Array *array)
 {
    eina_array_flush(array);
 
-   EINA_MAGIC_CHECK_ARRAY(array);
    EINA_SAFETY_ON_NULL_RETURN(array);
-   DBG("array=%p", array);
+   EINA_MAGIC_CHECK_ARRAY(array);
    MAGIC_FREE(array);
 }
 
@@ -441,22 +449,37 @@ eina_array_free(Eina_Array *array)
  * @brief Set the step of an array.
  *
  * @param array The array.
+ * @param sizeof_array Should be the value returned by sizeof (Eina_Array).
  * @param step The count of pointers to add when increasing the array size.
  *
  * This function sets the step of @p array to @p step. For performance
  * reasons, there is no check of @p array. If it is @c NULL or
- * invalid, the program may crash.
+ * invalid, the program may crash. This function should be called when
+ * the array is not initialized.
  */
 EAPI void
-eina_array_step_set(Eina_Array *array, unsigned int step)
+eina_array_step_set(Eina_Array *array,
+		    unsigned int sizeof_eina_array,
+		    unsigned int step)
 {
-  EINA_SAFETY_ON_NULL_RETURN(array);
-  array->data = NULL;
-  array->total = 0;
-  array->count = 0;
-  array->step = step;
-  EINA_MAGIC_SET(array, EINA_MAGIC_ARRAY);
-  DBG("array=%p, step=%u", array, step);
+   EINA_SAFETY_ON_NULL_RETURN(array);
+
+   if (sizeof (Eina_Array) != sizeof_eina_array)
+     {
+	ERR("Unknow Eina_Array size ! Got %i, expected %i !\n",
+	    sizeof_eina_array,
+	    (int) sizeof (Eina_Array));
+	/* Force memory to zero to provide a small layer of security */
+	memset(array, 0, sizeof_eina_array);
+	return ;
+     }
+
+   array->version = EINA_ARRAY_VERSION;
+   array->data = NULL;
+   array->total = 0;
+   array->count = 0;
+   array->step = step;
+   EINA_MAGIC_SET(array, EINA_MAGIC_ARRAY);
 }
 
 /**
@@ -471,10 +494,10 @@ eina_array_step_set(Eina_Array *array, unsigned int step)
 EAPI void
 eina_array_clean(Eina_Array *array)
 {
-   EINA_MAGIC_CHECK_ARRAY(array);
    EINA_SAFETY_ON_NULL_RETURN(array);
+   EINA_MAGIC_CHECK_ARRAY(array);
+
    array->count = 0;
-   DBG("array=%p", array);
 }
 
 /**
@@ -490,13 +513,15 @@ eina_array_clean(Eina_Array *array)
 EAPI void
 eina_array_flush(Eina_Array *array)
 {
-   EINA_MAGIC_CHECK_ARRAY(array);
    EINA_SAFETY_ON_NULL_RETURN(array);
-   DBG("array=%p", array);
+   EINA_MAGIC_CHECK_ARRAY(array);
+
    array->count = 0;
    array->total = 0;
 
-   if (!array->data) return;
+   if (!array->data)
+      return;
+
    free(array->data);
    array->data = NULL;
 }
@@ -519,7 +544,9 @@ eina_array_flush(Eina_Array *array)
  * and the error is set to #EINA_ERROR_OUT_OF_MEMORY.
  */
 EAPI Eina_Bool
-eina_array_remove(Eina_Array *array, Eina_Bool (*keep)(void *data, void *gdata), void *gdata)
+eina_array_remove(Eina_Array *array, Eina_Bool (*keep)(void *data,
+                                                       void *gdata),
+                  void *gdata)
 {
    void **tmp;
    /* WARNING:
@@ -531,68 +558,72 @@ eina_array_remove(Eina_Array *array, Eina_Bool (*keep)(void *data, void *gdata),
    unsigned int limit;
    unsigned int i;
 
-   EINA_MAGIC_CHECK_ARRAY(array);
    EINA_SAFETY_ON_NULL_RETURN_VAL(array, EINA_FALSE);
-   EINA_SAFETY_ON_NULL_RETURN_VAL(keep, EINA_FALSE);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(keep,  EINA_FALSE);
+   EINA_MAGIC_CHECK_ARRAY(array);
 
-   DBG("array=%p, keep=%p, gdata=%p", array, keep, gdata);
-
-   if (array->total == 0) return EINA_TRUE;
+   if (array->total == 0)
+      return EINA_TRUE;
 
    for (i = 0; i < array->count; ++i)
      {
-	data = eina_array_data_get(array, i);
+        data = eina_array_data_get(array, i);
 
-	if (keep(data, gdata) == EINA_FALSE) break;
+        if (keep(data, gdata) == EINA_FALSE)
+           break;
      }
    limit = i;
-   if (i < array->count) ++i;
+   if (i < array->count)
+      ++i;
+
    for (; i < array->count; ++i)
      {
-	data = eina_array_data_get(array, i);
+        data = eina_array_data_get(array, i);
 
-	if (keep(data, gdata) == EINA_TRUE) break;
+        if (keep(data, gdata) == EINA_TRUE)
+           break;
      }
    /* Special case all objects that need to stay are at the beginning of the array. */
    if (i == array->count)
      {
-	array->count = limit;
-	if (array->count == 0)
-	  {
-	     free(array->data);
-	     array->total = 0;
-	     array->data = NULL;
-	  }
+        array->count = limit;
+        if (array->count == 0)
+          {
+             free(array->data);
+             array->total = 0;
+             array->data = NULL;
+          }
 
-	return EINA_TRUE;
+        return EINA_TRUE;
      }
 
-   eina_error_set(0);
-   tmp = malloc(sizeof (void*) * array->total);
-   if (!tmp) {
-      eina_error_set(EINA_ERROR_OUT_OF_MEMORY);
-      return EINA_FALSE;
-   }
+        eina_error_set(0);
+   tmp = malloc(sizeof (void *) * array->total);
+   if (!tmp)
+     {
+        eina_error_set(EINA_ERROR_OUT_OF_MEMORY);
+        return EINA_FALSE;
+     }
 
-   memcpy(tmp, array->data, limit * sizeof(void*));
+   memcpy(tmp, array->data, limit * sizeof(void *));
    total = limit;
 
    if (i < array->count)
      {
-	tmp[total] = data;
-	total++;
-	++i;
+        tmp[total] = data;
+        total++;
+        ++i;
      }
 
    for (; i < array->count; ++i)
      {
-	data = eina_array_data_get(array, i);
+        data = eina_array_data_get(array, i);
 
-	if (keep(data, gdata))
-	  {
-	     tmp[total] = data;
-	     total++;
-	  }
+        if (keep(data, gdata))
+          {
+             tmp[total] = data;
+             total++;
+          }
      }
 
    free(array->data);
@@ -603,7 +634,6 @@ eina_array_remove(Eina_Array *array, Eina_Bool (*keep)(void *data, void *gdata),
 
    array->data = tmp;
    array->count = total;
-
    return EINA_TRUE;
 }
 
@@ -624,26 +654,27 @@ eina_array_iterator_new(const Eina_Array *array)
 {
    Eina_Iterator_Array *it;
 
-   EINA_MAGIC_CHECK_ARRAY(array);
    EINA_SAFETY_ON_NULL_RETURN_VAL(array, NULL);
+   EINA_MAGIC_CHECK_ARRAY(array);
 
    eina_error_set(0);
    it = calloc(1, sizeof (Eina_Iterator_Array));
-   if (!it) {
-      eina_error_set(EINA_ERROR_OUT_OF_MEMORY);
-      return NULL;
-   }
+   if (!it)
+     {
+        eina_error_set(EINA_ERROR_OUT_OF_MEMORY);
+        return NULL;
+     }
 
-   EINA_MAGIC_SET(it, EINA_MAGIC_ARRAY_ITERATOR);
+   EINA_MAGIC_SET(it,            EINA_MAGIC_ARRAY_ITERATOR);
    EINA_MAGIC_SET(&it->iterator, EINA_MAGIC_ITERATOR);
 
    it->array = array;
 
+   it->iterator.version = EINA_ITERATOR_VERSION;
    it->iterator.next = FUNC_ITERATOR_NEXT(eina_array_iterator_next);
-   it->iterator.get_container = FUNC_ITERATOR_GET_CONTAINER(eina_array_iterator_get_container);
+   it->iterator.get_container = FUNC_ITERATOR_GET_CONTAINER(
+         eina_array_iterator_get_container);
    it->iterator.free = FUNC_ITERATOR_FREE(eina_array_iterator_free);
-
-   DBG("array=%p, iterator=%p", array, it);
 
    return &it->iterator;
 }
@@ -665,26 +696,27 @@ eina_array_accessor_new(const Eina_Array *array)
 {
    Eina_Accessor_Array *it;
 
-   EINA_MAGIC_CHECK_ARRAY(array);
    EINA_SAFETY_ON_NULL_RETURN_VAL(array, NULL);
+   EINA_MAGIC_CHECK_ARRAY(array);
 
    eina_error_set(0);
    it = calloc(1, sizeof (Eina_Accessor_Array));
-   if (!it) {
-      eina_error_set(EINA_ERROR_OUT_OF_MEMORY);
-      return NULL;
-   }
+   if (!it)
+     {
+        eina_error_set(EINA_ERROR_OUT_OF_MEMORY);
+        return NULL;
+     }
 
-   EINA_MAGIC_SET(it, EINA_MAGIC_ARRAY_ACCESSOR);
+   EINA_MAGIC_SET(it,            EINA_MAGIC_ARRAY_ACCESSOR);
    EINA_MAGIC_SET(&it->accessor, EINA_MAGIC_ACCESSOR);
 
    it->array = array;
 
+   it->accessor.version = EINA_ACCESSOR_VERSION;
    it->accessor.get_at = FUNC_ACCESSOR_GET_AT(eina_array_accessor_get_at);
-   it->accessor.get_container = FUNC_ACCESSOR_GET_CONTAINER(eina_array_accessor_get_container);
+   it->accessor.get_container = FUNC_ACCESSOR_GET_CONTAINER(
+         eina_array_accessor_get_container);
    it->accessor.free = FUNC_ACCESSOR_FREE(eina_array_accessor_free);
-
-   DBG("array=%p, accessor=%p", array, it);
 
    return &it->accessor;
 }

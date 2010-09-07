@@ -16,14 +16,20 @@
  * if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
-
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
 
-#ifdef EFL_HAVE_PTHREAD
+#include <stdio.h>
+
+#ifdef EFL_HAVE_POSIX_THREADS
 # include <pthread.h>
+#endif
+
+#ifdef EFL_HAVE_WIN32_THREADS
+# define WIN32_LEAN_AND_MEAN
+# include <windows.h>
+# undef WIN32_LEAN_AND_MEAN
 #endif
 
 #include "eina_config.h"
@@ -33,7 +39,9 @@
 #include "eina_error.h"
 #include "eina_log.h"
 #include "eina_hash.h"
+#include "eina_binshare.h"
 #include "eina_stringshare.h"
+#include "eina_ustringshare.h"
 #include "eina_list.h"
 #include "eina_matrixsparse.h"
 #include "eina_array.h"
@@ -43,19 +51,18 @@
 #include "eina_rectangle.h"
 #include "eina_safety_checks.h"
 
-static Eina_Version _version = { VMAJ, VMIN, VMIC, VREV };
-EAPI Eina_Version *eina_version = &_version;
-
 /*============================================================================*
- *                                  Local                                     *
- *============================================================================*/
+*                                  Local                                     *
+*============================================================================*/
 
 /**
  * @cond LOCAL
  */
 
+static Eina_Version _version = { VMAJ, VMIN, VMIC, VREV };
+
 static int _eina_main_count = 0;
-#ifdef EFL_HAVE_PTHREAD
+#ifdef EFL_HAVE_THREADS
 static int _eina_main_thread_count = 0;
 #endif
 static int _eina_log_dom = -1;
@@ -70,40 +77,51 @@ static int _eina_log_dom = -1;
 #endif
 #define DBG(...) EINA_LOG_DOM_DBG(_eina_log_dom, __VA_ARGS__)
 
-#ifdef EFL_HAVE_PTHREAD
+#ifdef EFL_HAVE_THREADS
 static Eina_Bool _threads_activated = EINA_FALSE;
+# ifdef EFL_HAVE_POSIX_THREADS
 static pthread_mutex_t _mutex = PTHREAD_MUTEX_INITIALIZER;
-#define LOCK() if(_threads_activated) pthread_mutex_lock(&_mutex)
-#define UNLOCK() if(_threads_activated) pthread_mutex_unlock(&_mutex)
-#define UNLOCK_FORCE() pthread_mutex_unlock(&_mutex)
+#  define LOCK() if(_threads_activated) pthread_mutex_lock(&_mutex)
+#  define UNLOCK() if(_threads_activated) pthread_mutex_unlock(&_mutex)
+#  define UNLOCK_FORCE() pthread_mutex_unlock(&_mutex)
+# else /* EFL_HAVE_WIN32_THREADS */
+static HANDLE _mutex = NULL;
+#  define LOCK() if(_threads_activated) WaitForSingleObject(_mutex, INFINITE)
+#  define UNLOCK() if(_threads_activated) ReleaseMutex(_mutex)
+#  define UNLOCK_FORCE() ReleaseMutex(_mutex)
+# endif
 #else
-#define LOCK() do {} while (0)
-#define UNLOCK() do {} while (0)
-#define UNLOCK_FORCE() do {} while (0)
+# define LOCK() do {} while (0)
+# define UNLOCK() do {} while (0)
+# define UNLOCK_FORCE() do {} while (0)
 #endif
 
 /* place module init/shutdown functions here to avoid other modules
  * calling them by mistake.
  */
-#define S(x) extern Eina_Bool eina_##x##_init(void); extern Eina_Bool eina_##x##_shutdown(void)
-S(log);
-S(error);
-S(safety_checks);
-S(magic_string);
-S(iterator);
-S(accessor);
-S(array);
-S(module);
-S(mempool);
-S(list);
-S(stringshare);
-S(matrixsparse);
-S(convert);
-S(counter);
-S(benchmark);
-S(rectangle);
-S(strbuf);
-S(quadtree);
+#define S(x) extern Eina_Bool eina_ ## x ## _init(void); \
+   extern Eina_Bool eina_ ## x ## _shutdown(void)
+   S(log);
+   S(error);
+   S(safety_checks);
+   S(magic_string);
+   S(iterator);
+   S(accessor);
+   S(array);
+   S(module);
+   S(mempool);
+   S(list);
+   S(binshare);
+   S(stringshare);
+   S(ustringshare);
+   S(matrixsparse);
+   S(convert);
+   S(counter);
+   S(benchmark);
+   S(rectangle);
+   S(strbuf);
+   S(ustrbuf);
+   S(quadtree);
 #undef S
 
 struct eina_desc_setup
@@ -114,36 +132,40 @@ struct eina_desc_setup
 };
 
 static const struct eina_desc_setup _eina_desc_setup[] = {
-#define S(x) {#x, eina_##x##_init, eina_##x##_shutdown}
-  /* log is a special case as it needs printf */
-  S(error),
-  S(safety_checks),
-  S(magic_string),
-  S(iterator),
-  S(accessor),
-  S(array),
-  S(module),
-  S(mempool),
-  S(list),
-  S(stringshare),
-  S(matrixsparse),
-  S(convert),
-  S(counter),
-  S(benchmark),
-  S(rectangle),
-  S(strbuf),
-  S(quadtree)
+#define S(x) {# x, eina_ ## x ## _init, eina_ ## x ## _shutdown}
+   /* log is a special case as it needs printf */
+   S(error),
+   S(safety_checks),
+   S(magic_string),
+   S(iterator),
+   S(accessor),
+   S(array),
+   S(module),
+   S(mempool),
+   S(list),
+   S(binshare),
+   S(stringshare),
+   S(ustringshare),
+   S(matrixsparse),
+   S(convert),
+   S(counter),
+   S(benchmark),
+   S(rectangle),
+   S(strbuf),
+   S(ustrbuf),
+   S(quadtree)
 #undef S
 };
-static const size_t _eina_desc_setup_len = sizeof(_eina_desc_setup) / sizeof(_eina_desc_setup[0]);
+static const size_t _eina_desc_setup_len = sizeof(_eina_desc_setup) /
+   sizeof(_eina_desc_setup[0]);
 
 static void
 _eina_shutdown_from_desc(const struct eina_desc_setup *itr)
 {
    for (itr--; itr >= _eina_desc_setup; itr--)
      {
-	if (!itr->shutdown())
-	  ERR("Problems shutting down eina module '%s', ignored.", itr->name);
+        if (!itr->shutdown())
+           ERR("Problems shutting down eina module '%s', ignored.", itr->name);
      }
 
    eina_log_domain_unregister(_eina_log_dom);
@@ -156,12 +178,13 @@ _eina_shutdown_from_desc(const struct eina_desc_setup *itr)
  */
 
 /*============================================================================*
- *                                 Global                                     *
- *============================================================================*/
+*                                 Global                                     *
+*============================================================================*/
+
 
 /*============================================================================*
- *                                   API                                      *
- *============================================================================*/
+*                                   API                                      *
+*============================================================================*/
 
 /**
  * @addtogroup Eina_Main_Group Main
@@ -171,6 +194,12 @@ _eina_shutdown_from_desc(const struct eina_desc_setup *itr)
  *
  * @{
  */
+
+/**
+ * @var eina_version
+ * @brief Eina version (defined at configuration time)
+ */
+EAPI Eina_Version *eina_version = &_version;
 
 /**
  * @brief Initialize the Eina library.
@@ -191,31 +220,32 @@ eina_init(void)
    const struct eina_desc_setup *itr, *itr_end;
 
    if (EINA_LIKELY(_eina_main_count > 0))
-     return ++_eina_main_count;
+      return ++_eina_main_count;
 
    if (!eina_log_init())
      {
-	fprintf(stderr, "Could not initialize eina logging system.\n");
-	return 0;
+        fprintf(stderr, "Could not initialize eina logging system.\n");
+        return 0;
      }
+
    _eina_log_dom = eina_log_domain_register("eina", EINA_LOG_COLOR_DEFAULT);
    if (_eina_log_dom < 0)
      {
-	EINA_LOG_ERR("Could not register log domain: eina");
-	eina_log_shutdown();
-	return 0;
+        EINA_LOG_ERR("Could not register log domain: eina");
+        eina_log_shutdown();
+        return 0;
      }
 
    itr = _eina_desc_setup;
    itr_end = itr + _eina_desc_setup_len;
    for (; itr < itr_end; itr++)
      {
-	if (!itr->init())
-	  {
-	     ERR("Could not initialize eina module '%s'.", itr->name);
-	     _eina_shutdown_from_desc(itr);
-	     return 0;
-	  }
+        if (!itr->init())
+          {
+             ERR("Could not initialize eina module '%s'.", itr->name);
+             _eina_shutdown_from_desc(itr);
+             return 0;
+          }
      }
 
    _eina_main_count = 1;
@@ -241,7 +271,8 @@ eina_shutdown(void)
 {
    _eina_main_count--;
    if (EINA_UNLIKELY(_eina_main_count == 0))
-     _eina_shutdown_from_desc(_eina_desc_setup + _eina_desc_setup_len);
+             _eina_shutdown_from_desc(_eina_desc_setup + _eina_desc_setup_len);
+
    return _eina_main_count;
 }
 
@@ -262,26 +293,35 @@ eina_shutdown(void)
 EAPI int
 eina_threads_init(void)
 {
-#ifdef EFL_HAVE_PTHREAD
-    int ret;
-    
-    LOCK();
-    ++_eina_main_thread_count;
-    ret = _eina_main_thread_count;
+#ifdef EFL_HAVE_THREADS
+   int ret;
 
-    if(_eina_main_thread_count > 1) 
-    {
+# ifdef EFL_HAVE_WIN32_THREADS
+   if (!_mutex)
+      _mutex = CreateMutex(NULL, FALSE, NULL);
+
+   if (!_mutex)
+      return 0;
+
+# endif
+
+   LOCK();
+   ++_eina_main_thread_count;
+   ret = _eina_main_thread_count;
+
+   if(_eina_main_thread_count > 1)
+     {
         UNLOCK();
         return ret;
-    }
+     }
 
-    eina_stringshare_threads_init();
-    eina_log_threads_init();
-    _threads_activated = EINA_TRUE;
+   eina_share_common_threads_init();
+   eina_log_threads_init();
+   _threads_activated = EINA_TRUE;
 
-    return ret;
+   return ret;
 #else
-    return 0;
+   return 0;
 #endif
 }
 
@@ -302,27 +342,33 @@ eina_threads_init(void)
 EAPI int
 eina_threads_shutdown(void)
 {
-#ifdef EFL_HAVE_PTHREAD
-    int ret;
+#ifdef EFL_HAVE_THREADS
+   int ret;
 
-    LOCK();
-    ret = --_eina_main_thread_count;
-    if(_eina_main_thread_count > 0) 
-    {
+   LOCK();
+   ret = --_eina_main_thread_count;
+   if(_eina_main_thread_count > 0)
+     {
         UNLOCK();
-        return ret; 
-    }
+        return ret;
+     }
 
-    eina_stringshare_threads_shutdown();
-    eina_log_threads_shutdown();
+   eina_share_common_threads_shutdown();
+   eina_log_threads_shutdown();
 
-    _threads_activated = EINA_FALSE;
+   _threads_activated = EINA_FALSE;
 
-    UNLOCK_FORCE();
+   UNLOCK_FORCE();
 
-    return ret;
+# ifdef EFL_HAVE_WIN32_THREADS
+   if (_mutex)
+      CloseHandle(_mutex);
+
+# endif
+
+   return ret;
 #else
-    return 0;
+   return 0;
 #endif
 }
 

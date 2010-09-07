@@ -32,17 +32,35 @@ eina_fp.c \
 eina_rbtree.c \
 eina_benchmark.c \
 eina_rectangle.c \
+eina_share_common.c \
+eina_binshare.c \
 eina_stringshare.c \
+eina_ustringshare.c \
 eina_cpu.c \
 eina_tiler.c \
 eina_hamster.c \
 eina_safety_checks.c \
 eina_str.c \
 eina_strbuf.c \
+eina_strbuf_common.c \
+eina_ustrbuf.c \
+eina_unicode.c \
 eina_quadtree.c
+
+EXTRA_DIST = \
+       eina_share_common.h \
+       eina_private.h \
+       eina_strbuf_common.h \
+       eina_strbuf_template_c.x
+
+
 
 if EINA_STATIC_BUILD_CHAINED_POOL
 base_sources += $(top_srcdir)/src/modules/mp/chained_pool/eina_chained_mempool.c
+endif
+
+if EINA_STATIC_BUILD_ONE_BIG
+base_sources += $(top_srcdir)/src/modules/mp/one_big/eina_one_big.c
 endif
 
 if EINA_STATIC_BUILD_EMEMOA_FIXED
@@ -112,6 +130,8 @@ eina_amalgamation.c: $(base_sources) Makefile
 	@echo "#include \"eina_private.h\"" >> eina_amalgamation.c
 	@echo "#include \"eina_safety_checks.h\"" >> eina_amalgamation.c
 	@echo "#include \"Eina.h\"" >> eina_amalgamation.c
+	@echo "#include \"eina_strbuf_common.h\"" >> eina_amalgamation.c
+	@echo "#include \"eina_share_common.h\"" >> eina_amalgamation.c
 
 	@for f in $(base_sources); do \
 	   if [ `echo $$f | sed -e 's/^...\(.\).*/\1/'` != '/' ]; then \

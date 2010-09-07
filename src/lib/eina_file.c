@@ -42,16 +42,13 @@ void *alloca (size_t);
 #endif
 
 #include <string.h>
+#include <dirent.h>
 
 #ifndef _WIN32
 # include <sys/types.h>
 # include <sys/stat.h>
 # include <unistd.h>
-# include <dirent.h>
 #else
-# define WIN32_LEAN_AND_MEAN
-# include <windows.h>
-# undef WIN32_LEAN_AND_MEAN
 # include <Evil.h>
 #endif /* _WIN2 */
 
@@ -59,6 +56,7 @@ void *alloca (size_t);
 # define PATH_DELIM '/'
 #else
 # define PATH_DELIM '\\'
+# define NAME_MAX MAX_PATH
 #endif
 
 #include "eina_config.h"
@@ -67,14 +65,127 @@ void *alloca (size_t);
 /* undefs EINA_ARG_NONULL() so NULL checks are not compiled out! */
 #include "eina_safety_checks.h"
 #include "eina_file.h"
+#include "eina_stringshare.h"
+
+typedef struct _Eina_File_Iterator Eina_File_Iterator;
+struct _Eina_File_Iterator
+{
+   Eina_Iterator iterator;
+
+   DIR *dirp;
+   int length;
+
+   char dir[1];
+};
+
+static Eina_Bool
+_eina_file_ls_iterator_next(Eina_File_Iterator *it, void **data)
+{
+   struct dirent *dp;
+   char *name;
+   size_t length;
+
+   do
+     {
+        dp = readdir(it->dirp);
+        if (!dp)
+           return EINA_FALSE;
+     }
+   while ((dp->d_name[0] == '.') &&
+          ((dp->d_name[1] == '\0') ||
+           ((dp->d_name[1] == '.') && (dp->d_name[2] == '\0'))));
+
+   length = strlen(dp->d_name);
+   name = alloca(length + 2 + it->length);
+
+   memcpy(name,                  it->dir,    it->length);
+   memcpy(name + it->length,     "/",        1);
+   memcpy(name + it->length + 1, dp->d_name, length + 1);
+
+   *data = (char *)eina_stringshare_add(name);
+   return EINA_TRUE;
+}
+
+static char *
+_eina_file_ls_iterator_container(Eina_File_Iterator *it)
+{
+   return it->dir;
+}
+
+static void
+_eina_file_ls_iterator_free(Eina_File_Iterator *it)
+{
+   closedir(it->dirp);
+
+   EINA_MAGIC_SET(&it->iterator, 0);
+   free(it);
+}
+
+typedef struct _Eina_File_Direct_Iterator Eina_File_Direct_Iterator;
+struct _Eina_File_Direct_Iterator
+{
+   Eina_Iterator iterator;
+
+   DIR *dirp;
+   int length;
+
+   Eina_File_Direct_Info info;
+
+   char dir[1];
+};
+
+static Eina_Bool
+_eina_file_direct_ls_iterator_next(Eina_File_Direct_Iterator *it, void **data)
+{
+   struct dirent *dp;
+   size_t length;
+
+   do
+     {
+        dp = readdir(it->dirp);
+        if (!dp)
+           return EINA_FALSE;
+
+        length = strlen(dp->d_name);
+        if (it->info.name_start + length + 1 >= PATH_MAX)
+           continue;
+     }
+   while ((dp->d_name[0] == '.') &&
+          ((dp->d_name[1] == '\0') ||
+           ((dp->d_name[1] == '.') && (dp->d_name[2] == '\0'))));
+
+   memcpy(it->info.path + it->info.name_start, dp->d_name, length);
+   it->info.name_length = length;
+   it->info.path_length = it->info.name_start + length;
+   it->info.path[it->info.path_length] = '\0';
+   it->info.dirent = dp;
+
+   *data = &it->info;
+   return EINA_TRUE;
+}
+
+static char *
+_eina_file_direct_ls_iterator_container(Eina_File_Direct_Iterator *it)
+{
+   return it->dir;
+}
+
+static void
+_eina_file_direct_ls_iterator_free(Eina_File_Direct_Iterator *it)
+{
+   closedir(it->dirp);
+
+   EINA_MAGIC_SET(&it->iterator, 0);
+   free(it);
+}
 
 /*============================================================================*
- *                                 Global                                     *
- *============================================================================*/
+*                                 Global                                     *
+*============================================================================*/
 
 /*============================================================================*
- *                                   API                                      *
- *============================================================================*/
+*                                   API                                      *
+*============================================================================*/
 
 /**
  * @addtogroup Eina_File_Group File
@@ -109,121 +220,133 @@ void *alloca (size_t);
  * immediatly. otherwise, it returns #EINA_TRUE.
  */
 EAPI Eina_Bool
-eina_file_dir_list(const char *dir, Eina_Bool recursive, Eina_File_Dir_List_Cb cb, void *data)
+eina_file_dir_list(const char *dir,
+                   Eina_Bool recursive,
+                   Eina_File_Dir_List_Cb cb,
+                   void *data)
 {
 #ifndef _WIN32
-	struct dirent *de;
-	DIR *d;
+   struct dirent *de;
+   DIR *d;
 
-	EINA_SAFETY_ON_NULL_RETURN_VAL(cb, EINA_FALSE);
-	EINA_SAFETY_ON_NULL_RETURN_VAL(dir, EINA_FALSE);
-	EINA_SAFETY_ON_TRUE_RETURN_VAL(dir[0] == '\0', EINA_FALSE);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(cb,  EINA_FALSE);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(dir, EINA_FALSE);
+   EINA_SAFETY_ON_TRUE_RETURN_VAL(dir[0] == '\0', EINA_FALSE);
 
-	d = opendir(dir);
-	if (!d) return EINA_FALSE;
+   d = opendir(dir);
+   if (!d)
+      return EINA_FALSE;
 
-	while ((de = readdir(d)))
-	{
-		if (!strcmp(de->d_name, ".") || !strcmp(de->d_name, ".."))
-			continue;
+   while ((de = readdir(d)))
+     {
+        if (!strcmp(de->d_name, ".") || !strcmp(de->d_name, ".."))
+           continue;
 
-		cb(de->d_name, dir, data);
-		/* d_type is only available on linux and bsd (_BSD_SOURCE) */
+        cb(de->d_name, dir, data);
+        /* d_type is only available on linux and bsd (_BSD_SOURCE) */
 
-		if (recursive == EINA_TRUE) {
-			char *path;
+        if (recursive == EINA_TRUE)
+          {
+             char *path;
 
-			path = alloca(strlen(dir) + strlen(de->d_name) + 2);
-			strcpy(path, dir);
-			strcat(path, "/");
-			strcat(path, de->d_name);
+             path = alloca(strlen(dir) + strlen(de->d_name) + 2);
+             strcpy(path, dir);
+             strcat(path, "/");
+             strcat(path, de->d_name);
 #ifndef sun
-			if (de->d_type == DT_UNKNOWN) {
+             if (de->d_type == DT_UNKNOWN)
+               {
 #endif
-				struct stat st;
+             struct stat st;
 
-				if (stat(path, &st))
-					continue ;
+             if (stat(path, &st))
+                continue;
 
-				if (!S_ISDIR(st.st_mode))
-					continue ;
+             if (!S_ISDIR(st.st_mode))
+                continue;
+
 #ifndef sun
-			} else if (de->d_type != DT_DIR) {
-				continue ;
-			}
+          }
+        else if (de->d_type != DT_DIR)
+           continue;
+
 #endif
 
-			eina_file_dir_list(path, recursive, cb, data);
-		}
-	}
+             eina_file_dir_list(path, recursive, cb, data);
+          }
+     }
 
-	closedir(d);
+   closedir(d);
 #else
-	WIN32_FIND_DATA file;
-	HANDLE          hSearch;
-	char           *new_dir;
-	TCHAR          *tdir;
-	size_t          length_dir;
+   WIN32_FIND_DATA file;
+   HANDLE hSearch;
+   char *new_dir;
+   TCHAR *tdir;
+   size_t length_dir;
 
-	EINA_SAFETY_ON_NULL_RETURN_VAL(cb, EINA_FALSE);
-	EINA_SAFETY_ON_NULL_RETURN_VAL(dir, EINA_FALSE);
-	EINA_SAFETY_ON_TRUE_RETURN_VAL(dir[0] == '\0', EINA_FALSE);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(cb,  EINA_FALSE);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(dir, EINA_FALSE);
+   EINA_SAFETY_ON_TRUE_RETURN_VAL(dir[0] == '\0', EINA_FALSE);
 
-	length_dir = strlen(dir);
-	new_dir = (char *)alloca(length_dir + 5);
-	if (!new_dir) return EINA_FALSE;
+   length_dir = strlen(dir);
+   new_dir = (char *)alloca(length_dir + 5);
+   if (!new_dir)
+      return EINA_FALSE;
 
-	memcpy(new_dir, dir, length_dir);
-	memcpy(new_dir + length_dir, "/*.*", 5);
+   memcpy(new_dir,              dir,    length_dir);
+   memcpy(new_dir + length_dir, "/*.*", 5);
 
 #ifdef UNICODE
-	tdir =  evil_char_to_wchar(new_dir);
+   tdir = evil_char_to_wchar(new_dir);
 #else
-	tdir = new_dir;
+   tdir = new_dir;
 #endif /* ! UNICODE */
-	hSearch = FindFirstFile(tdir, &file);
+   hSearch = FindFirstFile(tdir, &file);
 #ifdef UNICODE
-	free(tdir);
+   free(tdir);
 #endif /* UNICODE */
 
-	if (hSearch == INVALID_HANDLE_VALUE) return EINA_FALSE;
+   if (hSearch == INVALID_HANDLE_VALUE)
+      return EINA_FALSE;
 
-	do
-	{
-		char *filename;
+   do
+     {
+        char *filename;
 
 #ifdef UNICODE
-		filename = evil_wchar_to_char(file.cFileName);
+        filename = evil_wchar_to_char(file.cFileName);
 #else
-		filename = file.cFileName;
+        filename = file.cFileName;
 #endif /* ! UNICODE */
-		if (!strcmp(filename, ".") || !strcmp(filename, ".."))
-			continue;
+        if (!strcmp(filename, ".") || !strcmp(filename, ".."))
+           continue;
 
-		cb(filename, dir, data);
+        cb(filename, dir, data);
 
-		if (recursive == EINA_TRUE) {
-			char *path;
+        if (recursive == EINA_TRUE)
+          {
+             char *path;
 
-			path = alloca(strlen(dir) + strlen(filename) + 2);
-			strcpy(path, dir);
-			strcat(path, "/");
-			strcat(path, filename);
+             path = alloca(strlen(dir) + strlen(filename) + 2);
+             strcpy(path, dir);
+             strcat(path, "/");
+             strcat(path, filename);
 
-			if (!(file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-				continue ;
+             if (!(file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+                continue;
 
-			eina_file_dir_list(path, recursive, cb, data);
-		}
+             eina_file_dir_list(path, recursive, cb, data);
+          }
+
 #ifdef UNICODE
-		free(filename);
+        free(filename);
 #endif /* UNICODE */
 
-	} while (FindNextFile(hSearch, &file));
-	FindClose(hSearch);
+     } while (FindNextFile(hSearch, &file));
+   FindClose(hSearch);
 #endif /* _WIN32 */
 
-	return EINA_TRUE;
+   return EINA_TRUE;
 }
 
 /**
@@ -240,32 +363,174 @@ eina_file_dir_list(const char *dir, Eina_Bool recursive, Eina_File_Dir_List_Cb c
 EAPI Eina_Array *
 eina_file_split(char *path)
 {
-	Eina_Array *ea;
-	char *current;
-	size_t length;
+   Eina_Array *ea;
+   char *current;
+   size_t length;
 
-	EINA_SAFETY_ON_NULL_RETURN_VAL(path, NULL);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(path, NULL);
 
-	ea = eina_array_new(16);
+   ea = eina_array_new(16);
 
-	if (!ea) return NULL;
+   if (!ea)
+      return NULL;
 
-	for (current = strchr(path, PATH_DELIM);
-	     current != NULL;
-	     path = current + 1, current = strchr(path, PATH_DELIM))
-	{
-		length = current - path;
+   for (current = strchr(path, PATH_DELIM);
+        current != NULL;
+        path = current + 1, current = strchr(path, PATH_DELIM))
+     {
+        length = current - path;
 
-		if (length <= 0) continue ;
+        if (length <= 0)
+           continue;
 
-		eina_array_push(ea, path);
-		*current = '\0';
-	}
+        eina_array_push(ea, path);
+        *current = '\0';
+     }
 
-	if (*path != '\0')
-		eina_array_push(ea, path);
+   if (*path != '\0')
+        eina_array_push(ea, path);
 
-	return ea;
+   return ea;
+}
+
+/**
+ * Get an iterator to list the content of a directory.
+ *
+ * Iterators are cheap to be created and allow interruption at any
+ * iteration. At each iteration, only the next directory entry is read
+ * from the filesystem with readdir().
+ *
+ * The iterator will handle the user a stringshared value with the
+ * full path. One must call eina_stringshare_del() on it after usage
+ * to not leak!
+ *
+ * The eina_file_direct_ls() function will provide a possibly faster
+ * alternative if you need to filter the results somehow, like
+ * checking extension.
+ *
+ * The iterator will walk over '.' and '..' without returning them.
+ *
+ * @param  dir The name of the directory to list
+ * @return Return an Eina_Iterator that will walk over the files and
+ *         directory in the pointed directory. On failure it will
+ *         return NULL. The iterator emits stringshared value with the
+ *         full path and must be freed with eina_stringshare_del().
+ *
+ * @see eina_file_direct_ls()
+ */
+EAPI Eina_Iterator *
+eina_file_ls(const char *dir)
+{
+   Eina_File_Iterator *it;
+   size_t length;
+
+   if (!dir)
+      return NULL;
+
+   length = strlen(dir);
+   if (length < 1)
+      return NULL;
+
+   it = calloc(1, sizeof (Eina_File_Iterator) + length);
+   if (!it)
+      return NULL;
+
+   EINA_MAGIC_SET(&it->iterator, EINA_MAGIC_ITERATOR);
+
+   it->dirp = opendir(dir);
+   if (!it->dirp)
+     {
+        free(it);
+        return NULL;
+     }
+
+   memcpy(it->dir, dir, length + 1);
+   if (dir[length - 1] != '/')
+      it->length = length;
+   else
+      it->length = length - 1;
+
+   it->iterator.version = EINA_ITERATOR_VERSION;
+   it->iterator.next = FUNC_ITERATOR_NEXT(_eina_file_ls_iterator_next);
+   it->iterator.get_container = FUNC_ITERATOR_GET_CONTAINER(
+         _eina_file_ls_iterator_container);
+   it->iterator.free = FUNC_ITERATOR_FREE(_eina_file_ls_iterator_free);
+
+   return &it->iterator;
+}
+
+/**
+ * Get an iterator to list the content of a directory, with direct information.
+ *
+ * Iterators are cheap to be created and allow interruption at any
+ * iteration. At each iteration, only the next directory entry is read
+ * from the filesystem with readdir().
+ *
+ * The iterator returns the direct pointer to couple of useful information in
+ * #Eina_File_Direct_Info and that pointer should not be modified anyhow!
+ *
+ * The iterator will walk over '.' and '..' without returning them.
+ *
+ * @param  dir The name of the directory to list
+
+ * @return Return an Eina_Iterator that will walk over the files and
+ *         directory in the pointed directory. On failure it will
+ *         return NULL. The iterator emits #Eina_File_Direct_Info
+ *         pointers that could be used but not modified. The lifetime
+ *         of the returned pointer is until the next iteration and
+ *         while the iterator is live, deleting the iterator
+ *         invalidates the pointer.
+ *
+ * @see eina_file_ls()
+ */
+EAPI Eina_Iterator *
+eina_file_direct_ls(const char *dir)
+{
+   Eina_File_Direct_Iterator *it;
+   size_t length;
+
+   if (!dir)
+      return NULL;
+
+   length = strlen(dir);
+   if (length < 1)
+      return NULL;
+
+   if (length + NAME_MAX + 2 >= PATH_MAX)
+      return NULL;
+
+   it = calloc(1, sizeof(Eina_File_Direct_Iterator) + length);
+   if (!it)
+      return NULL;
+
+   EINA_MAGIC_SET(&it->iterator, EINA_MAGIC_ITERATOR);
+
+   it->dirp = opendir(dir);
+   if (!it->dirp)
+     {
+        free(it);
+        return NULL;
+     }
+
+   memcpy(it->dir,       dir, length + 1);
+   it->length = length;
+
+   memcpy(it->info.path, dir, length);
+   if (dir[length - 1] == '/')
+      it->info.name_start = length;
+   else
+     {
+        it->info.path[length] = '/';
+        it->info.name_start = length + 1;
+     }
+
+   it->iterator.version = EINA_ITERATOR_VERSION;
+   it->iterator.next = FUNC_ITERATOR_NEXT(_eina_file_direct_ls_iterator_next);
+   it->iterator.get_container = FUNC_ITERATOR_GET_CONTAINER(
+         _eina_file_direct_ls_iterator_container);
+   it->iterator.free = FUNC_ITERATOR_FREE(_eina_file_direct_ls_iterator_free);
+
+   return &it->iterator;
 }
 
 /**

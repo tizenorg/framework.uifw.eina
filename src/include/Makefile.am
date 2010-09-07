@@ -25,7 +25,10 @@ eina_counter.h \
 eina_inline_array.x \
 eina_magic.h \
 eina_stringshare.h \
+eina_binshare.h \
+eina_ustringshare.h \
 eina_inline_stringshare.x \
+eina_inline_ustringshare.x \
 eina_inline_list.x \
 eina_accessor.h \
 eina_convert.h \
@@ -46,6 +49,8 @@ eina_inline_tiler.x \
 eina_str.h \
 eina_inline_str.x \
 eina_strbuf.h \
+eina_ustrbuf.h \
+eina_unicode.h \
 eina_quadtree.h
 
 installed_mainheaderdir = $(includedir)/eina-@VMAJ@
@@ -55,5 +60,4 @@ installed_headersdir = $(includedir)/eina-@VMAJ@/eina
 dist_installed_headers_DATA = $(EINAHEADERS)
 
 EXTRA_DIST = \
-eina_config.h.in \
-eina_private.h
+eina_config.h.in
