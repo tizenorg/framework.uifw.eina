@@ -19,8 +19,14 @@
 #ifndef EINA_FILE_H_
 #define EINA_FILE_H_
 
+#if defined (__MacOSX__) || defined (__FreeBSD__) || (defined (__MACH__) && \
+   defined (__APPLE__))
+# include <sys/syslimits.h>
+#endif
+
 #include "eina_types.h"
 #include "eina_array.h"
+#include "eina_iterator.h"
 
 /**
  * @addtogroup Eina_Tools_Group Tools
@@ -38,7 +44,17 @@
  * @typedef Eina_File_Dir_List_Cb
  * Type for a callback.
  */
+typedef struct _Eina_File_Direct_Info Eina_File_Direct_Info;
 typedef void (*Eina_File_Dir_List_Cb)(const char *name, const char *path, void *data);
+
+struct _Eina_File_Direct_Info
+{
+   size_t path_length; /* size of the whole path */
+   size_t name_length; /* size of the filename/basename component */
+   size_t name_start; /* where the filename/basename component starts */
+   char path[PATH_MAX];
+   const struct dirent *dirent;
+};
 
 /**
  * @def EINA_FILE_DIR_LIST_CB
@@ -50,8 +66,13 @@ typedef void (*Eina_File_Dir_List_Cb)(const char *name, const char *path, void *
  */
 #define EINA_FILE_DIR_LIST_CB(function) ((Eina_File_Dir_List_Cb)function)
 
-EAPI Eina_Bool eina_file_dir_list(const char *dir, Eina_Bool recursive, Eina_File_Dir_List_Cb cb, void *data) EINA_ARG_NONNULL(1, 3);
-EAPI Eina_Array *eina_file_split(char *path) EINA_WARN_UNUSED_RESULT EINA_ARG_NONNULL(1);
+EAPI Eina_Bool       eina_file_dir_list(const char *dir,
+                                        Eina_Bool recursive,
+                                        Eina_File_Dir_List_Cb cb,
+                                        void *data) EINA_ARG_NONNULL(1, 3);
+EAPI Eina_Array *    eina_file_split(char *path) EINA_WARN_UNUSED_RESULT EINA_ARG_NONNULL(1) EINA_MALLOC;
+EAPI Eina_Iterator * eina_file_ls(const char *dir) EINA_WARN_UNUSED_RESULT EINA_ARG_NONNULL(1) EINA_MALLOC;
+EAPI Eina_Iterator * eina_file_direct_ls(const char *dir) EINA_WARN_UNUSED_RESULT EINA_ARG_NONNULL(1) EINA_MALLOC;
 
 /**
  * @}

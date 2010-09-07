@@ -19,6 +19,7 @@
 #ifndef EINA_INLINE_ARRAY_X_
 #define EINA_INLINE_ARRAY_X_
 
+#include <stdio.h>
 
 /**
  * @cond LOCAL
@@ -52,15 +53,18 @@ EAPI Eina_Bool eina_array_grow(Eina_Array *array);
  * #EINA_ERROR_OUT_OF_MEMORY is set. Otherwise, #EINA_TRUE is
  * returned.
  */
+
 static inline Eina_Bool
 eina_array_push(Eina_Array *array, const void *data)
 {
    if (!data) return EINA_FALSE;
 
    if (EINA_UNLIKELY((array->count + 1) > array->total))
-     if (!eina_array_grow(array)) return EINA_FALSE;
+     if (!eina_array_grow(array))
+       return EINA_FALSE;
 
    array->data[array->count++] = (void*) data;
+
    return EINA_TRUE;
 }
 
@@ -79,8 +83,15 @@ eina_array_push(Eina_Array *array, const void *data)
 static inline void *
 eina_array_pop(Eina_Array *array)
 {
-   if (array->count <= 0) return NULL;
-   return array->data[--array->count];
+   void *ret = NULL;
+
+   if (array->count <= 0)
+     goto on_empty;
+
+   ret = array->data[--array->count];
+
+ on_empty:
+   return ret;
 }
 
 /**
@@ -101,13 +112,13 @@ eina_array_data_get(const Eina_Array *array, unsigned int idx)
 }
 
 /**
- * @brief Return the data at a given position in an array.
+ * @brief Set the data at a given position in an array.
  *
  * @param array The array.
  * @param idx The potition of the data to set.
  * @param data The data to set.
  *
- * This function returns the data at the position @p idx in @p
+ * This function sets the data at the position @p idx in @p
  * array. For performance reasons, there is no check of @p array or @p
  * idx. If it is @c NULL or invalid, the program may crash.
  */
@@ -131,6 +142,36 @@ static inline unsigned int
 eina_array_count_get(const Eina_Array *array)
 {
    return array->count;
+}
+
+/**
+ * @brief Provide a safe way to iterate over an array
+ *
+ * @param array The array to iterate over.
+ * @param cb The callback to call for each item.
+ * @param fdata The user data to pass to the callback.
+ * @return EINA_TRUE if it successfully iterate all items of the array.
+ *
+ * This function provide a safe way to iterate over an array. @p cb should
+ * return EINA_TRUE as long as you want the function to continue iterating,
+ * by returning EINA_FALSE it will stop and return EINA_FALSE as a result.
+ */
+static inline Eina_Bool
+eina_array_foreach(Eina_Array *array, Eina_Each_Cb cb, void *fdata)
+{
+   void *data;
+   Eina_Array_Iterator iterator;
+   unsigned int i;
+   Eina_Bool ret = EINA_TRUE;
+
+   EINA_ARRAY_ITER_NEXT(array, i, data, iterator)
+     if (cb(array, data, fdata) != EINA_TRUE)
+       {
+	  ret = EINA_FALSE;
+	  break;
+       }
+
+   return ret;
 }
 
 /**

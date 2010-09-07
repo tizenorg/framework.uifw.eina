@@ -19,21 +19,7 @@
 #ifndef EINA_MAIN_H_
 #define EINA_MAIN_H_
 
-
 #include "eina_types.h"
-
-#define EINA_VERSION_MAJOR 0
-#define EINA_VERSION_MINOR 9
-
-typedef struct _Eina_Version
-{
-   int major;
-   int minor;
-   int micro;
-   int revision;
-} Eina_Version;
-
-EAPI extern Eina_Version *eina_version;
 
 /**
  * @addtogroup Eina_Core_Group Core
@@ -47,12 +33,35 @@ EAPI extern Eina_Version *eina_version;
  * @{
  */
 
+/**
+ * @def EINA_VERSION_MAJOR
+ * @brief Major version of Eina
+ */
+#define EINA_VERSION_MAJOR 1
+
+/**
+ * @def EINA_VERSION_MINOR
+ * @brief Minor version of Eina
+ */
+#define EINA_VERSION_MINOR 0
+
+/**
+ * @struct Eina_Version
+ * The version of Eina.
+ */
+typedef struct _Eina_Version
+{
+   int major;    /**< Major component of the version */
+   int minor;    /**< Minor component of the version */
+   int micro;    /**< Micro component of the version */
+   int revision; /**< Revision component of the version */
+} Eina_Version;
+
+EAPI extern Eina_Version *eina_version;
+
 EAPI int eina_init(void);
-
 EAPI int eina_shutdown(void);
-
 EAPI int eina_threads_init(void);
-
 EAPI int eina_threads_shutdown(void);
 
 /**

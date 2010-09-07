@@ -34,6 +34,9 @@ eina_suite_SOURCES = 	\
 eina_suite.c 		\
 eina_test_fp.c		\
 eina_test_stringshare.c \
+eina_test_ustringshare.c\
+eina_test_ustr.c	\
+eina_test_binshare.c    \
 eina_test_array.c 	\
 eina_test_error.c	\
 eina_test_log.c 	\
@@ -67,6 +70,12 @@ module_dummy_LTLIBRARIES = module_dummy.la
 module_dummy_la_SOURCES = \
 eina_test_module_dummy.c
 
+module_dummy_la_CPPFLAGS = 			\
+-I$(top_srcdir)/src/lib 			\
+-I$(top_srcdir)/src/include 			\
+-I$(top_builddir)/src/include 			\
+-I$(top_builddir)/src/lib 			\
+@EFL_EINA_BUILD@
 module_dummy_la_LIBADD       = $(top_builddir)/src/lib/libeina.la @EINA_LIBS@
 module_dummy_la_LDFLAGS      = -no-undefined @lt_enable_auto_import@ -module -avoid-version
 module_dummy_la_LIBTOOLFLAGS = --tag=disable-static
@@ -103,4 +112,3 @@ eina_bench_LDADD = @GLIB_LIBS@ $(top_builddir)/src/lib/libeina.la
 endif
 
 EXTRA_DIST = eina_bench.h eina_suite.h Ecore_Data.h Evas_Data.h evas_mempool.h
-

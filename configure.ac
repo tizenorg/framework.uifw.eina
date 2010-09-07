@@ -1,25 +1,24 @@
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
-m4_define([v_maj], [0])
-m4_define([v_min], [9])
-m4_define([v_mic], [9])
-m4_define([v_rev], m4_esyscmd([(svnversion . | grep -v exported || echo 0) | awk -F : '{printf("%s\n", $1);}' | tr -d ' :MSP\n']))
+m4_define([v_maj], [1])
+m4_define([v_min], [0])
+m4_define([v_mic], [0])
+m4_define([v_rev], m4_esyscmd([(svnversion "${SVN_REPO_PATH:-.}" | grep -v export || echo 0) | awk -F : '{printf("%s\n", $1);}' | tr -d ' :MSP\n']))
 m4_if(v_rev, [0], [m4_define([v_rev], m4_esyscmd([git log 2> /dev/null | (grep -m1 git-svn-id || echo 0) | sed -e 's/.*@\([0-9]*\).*/\1/' | tr -d '\n']))])
 ##--   When released, remove the dnl on the below line
-dnl m4_undefine([v_rev])
+m4_undefine([v_rev])
 ##--   When doing snapshots - change soname. remove dnl on below line
-m4_define([relname], [ver-pre-svn-06])
-m4_define([v_rel], [-release relname])
+dnl m4_define([relname], [ver-pre-svn-07])
+dnl m4_define([v_rel], [-release relname])
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
-m4_ifdef([v_rev], [m4_define([v_ver], [v_maj.v_min.v_mic.v_rev])],
-[m4_define([v_ver], [v_maj.v_min.v_mic])])
+m4_ifdef([v_rev], [m4_define([v_ver], [v_maj.v_min.v_mic.v_rev])], [m4_define([v_ver], [v_maj.v_min.v_mic])])
 m4_define([lt_rev], m4_eval(v_maj + v_min))
 m4_define([lt_cur], v_mic)
 m4_define([lt_age], v_min)
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
  
-AC_INIT([eina], [v_ver], [enlightenment-devel@lists.sourceforge.net])
+AC_INIT([eina], [v_ver-alpha], [enlightenment-devel@lists.sourceforge.net])
 AC_PREREQ([2.59])
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_MACRO_DIR([m4])
@@ -62,7 +61,7 @@ case "$host_os" in
       MODULE_ARCH="$host_os-$host_cpu"
       ;;
    *)
-      MODULE_ARCH="$host_os-$host_cpu-$relname"
+      MODULE_ARCH="$host_os-$host_cpu-v_maj.v_min.v_mic"
       ;;
 esac
 AC_SUBST(MODULE_ARCH)
@@ -84,11 +83,20 @@ EFL_CHECK_CPU_SSE([have_sse="yes"], [have_sse="no"])
 EFL_CHECK_CPU_SSE2([have_sse2="yes"], [have_sse2="no"])
 EFL_CHECK_CPU_ALTIVEC([have_altivec="yes"], [have_altivec="no"])
 
-EFL_CHECK_PTHREAD(["yes"],
-   [have_pthread="yes"],
-   [have_pthread="no"],
-   [have_pthread_spinlock="yes"],
-   [have_pthread_spinlock="no"])
+EFL_CHECK_THREADS(
+   [
+    if test "x${_efl_have_posix_threads}" = "xyes" ; then
+       have_threads="POSIX"
+    else
+       if test "x${_efl_have_win32_threads}" = "xyes" ; then
+          have_threads="Win32"
+       else
+          have_threads="no"
+       fi
+    fi
+   ],
+   [have_threads="no"])
+EFL_CHECK_SPINLOCK([have_posix_threads_spinlock="yes"], [have_posix_threads_spinlock="no"])
 
 ### Additional options to configure
 
@@ -278,13 +286,25 @@ if test "x${enable_ememoa}" = "xyes" ; then
    )
 fi
 
+
 ### Checks for header files
 AC_HEADER_ASSERT
 AC_HEADER_DIRENT
 AC_HEADER_TIME
 
-### Checks for types
 
+### Checks for types
+AC_CHECK_HEADER([inttypes.h],
+		[EINA_CONFIGURE_HAVE_INTTYPES_H="#define EINA_HAVE_INTTYPES_H"])
+AC_SUBST(EINA_CONFIGURE_HAVE_INTTYPES_H)
+
+AC_CHECK_HEADER([stdint.h],
+		[EINA_CONFIGURE_HAVE_STDINT_H="#define EINA_HAVE_STDINT_H"])
+AC_SUBST(EINA_CONFIGURE_HAVE_STDINT_H)
+
+AC_CHECK_SIZEOF(wchar_t)
+EINA_SIZEOF_WCHAR_T=$ac_cv_sizeof_wchar_t
+AC_SUBST(EINA_SIZEOF_WCHAR_T)
 
 ### Checks for structures
 
@@ -484,13 +504,15 @@ else
    enable_pass_through="no"
 fi
 
+enable_one_big="static"
+
 EINA_CHECK_MODULE([chained-pool],   [${enable_chained_pool}], [chained pool])
 EINA_CHECK_MODULE([ememoa-fixed],   [${enable_ememoa}],       [ememoa fixed])
 EINA_CHECK_MODULE([ememoa-unknown], [${enable_ememoa}],       [ememoa unknown])
 EINA_CHECK_MODULE([fixed-bitmap],   [no],                     [fixed bitmap])
 EINA_CHECK_MODULE([pass-through],   [${enable_pass_through}], [pass through])
 EINA_CHECK_MODULE([buddy],          [no],                     [buddy])
-
+EINA_CHECK_MODULE([one-big],        [${enable_one_big}],      [one big])
 
 ### Make the debug preprocessor configurable
 
@@ -528,7 +550,7 @@ AC_SUBST(requirement_eina)
 
 AC_CONFIG_FILES([
 Makefile
-eina-0.pc
+eina.pc
 eina.spec
 doc/Makefile
 src/Makefile
@@ -543,6 +565,7 @@ src/modules/mp/ememoa_unknown/Makefile
 src/modules/mp/pass_through/Makefile
 src/modules/mp/fixed_bitmap/Makefile
 src/modules/mp/buddy/Makefile
+src/modules/mp/one_big/Makefile
 src/tests/Makefile
 ])
 
@@ -566,7 +589,10 @@ echo "  Safety checks........: ${have_safety_checks}"
 echo "  Maximum log level....: ${with_max_log_level}"
 echo "  Report string usage..: ${have_stringshare_usage}"
 echo "  Default mempool......: ${have_default_mempool}"
-echo "  Thread Support.......: ${have_pthread} (spinlock: ${have_pthread_spinlock})"
+echo "  Thread Support.......: ${have_threads}"
+if test "${have_threads}" = "POSIX" ; then
+echo "    spinlock...........: ${have_posix_threads_spinlock}"
+fi
 echo "  Amalgamation.........: ${do_amalgamation}"
 echo "  Iconv support........: ${have_iconv}"
 echo
@@ -592,6 +618,7 @@ echo "    Ememoa unknown.....: ${enable_ememoa_unknown}"
 echo "    Fixed bitmap.......: ${enable_fixed_bitmap}"
 echo "    Pass through.......: ${enable_pass_through}"
 echo "    Buddy..............: ${enable_buddy}"
+echo "    One big............: ${enable_one_big}"
 echo
 echo "Compilation............: make (or gmake)"
 echo "  CPPFLAGS.............: $CPPFLAGS"
@@ -601,3 +628,4 @@ echo
 echo "Installation...........: make install (as root if needed, with 'su' or 'sudo')"
 echo "  prefix...............: $prefix"
 echo
+EFL_FORM_VOLTRON

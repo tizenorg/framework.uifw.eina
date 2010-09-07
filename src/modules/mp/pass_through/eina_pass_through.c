@@ -1,6 +1,3 @@
-/*
- * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
- */
 /* EINA - EFL data type library
  * Copyright (C) 2008 Cedric BAIL
  *
@@ -42,16 +39,18 @@ eina_pass_through_free(__UNUSED__ void *data, void *ptr)
    free(ptr);
 }
 
-static void*
+static void *
 eina_pass_through_realloc(__UNUSED__ void *data, void *ptr, unsigned int size)
 {
    return realloc(ptr, size);
 }
 
-static void*
-eina_pass_through_init(__UNUSED__ const char *context, __UNUSED__ const char *option, __UNUSED__ va_list args)
+static void *
+eina_pass_through_init(__UNUSED__ const char *context,
+                       __UNUSED__ const char *option,
+                       __UNUSED__ va_list args)
 {
-   return (void*) 0x1;
+   return (void *)0x1;
 }
 
 static void
@@ -73,12 +72,12 @@ static Eina_Mempool_Backend _eina_pass_through_mp_backend = {
 
 Eina_Bool pass_through_init(void)
 {
-	return eina_mempool_register(&_eina_pass_through_mp_backend);
+   return eina_mempool_register(&_eina_pass_through_mp_backend);
 }
 
 void pass_through_shutdown(void)
 {
-	eina_mempool_unregister(&_eina_pass_through_mp_backend);
+   eina_mempool_unregister(&_eina_pass_through_mp_backend);
 }
 
 #ifndef EINA_STATIC_BUILD_PASS_THROUGH
