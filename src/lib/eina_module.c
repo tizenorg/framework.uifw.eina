@@ -163,6 +163,27 @@ static void _dir_list_cb(const char *name, const char *path, void *data)
      }
 }
 
+static void _dir_arch_list_cb(const char *name, const char *path, void *data)
+{
+   Dir_List_Get_Cb_Data *cb_data = data;
+   Eina_Module *m;
+   char *file;
+   size_t length;
+
+   length = strlen(path) + 1 + strlen(name) + 1 +
+      strlen((char *)(cb_data->data)) + 1 + sizeof("module") +
+      sizeof(SHARED_LIB_SUFFIX) + 1;
+
+   file = alloca(length);
+   snprintf(file, length, "%s/%s/%s/module" SHARED_LIB_SUFFIX,
+            path, name, (char *)(cb_data->data));
+   m = eina_module_new(file);
+   if (!m)
+      return;
+
+   eina_array_push(cb_data->array, m);
+}
+
 /**
  * @endcond
  */
@@ -449,9 +470,9 @@ EAPI void *eina_module_symbol_get(const Eina_Module *m, const char *symbol)
  * @param m The module.
  * @return The file name.
  *
- * Return the file name passed in eina_module_new(). If @p m is
- * @c NULL, the function returns immediatly @c NULL. The returned
- * value must no be freed.
+ * This function returns the file name passed in eina_module_new(). If
+ * @p m is @c NULL, the function returns immediatly @c NULL. The
+ * returned value must no be freed.
  */
 EAPI const char *eina_module_file_get(const Eina_Module *m)
 {
@@ -459,6 +480,20 @@ EAPI const char *eina_module_file_get(const Eina_Module *m)
    return m->file;
 }
 
+/**
+ * @brief Return the path built from the location of a library and a
+ * given sub directory.
+ *
+ * @param symbol The symbol to search for.
+ * @param sub_dir The subdirectory to append.
+ * @return The built path on success, @c NULL otherwise.
+ *
+ * This function returns the path built by concatenating the path of
+ * the library containing the symbol @p symbol and @p sub_dir. @p sub_dir
+ * can be @c NULL. The returned path must be freed when not used
+ * anymore. If the symbol is not found, or dl_addr() is not supported,
+ * or allocation fails, this function returns @c NULL.
+ */
 EAPI char *eina_module_symbol_path_get(const void *symbol, const char *sub_dir)
 {
 #ifdef HAVE_DLADDR
@@ -482,10 +517,9 @@ EAPI char *eina_module_symbol_path_get(const void *symbol, const char *sub_dir)
            path = malloc(l0 - l1 + l2 + 1);
            if (path)
              {
-                   memcpy(path,           eina_dl.dli_fname, l0 - l1);
+                memcpy(path, eina_dl.dli_fname, l0 - l1);
                 if (sub_dir && (*sub_dir != '\0'))
-                   memcpy(path + l0 - l1, sub_dir,           l2);
-
+                   memcpy(path + l0 - l1, sub_dir, l2);
                 path[l0 - l1 + l2] = '\0';
                 return path;
              }
@@ -496,6 +530,20 @@ EAPI char *eina_module_symbol_path_get(const void *symbol, const char *sub_dir)
    return NULL;
 }
 
+/**
+ * @brief Return the path built from the value of an environment varialbe and a
+ * given sub directory.
+ *
+ * @param env The environment variable to expand.
+ * @param sub_dir The subdirectory to append.
+ * @return The built path on success, @c NULL otherwise.
+ *
+ * This function returns the path built by concatenating the value of
+ * the environment variable named @p env and @p sub_dir. @p sub_dir
+ * can be @c NULL. The returned path must be freed when not used
+ * anymore. If the symbol is not found, or @p env does not exist, or
+ * allocation fails, this function returns @c NULL.
+ */
 EAPI char *eina_module_environment_path_get(const char *env,
                                             const char *sub_dir)
 {
@@ -530,36 +578,17 @@ EAPI char *eina_module_environment_path_get(const char *env,
    return NULL;
 }
 
-static void _dir_arch_list_db(const char *name, const char *path, void *data)
-{
-   Dir_List_Get_Cb_Data *cb_data = data;
-   Eina_Module *m;
-   char *file;
-   size_t length;
-
-   length = strlen(path) + 1 + strlen(name) + 1 +
-      strlen((char *)(cb_data->data)) + 1 + sizeof("module") +
-      sizeof(SHARED_LIB_SUFFIX) + 1;
-
-   file = alloca(length);
-   snprintf(file, length, "%s/%s/%s/module" SHARED_LIB_SUFFIX,
-            path, name, (char *)(cb_data->data));
-   m = eina_module_new(file);
-   if (!m)
-      return;
-
-   eina_array_push(cb_data->array, m);
-}
-
 /**
- * Get a list of modules found on the directory path
+ * @brief Get an array of modules found on the directory path matching an arch type.
  *
  * @param array The array that stores the list of the modules.
- * @param path The directory's path to search for modules
- * @param arch the architecture string
- * @param cb Callback function to call, if the return value of the callback is zero
- * it won't be added to the list, if it is one, it will.
- * @param data Data passed to the callback function
+ * @param path The directory's path to search for modules.
+ * @param arch The architecture string.
+ *
+ * This function adds to @p array the module names found in @p path
+ * which match the cpu architecture @p arch. If @p path or @p arch is
+ * @c NULL, the function returns immediatly @p array. @p array can be
+ * @c NULL. In that case, it is created with 4 elements.
  */
 EAPI Eina_Array *eina_module_arch_list_get(Eina_Array *array,
                                            const char *path,
@@ -574,20 +603,28 @@ EAPI Eina_Array *eina_module_arch_list_get(Eina_Array *array,
    list_get_cb_data.cb = NULL;
    list_get_cb_data.data = (void *)arch;
 
-   eina_file_dir_list(path, 0, &_dir_arch_list_db, &list_get_cb_data);
+   eina_file_dir_list(path, 0, &_dir_arch_list_cb, &list_get_cb_data);
 
    return list_get_cb_data.array;
 }
 
 /**
- * Get a list of modules found on the directory path
+ * @brief Get a list of modules found on the directory path.
  *
  * @param array The array that stores the list of the modules.
- * @param path The directory's path to search for modules
- * @param recursive Iterate recursively on the path
- * @param cb Callback function to call, if the return value of the callback is zero
- * it won't be added to the list, if it is one, it will.
- * @param data Data passed to the callback function
+ * @param path The directory's path to search for modules.
+ * @param recursive Iterate recursively on the path.
+ * @param cb Callback function to call on each module.
+ * @param data Data passed to the callback function.
+ *
+ * This function adds to @p array the list of modules found in
+ * @p path. If @p recursive is #EINA_TRUE, then recursive search is
+ * done. The callback @p cb is called on each module found, and @p data
+ * is passed to @p cb. If @p path is @c NULL, the function returns
+ * immediatly @p array. If the returned value of @p cb is 0, the
+ * module will not be added to the list, otherwise it will be added.
+ * @p array can be @c NULL. In that case, it is created with 4
+ * elements. @p cb can be @c NULL.
  */
 EAPI Eina_Array *eina_module_list_get(Eina_Array *array,
                                       const char *path,
@@ -617,10 +654,11 @@ EAPI Eina_Array *eina_module_list_get(Eina_Array *array,
  * @brief Find an module in array.
  *
  * @param array The array to find the module.
- * @param module The name of module to be searched;
+ * @param module The name of module to be searched.
  *
- * This function finds an @p module in an @p array;
- * If the element is found return the module else NULL.
+ * This function finds an @p module in @p array.
+ * If the element is found  the function returns the module, else
+ * @c NULL is returned.
  */
 EAPI Eina_Module *
 eina_module_find(const Eina_Array *array, const char *module)
@@ -654,8 +692,12 @@ eina_module_find(const Eina_Array *array, const char *module)
 }
 
 /**
- * Load every module on the list of modules
- * @param array The array of modules to load
+ * @brief Load every module on the list of modules.
+ *
+ * @param array The array of modules to load.
+ *
+ * This function calls eina_module_load() on each element found in
+ * @p array. If @p array is @c NULL, this function does nothing.
  */
 EAPI void eina_module_list_load(Eina_Array *array)
 {
@@ -670,8 +712,12 @@ EAPI void eina_module_list_load(Eina_Array *array)
 }
 
 /**
- * Unload every module on the list of modules
- * @param array The array of modules to unload
+ * @brief Unload every module on the list of modules.
+ *
+ * @param array The array of modules to unload.
+ *
+ * This function calls eina_module_unload() on each element found in
+ * @p array. If @p array is @c NULL, this function does nothing.
  */
 EAPI void eina_module_list_unload(Eina_Array *array)
 {
@@ -686,8 +732,12 @@ EAPI void eina_module_list_unload(Eina_Array *array)
 }
 
 /**
- * Helper function that iterates over the list of modules and calls
- * eina_module_free on each
+ * @p Free every module on the list of modules.
+ *
+ * @param array The array of modules to free.
+ *
+ * This function calls eina_module_free() on each element found in
+ * @p array. If @p array is @c NULL, this function does nothing.
  */
 EAPI void eina_module_list_free(Eina_Array *array)
 {
