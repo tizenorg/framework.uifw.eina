@@ -539,6 +539,14 @@ eina_log_win32_color_get(const char *domain_str)
 }
 #endif
 
+// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
+static inline unsigned int
+eina_log_pid_get(void)
+{
+   return (unsigned int)getpid();
+}
+// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
+
 static inline void
 eina_log_print_level_name_get(int level, const char **p_name)
 {
@@ -633,7 +641,10 @@ eina_log_print_prefix_NOthreads_NOcolor_file_func(FILE *fp,
                                                   int line)
 {
    DECLARE_LEVEL_NAME(level);
-   fprintf(fp, "%s:%s %s:%d %s() ", name, d->domain_str, file, line, fnc);
+// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
+   fprintf(fp, "%s<%u>:%s %s:%d %s() ", name, eina_log_pid_get(), 
+           d->domain_str, file, line, fnc);
+// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 }
 
 static void
@@ -645,7 +656,10 @@ eina_log_print_prefix_NOthreads_NOcolor_NOfile_func(FILE *fp,
                                                     int line __UNUSED__)
 {
    DECLARE_LEVEL_NAME(level);
-   fprintf(fp, "%s:%s %s() ", name, d->domain_str, fnc);
+// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
+   fprintf(fp, "%s<%u>:%s %s() ", name, eina_log_pid_get(), d->domain_str, 
+           fnc);
+// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 }
 
 static void
@@ -657,7 +671,10 @@ eina_log_print_prefix_NOthreads_NOcolor_file_NOfunc(FILE *fp,
                                                     int line)
 {
    DECLARE_LEVEL_NAME(level);
-   fprintf(fp, "%s:%s %s:%d ", name, d->domain_str, file, line);
+// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
+   fprintf(fp, "%s<%u>:%s %s:%d ", name, eina_log_pid_get(), d->domain_str, 
+           file, line);
+// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 }
 
 /* No threads, color */
@@ -693,9 +710,13 @@ eina_log_print_prefix_NOthreads_color_file_func(FILE *fp,
                            FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
    fprintf(fp, " ");
 #else
-   fprintf(fp, "%s%s" EINA_COLOR_RESET ":%s %s:%d "
+// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
+   fprintf(fp, "%s%s<%u>" EINA_COLOR_RESET ":%s %s:%d "
+//End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
            EINA_COLOR_HIGH "%s()" EINA_COLOR_RESET " ",
-           color, name, d->domain_str, file, line, fnc);
+// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
+           color, name, eina_log_pid_get(), d->domain_str, file, line, fnc);
+// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 #endif
 }
 
@@ -728,9 +749,13 @@ eina_log_print_prefix_NOthreads_color_NOfile_func(FILE *fp,
                            FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
    fprintf(fp, " ");
 #else
-   fprintf(fp, "%s%s" EINA_COLOR_RESET ":%s "
+// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
+   fprintf(fp, "%s%s<%u>" EINA_COLOR_RESET ":%s "
+// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
            EINA_COLOR_HIGH "%s()" EINA_COLOR_RESET " ",
-           color, name, d->domain_str, fnc);
+// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
+           color, name, eina_log_pid_get(), d->domain_str, fnc);
+// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 #endif
 }
 
@@ -758,8 +783,10 @@ eina_log_print_prefix_NOthreads_color_file_NOfunc(FILE *fp,
                            FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
    fprintf(fp, " %s:%d ", file, line);
 #else
-   fprintf(fp, "%s%s" EINA_COLOR_RESET ":%s %s:%d ",
-           color, name, d->domain_str, file, line);
+// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
+   fprintf(fp, "%s%s<%u>" EINA_COLOR_RESET ":%s %s:%d ",
+           color, name, eina_log_pid_get(), d->domain_str, file, line);
+// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 #endif
 }
 
@@ -779,12 +806,17 @@ eina_log_print_prefix_threads_NOcolor_file_func(FILE *fp,
    cur = SELF();
    if (IS_OTHER(cur))
      {
-        fprintf(fp, "%s:%s[T:%lu] %s:%d %s() ",
-                name, d->domain_str, (unsigned long)cur, file, line, fnc);
+// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
+        fprintf(fp, "%s<%u>:%s[T:%lu] %s:%d %s() ",
+                name, eina_log_pid_get(), d->domain_str, 
+                (unsigned long)cur, file, line, fnc);
+// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
         return;
      }
-
-        fprintf(fp, "%s:%s %s:%d %s() ", name, d->domain_str, file, line, fnc);
+// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
+   fprintf(fp, "%s<%u>:%s %s:%d %s() ", 
+           name, eina_log_pid_get(), d->domain_str, file, line, fnc);
+// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 }
 
 static void
@@ -801,12 +833,17 @@ eina_log_print_prefix_threads_NOcolor_NOfile_func(FILE *fp,
    cur = SELF();
    if (IS_OTHER(cur))
      {
-        fprintf(fp, "%s:%s[T:%lu] %s() ",
-                name, d->domain_str, (unsigned long)cur, fnc);
+// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
+        fprintf(fp, "%s<%u>:%s[T:%lu] %s() ",
+                name, eina_log_pid_get(), d->domain_str, 
+                (unsigned long)cur, fnc);
+// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
         return;
      }
-
-        fprintf(fp, "%s:%s %s() ", name, d->domain_str, fnc);
+// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
+   fprintf(fp, "%s<%u>:%s %s() ", 
+           name, eina_log_pid_get(), d->domain_str, fnc);
+// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 }
 
 static void
@@ -823,12 +860,18 @@ eina_log_print_prefix_threads_NOcolor_file_NOfunc(FILE *fp,
    cur = SELF();
    if (IS_OTHER(cur))
      {
-        fprintf(fp, "%s:%s[T:%lu] %s:%d ",
-                name, d->domain_str, (unsigned long)cur, file, line);
+// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
+        fprintf(fp, "%s<%u>:%s[T:%lu] %s:%d ",
+                name, eina_log_pid_get(), d->domain_str, (unsigned long)cur, 
+                file, line);
+// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
         return;
      }
-
-        fprintf(fp, "%s:%s %s:%d ", name, d->domain_str, file, line);
+// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
+   
+   fprintf(fp, "%s<%u>:%s %s:%d ", 
+           name, eina_log_pid_get(), d->domain_str, file, line);
+// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 }
 
 /* threads, color */
@@ -883,11 +926,15 @@ eina_log_print_prefix_threads_color_file_func(FILE *fp,
                                 FOREGROUND_BLUE);
         fprintf(fp, " ");
 # else
-        fprintf(fp, "%s%s" EINA_COLOR_RESET ":%s[T:"
+// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
+        fprintf(fp, "%s%s<%u>" EINA_COLOR_RESET ":%s[T:"
+// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
                 EINA_COLOR_ORANGE "%lu" EINA_COLOR_RESET "] %s:%d "
                 EINA_COLOR_HIGH "%s()" EINA_COLOR_RESET " ",
-                color, name, d->domain_str, (unsigned long)cur, file,
-		line, fnc);
+// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
+                color, name, eina_log_pid_get() ,d->domain_str, 
+                (unsigned long)cur, file, line, fnc);
+// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 # endif
         return;
      }
@@ -900,9 +947,13 @@ eina_log_print_prefix_threads_color_file_func(FILE *fp,
                                                    fnc,
                                                    line);
 # else
-   fprintf(fp, "%s%s" EINA_COLOR_RESET ":%s %s:%d "
+// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
+   fprintf(fp, "%s%s<%u>" EINA_COLOR_RESET ":%s %s:%d "
+// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
            EINA_COLOR_HIGH "%s()" EINA_COLOR_RESET " ",
-           color, name, d->domain_str, file, line, fnc);
+// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
+           color, name, eina_log_pid_get(), d->domain_str, file, line, fnc);
+// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 # endif
 }
 
@@ -952,10 +1003,15 @@ eina_log_print_prefix_threads_color_NOfile_func(FILE *fp,
                                 FOREGROUND_BLUE);
         fprintf(fp, " ");
 # else
-        fprintf(fp, "%s%s" EINA_COLOR_RESET ":%s[T:"
+// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
+        fprintf(fp, "%s%s<%u>" EINA_COLOR_RESET ":%s[T:"
+// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
                 EINA_COLOR_ORANGE "%lu" EINA_COLOR_RESET "] "
                 EINA_COLOR_HIGH "%s()" EINA_COLOR_RESET " ",
-                color, name, d->domain_str, (unsigned long)cur, fnc);
+// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
+                color, name, eina_log_pid_get(), d->domain_str, 
+                (unsigned long)cur, fnc);
+// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 # endif
         return;
      }
@@ -968,9 +1024,13 @@ eina_log_print_prefix_threads_color_NOfile_func(FILE *fp,
                                                      fnc,
                                                      line);
 # else
-   fprintf(fp, "%s%s" EINA_COLOR_RESET ":%s "
+// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
+   fprintf(fp, "%s%s<%u>" EINA_COLOR_RESET ":%s "
+// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
            EINA_COLOR_HIGH "%s()" EINA_COLOR_RESET " ",
-           color, name, d->domain_str, fnc);
+// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
+           color, name, eina_log_pid_get(), d->domain_str, fnc);
+// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 # endif
 }
 
@@ -1015,9 +1075,14 @@ eina_log_print_prefix_threads_color_file_NOfunc(FILE *fp,
                                 FOREGROUND_BLUE);
         fprintf(fp, "] %s:%d ", file, line);
 # else
-        fprintf(fp, "%s%s" EINA_COLOR_RESET ":%s[T:"
+// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
+        fprintf(fp, "%s%s<%u>" EINA_COLOR_RESET ":%s[T:"
+// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
                 EINA_COLOR_ORANGE "%lu" EINA_COLOR_RESET "] %s:%d ",
-                color, name, d->domain_str, (unsigned long)cur, file, line);
+// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
+                color, name, eina_log_pid_get(), d->domain_str, 
+                (unsigned long)cur, file, line);
+// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 # endif
         return;
      }
