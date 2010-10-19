@@ -62,6 +62,7 @@ static const Eina_Test_Case etc[] = {
    { "String", eina_test_str },
    { "Unicode String", eina_test_ustr },
    { "QuadTree", eina_test_quadtree },
+   { "Sched", eina_test_sched },
    { NULL, NULL }
 };
 
@@ -70,7 +71,7 @@ _list_tests(void)
 {
    const Eina_Test_Case *itr = etc;
       fputs("Available Test Cases:\n", stderr);
-   for (; itr->test_case != NULL; itr++)
+   for (; itr->test_case; itr++)
       fprintf(stderr, "\t%s\n", itr->test_case);
 }
 
@@ -96,7 +97,7 @@ eina_build_suite(int argc, const char **argv)
 
    s = suite_create("Eina");
 
-   for (i = 0; etc[i].test_case != NULL; ++i)
+   for (i = 0; etc[i].test_case; ++i)
      {
         if (!_use_test(argc, argv, etc[i].test_case))
            continue;
@@ -122,7 +123,7 @@ static void _mempool_init(void)
    /* force modules to be loaded in case they are not installed */
    _modules = eina_module_list_get(NULL,
                                    PACKAGE_BUILD_DIR "/src/modules",
-                                   1,
+                                   EINA_TRUE,
                                    NULL,
                                    NULL);
    eina_module_list_load(_modules);
@@ -163,7 +164,7 @@ main(int argc, char **argv)
 
    _mempool_init();
 
-   srunner_run_all(sr, CK_NORMAL);
+   srunner_run_all(sr, CK_ENV);
    failed_count = srunner_ntests_failed(sr);
    srunner_free(sr);
 

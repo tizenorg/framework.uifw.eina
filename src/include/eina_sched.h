@@ -1,5 +1,5 @@
 /* EINA - EFL data type library
- * Copyright (C) 2002-2008 Cedric BAIL
+ * Copyright (C) 2010 ProFUSION embedded systems
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,35 +16,11 @@
  * if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EINA_RBTREE_INLINE_H_
-#define EINA_RBTREE_INLINE_H_
+#ifndef EINA_SCHED_H_
+#define EINA_SCHED_H_
 
-/**
- * @addtogroup Eina_Rbtree_Group Red-Black tree
- *
- * @brief These functions provide Red-Black trees management.
- *
- * @{
- */
+#include "eina_types.h"
 
-static inline Eina_Rbtree *
-eina_rbtree_inline_lookup(const Eina_Rbtree *root, const void *key, int length, Eina_Rbtree_Cmp_Key_Cb cmp, const void *data)
-{
-   int result;
+EAPI void eina_sched_prio_drop(void);
 
-   while (root)
-     {
-        result = cmp(root, key, length, (void*) data);
-        if (result == 0) return (Eina_Rbtree*) root;
-
-        root = root->son[result < 0 ? 0 : 1];
-     }
-
-   return NULL;
-}
-
-/**
- * @}
- */
-
-#endif
+#endif /* EINA_SCHED_H_ */

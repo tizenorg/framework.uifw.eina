@@ -37,6 +37,7 @@ eina_binshare.c \
 eina_stringshare.c \
 eina_ustringshare.c \
 eina_cpu.c \
+eina_sched.c \
 eina_tiler.c \
 eina_hamster.c \
 eina_safety_checks.c \
@@ -89,10 +90,6 @@ eina_amalgamation.c: $(base_sources) Makefile
 
 	@echo "#ifdef HAVE_CONFIG_H" >> eina_amalgamation.c
 	@echo "#include \"config.h\"" >> eina_amalgamation.c
-	@echo "#endif" >> eina_amalgamation.c
-
-	@echo "#ifndef _WIN32" >> eina_amalgamation.c
-	@echo "#define _GNU_SOURCE" >> eina_amalgamation.c
 	@echo "#endif" >> eina_amalgamation.c
 
 	@echo "#ifdef HAVE_ALLOCA_H" >> eina_amalgamation.c

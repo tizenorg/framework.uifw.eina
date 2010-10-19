@@ -33,8 +33,6 @@
 # include "config.h"
 #endif
 
-#define _GNU_SOURCE
-
 #ifdef HAVE_ALLOCA_H
 # include <alloca.h>
 #elif defined __GNUC__
@@ -69,6 +67,7 @@ void *alloca (size_t);
 #include "eina_hash.h"
 #include "eina_rbtree.h"
 #include "eina_error.h"
+#include "eina_log.h"
 #include "eina_stringshare.h"
 
 /* undefs EINA_ARG_NONULL() so NULL checks are not compiled out! */
@@ -594,7 +593,7 @@ eina_stringshare_shutdown(void)
  * This function decreases the reference counter associated to @p str
  * if it exists. If that counter reaches 0, the memory associated to
  * @p str is freed. If @p str is NULL, the function returns
- * immediatly.
+ * immediately.
  *
  * Note that if the given pointer is not shared or NULL, bad things
  * will happen, likely a segmentation fault.

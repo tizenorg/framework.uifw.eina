@@ -86,7 +86,7 @@ eina_ememoa_unknown_size_init(const char *context,
    struct ememoa_mempool_desc_s *desc = NULL;
    Eina_Ememoa_Unknown_Size_Mempool *efm = NULL;
    Eina_Bool thread_protect;
-   unsigned int *items_map;
+   unsigned int *items_map = NULL;
    unsigned int items_count;
    unsigned int i;
    int context_length;
@@ -128,6 +128,9 @@ eina_ememoa_unknown_size_init(const char *context,
    return efm;
 
 on_error:
+   if (items_map)
+      free(items_map);
+   
    if (desc)
       free(desc);
 

@@ -41,13 +41,19 @@
  * @{
  */
 
+/**
+ * @typedef Eina_Hash
+ * Type for a generic hash table.
+ */
 typedef struct _Eina_Hash Eina_Hash;
+
 typedef struct _Eina_Hash_Tuple Eina_Hash_Tuple;
+
 struct _Eina_Hash_Tuple
 {
-   const void *key;
-   void *data;
-   unsigned int key_length;
+   const void *key; /**< The key */
+   void *data; /**< The data associated to the key */
+   unsigned int key_length; /**< The length of the key */
 };
 
 typedef unsigned int (*Eina_Key_Length)(const void *key);
@@ -70,18 +76,6 @@ EAPI Eina_Hash *     eina_hash_int32_new(Eina_Free_Cb data_free_cb);
 EAPI Eina_Hash *     eina_hash_int64_new(Eina_Free_Cb data_free_cb);
 EAPI Eina_Hash *     eina_hash_pointer_new(Eina_Free_Cb data_free_cb);
 EAPI Eina_Hash *     eina_hash_stringshared_new(Eina_Free_Cb data_free_cb);
-EAPI Eina_Hash *     eina_hash_threadsafe_new(Eina_Key_Length key_length_cb,
-                                              Eina_Key_Cmp key_cmp_cb,
-                                              Eina_Key_Hash key_hash_cb,
-                                              Eina_Free_Cb data_free_cb,
-                                              int buckets_power_size) EINA_MALLOC EINA_WARN_UNUSED_RESULT EINA_ARG_NONNULL(2, 3);
-EAPI Eina_Hash *     eina_hash_threadsafe_string_djb2_new(Eina_Free_Cb data_free_cb);
-EAPI Eina_Hash *     eina_hash_threadsafe_string_superfast_new(Eina_Free_Cb data_free_cb);
-EAPI Eina_Hash *     eina_hash_threadsafe_string_small_new(Eina_Free_Cb data_free_cb);
-EAPI Eina_Hash *     eina_hash_threadsafe_int32_new(Eina_Free_Cb data_free_cb);
-EAPI Eina_Hash *     eina_hash_threadsafe_int64_new(Eina_Free_Cb data_free_cb);
-EAPI Eina_Hash *     eina_hash_threadsafe_pointer_new(Eina_Free_Cb data_free_cb);
-EAPI Eina_Hash *     eina_hash_threadsafe_stringshared_new(Eina_Free_Cb data_free_cb);
 EAPI Eina_Bool       eina_hash_add(Eina_Hash *hash,
                                    const void *key,
                                    const void *data) EINA_ARG_NONNULL(1, 2, 3);

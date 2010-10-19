@@ -2,10 +2,12 @@
 # include "config.h"
 #endif
 
-#define _GNU_SOURCE
-
 #include <stdio.h>
 #include <string.h>
+
+#ifdef HAVE_EVIL
+# include <Evil.h>
+#endif
 
 #include "eina_private.h"
 #include "eina_str.h"

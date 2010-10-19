@@ -19,10 +19,7 @@
 #ifndef EINA_FILE_H_
 #define EINA_FILE_H_
 
-#if defined (__MacOSX__) || defined (__FreeBSD__) || (defined (__MACH__) && \
-   defined (__APPLE__))
-# include <sys/syslimits.h>
-#endif
+#include <limits.h>
 
 #include "eina_types.h"
 #include "eina_array.h"
@@ -41,19 +38,29 @@
  */
 
 /**
- * @typedef Eina_File_Dir_List_Cb
- * Type for a callback.
+ * @typedef Eina_File_Direct_Info
+ * A typedef to #_Eina_File_Direct_Info.
  */
 typedef struct _Eina_File_Direct_Info Eina_File_Direct_Info;
+
+/**
+ * @typedef Eina_File_Dir_List_Cb
+ * Type for a callback to be called when iterating over the files of a
+ * directory.
+ */
 typedef void (*Eina_File_Dir_List_Cb)(const char *name, const char *path, void *data);
 
+/**
+ * @struct _Eina_File_Direct_Info
+ * A structure to store informations of a path.
+ */
 struct _Eina_File_Direct_Info
 {
-   size_t path_length; /* size of the whole path */
-   size_t name_length; /* size of the filename/basename component */
-   size_t name_start; /* where the filename/basename component starts */
-   char path[PATH_MAX];
-   const struct dirent *dirent;
+   size_t path_length; /**< size of the whole path */
+   size_t name_length; /**< size of the filename/basename component */
+   size_t name_start; /**< where the filename/basename component starts */
+   char path[PATH_MAX]; /**< the path */
+   const struct dirent *dirent; /**< the dirent structure of the path */
 };
 
 /**

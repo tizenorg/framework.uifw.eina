@@ -76,6 +76,7 @@
 #include "eina_hash.h"
 #include "eina_rbtree.h"
 #include "eina_error.h"
+#include "eina_log.h"
 
 /* undefs EINA_ARG_NONULL() so NULL checks are not compiled out! */
 #include "eina_safety_checks.h"
@@ -492,7 +493,7 @@ _eina_share_common_head_find(Eina_Share_Common_Head *head,
 
    prev = node;
    node = node->next;
-   for (; node != NULL; prev = node, node = node->next)
+   for (; node; prev = node, node = node->next)
       if (_eina_share_common_node_eq(node, str, slen))
         {
            /* promote node, make hot items be at the beginning */
@@ -519,7 +520,7 @@ _eina_share_common_head_remove_node(Eina_Share_Common_Head *head,
 
    prev = head->head;
    cur = head->head->next;
-   for (; cur != NULL; prev = cur, cur = cur->next)
+   for (; cur; prev = cur, cur = cur->next)
       if (cur == node)
         {
            prev->next = cur->next;
@@ -704,12 +705,12 @@ eina_share_common_shutdown(Eina_Share **_share)
 
 /**
  * @internal
- * @brief Activate the share_common mutexs.
+ * @brief Activate the share_common mutexes.
  *
- * This function activate the mutexs in the eina share_common module. It is called by
- * eina_thread_init().
+ * This function activate the mutexes in the eina share_common module. It is called by
+ * eina_threads_init().
  *
- * @see eina_thread_init()
+ * @see eina_threads_init()
  */
 void
 eina_share_common_threads_init(void)
@@ -719,12 +720,12 @@ eina_share_common_threads_init(void)
 
 /**
  * @internal
- * @brief Shut down the share_common mutexs.
+ * @brief Shut down the share_common mutexes.
  *
- * This function shuts down the mutexs in the share_common module.
- * It is called by eina_thread_shutdown().
+ * This function shuts down the mutexes in the share_common module.
+ * It is called by eina_threads_shutdown().
  *
- * @see eina_thread_shutdown()
+ * @see eina_threads_shutdown()
  */
 void
 eina_share_common_threads_shutdown(void)

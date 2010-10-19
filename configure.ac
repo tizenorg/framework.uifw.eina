@@ -18,13 +18,14 @@ m4_define([lt_age], v_min)
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
  
-AC_INIT([eina], [v_ver-alpha], [enlightenment-devel@lists.sourceforge.net])
+AC_INIT([eina], [v_ver.beta], [enlightenment-devel@lists.sourceforge.net])
 AC_PREREQ([2.59])
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_ISC_POSIX
+AC_GNU_SOURCE
 
 AM_INIT_AUTOMAKE([1.6 dist-bzip2])
 AM_CONFIG_HEADER([config.h])
@@ -119,6 +120,32 @@ if test "x${have_magic_debug}" = "xyes" ; then
    EINA_CONFIGURE_MAGIC_DEBUG="#define EINA_MAGIC_DEBUG"
 fi
 AC_SUBST(EINA_CONFIGURE_MAGIC_DEBUG)
+
+# Valgrind
+want_valgrind="no"
+
+AC_MSG_CHECKING(whether to enable build with valgrind)
+AC_ARG_ENABLE(valgrind,
+  AC_HELP_STRING([--enable-valgrind], [enable valgrind fixes to stop false reports]),
+  [want_valgrind=$enableval]
+)
+AC_MSG_RESULT($want_valgrind)
+
+if test x$want_valgrind = "xyes"; then
+    PKG_CHECK_MODULES(VALGRIND, valgrind >= 2.4.0,
+        [
+         requirement_eina="valgrind ${requirement_eina}"
+        ],
+        [
+         AC_DEFINE(NVALGRIND, 1, [Valgrind support disabled])
+         if test "x$want_valgrind" = "xyes"; then
+            AC_MSG_ERROR([Valgrind >= 2.4.0 is required)])
+         fi
+        ]
+    )
+else
+    AC_DEFINE(NVALGRIND, 1, [Valgrind support disabled])
+fi
 
 # Safety checks (avoid crashes on wrong api usage)
 AC_ARG_ENABLE(safety-checks,
@@ -592,6 +619,7 @@ echo "  Default mempool......: ${have_default_mempool}"
 echo "  Thread Support.......: ${have_threads}"
 if test "${have_threads}" = "POSIX" ; then
 echo "    spinlock...........: ${have_posix_threads_spinlock}"
+echo "    debug usage........: ${have_debug_threads}"
 fi
 echo "  Amalgamation.........: ${do_amalgamation}"
 echo "  Iconv support........: ${have_iconv}"

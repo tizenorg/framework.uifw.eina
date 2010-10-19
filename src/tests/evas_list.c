@@ -258,7 +258,7 @@ evas_list_append_relative_list(Evas_List *list,
 }
 
 /**
- * Prepend a data pointer to a linked list before the memeber specified
+ * Prepend a data pointer to a linked list before the member specified
  * @param list The list handle to prepend @p data too
  * @param data The data pointer to prepend to list @p list before @p relative
  * @param relative The data pointer before which to insert @p data
@@ -765,7 +765,7 @@ evas_list_data(const Evas_List *list)
  * This function returns how many members in the specified list: @p list. If
  * the list is empty (NULL), 0 is returned.
  *
- * NB: This is an order-1 operation and takes the same tiem regardless of the
+ * NB: This is an order-1 operation and takes the same time regardless of the
  * length of the list.
  *
  * Example:
@@ -1009,14 +1009,14 @@ evas_list_sort(Evas_List *list, int size, int (*func)(void *, void *))
                   Evas_List *prev1;
                   Evas_List *prev2;
 
-                  if (size1 == 0 || head1 == NULL) /* List1 is empty, head1 is already at the end of the list. So only need to update head2 */
+                  if (size1 == 0 || !head1) /* List1 is empty, head1 is already at the end of the list. So only need to update head2 */
                     {
                        for (; pass_number < size_sum; ++pass_number)
                           head2 = evas_list_next (head2);
                        break;
                     }
                   else
-                  if (size2 == 0 || head2 == NULL) /* List2 is empty, just leave */
+                  if (size2 == 0 || !head2) /* List2 is empty, just leave */
                      break;
                   else
                   if (func (head1->data, head2->data) < 0)
