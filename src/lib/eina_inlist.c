@@ -602,7 +602,7 @@ eina_inlist_count(const Eina_Inlist *list)
 }
 
 /**
- * @brief Returned a new iterator asociated to a list.
+ * @brief Returned a new iterator associated to a list.
  *
  * @param list The list.
  * @return A new iterator.
@@ -649,7 +649,7 @@ eina_inlist_iterator_new(const Eina_Inlist *list)
 }
 
 /**
- * @brief Returned a new accessor asociated to a list.
+ * @brief Returned a new accessor associated to a list.
  *
  * @param list The list.
  * @return A new accessor.
@@ -663,29 +663,29 @@ eina_inlist_iterator_new(const Eina_Inlist *list)
 EAPI Eina_Accessor *
 eina_inlist_accessor_new(const Eina_Inlist *list)
 {
-   Eina_Accessor_Inlist *it;
+   Eina_Accessor_Inlist *ac;
 
         eina_error_set(0);
-   it = calloc(1, sizeof (Eina_Accessor_Inlist));
-   if (!it)
+   ac = calloc(1, sizeof (Eina_Accessor_Inlist));
+   if (!ac)
      {
         eina_error_set(EINA_ERROR_OUT_OF_MEMORY);
         return NULL;
      }
 
-   it->head = list;
-   it->current = list;
-   it->index = 0;
+   ac->head = list;
+   ac->current = list;
+   ac->index = 0;
 
-   it->accessor.version = EINA_ACCESSOR_VERSION;
-   it->accessor.get_at = FUNC_ACCESSOR_GET_AT(eina_inlist_accessor_get_at);
-   it->accessor.get_container = FUNC_ACCESSOR_GET_CONTAINER(
+   ac->accessor.version = EINA_ACCESSOR_VERSION;
+   ac->accessor.get_at = FUNC_ACCESSOR_GET_AT(eina_inlist_accessor_get_at);
+   ac->accessor.get_container = FUNC_ACCESSOR_GET_CONTAINER(
          eina_inlist_accessor_get_container);
-   it->accessor.free = FUNC_ACCESSOR_FREE(eina_inlist_accessor_free);
+   ac->accessor.free = FUNC_ACCESSOR_FREE(eina_inlist_accessor_free);
 
-   EINA_MAGIC_SET(&it->accessor, EINA_MAGIC_ACCESSOR);
+   EINA_MAGIC_SET(&ac->accessor, EINA_MAGIC_ACCESSOR);
 
-   return &it->accessor;
+   return &ac->accessor;
 }
 
 /**

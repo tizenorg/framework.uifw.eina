@@ -20,10 +20,6 @@
 # include "config.h"
 #endif
 
-#ifndef _WIN32
-# define _GNU_SOURCE
-#endif
-
 #ifdef HAVE_ALLOCA_H
 # include <alloca.h>
 #elif defined __GNUC__
@@ -57,6 +53,12 @@ void *alloca (size_t);
 #else
 # define PATH_DELIM '\\'
 # define NAME_MAX MAX_PATH
+#endif
+
+#ifdef __sun
+# ifndef NAME_MAX
+#  define NAME_MAX 255
+# endif
 #endif
 
 #include "eina_config.h"
@@ -217,7 +219,7 @@ _eina_file_direct_ls_iterator_free(Eina_File_Direct_Iterator *it)
  *
  * If @p cb or @p dir are @c NULL, or if @p dir is a string of size 0,
  * or if @p dir can not be opened, this function returns #EINA_FALSE
- * immediatly. otherwise, it returns #EINA_TRUE.
+ * immediately. otherwise, it returns #EINA_TRUE.
  */
 EAPI Eina_Bool
 eina_file_dir_list(const char *dir,

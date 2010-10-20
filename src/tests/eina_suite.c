@@ -62,6 +62,7 @@ static const Eina_Test_Case etc[] = {
    { "String", eina_test_str },
    { "Unicode String", eina_test_ustr },
    { "QuadTree", eina_test_quadtree },
+   { "Sched", eina_test_sched },
    { NULL, NULL }
 };
 
@@ -122,7 +123,7 @@ static void _mempool_init(void)
    /* force modules to be loaded in case they are not installed */
    _modules = eina_module_list_get(NULL,
                                    PACKAGE_BUILD_DIR "/src/modules",
-                                   1,
+                                   EINA_TRUE,
                                    NULL,
                                    NULL);
    eina_module_list_load(_modules);

@@ -36,6 +36,10 @@
 #include "eina_mempool.h"
 #include "eina_trash.h"
 
+#ifndef NVALGRIND
+# include <valgrind/memcheck.h>
+#endif
+
 #ifdef DEBUG
 #include "eina_private.h"
 #include "eina_log.h"
@@ -89,9 +93,25 @@ eina_one_big_malloc(void *data, __UNUSED__ unsigned int size)
 
    if (pool->empty)
      {
+#ifndef NVALGRIND
+        VALGRIND_MAKE_MEM_DEFINED(pool->empty, pool->item_size);
+#endif
         mem = eina_trash_pop(&pool->empty);
         pool->usage++;
         goto on_exit;
+     }
+
+   if (!pool->base)
+     {
+	pool->base = malloc(pool->item_size * pool->max);
+	if (!pool->base)
+	  {
+	     eina_error_set(EINA_ERROR_OUT_OF_MEMORY);
+	     goto retry_smaller;
+	  }
+#ifndef NVALGRIND
+        VALGRIND_MAKE_MEM_NOACCESS(pool->base, pool->item_size * pool->max);
+#endif
      }
 
    if (pool->served < pool->max)
@@ -101,12 +121,16 @@ eina_one_big_malloc(void *data, __UNUSED__ unsigned int size)
         goto on_exit;
      }
 
-      eina_error_set(0);
+ retry_smaller:
+   eina_error_set(0);
    mem = malloc(pool->item_size);
    if (!mem)
       eina_error_set(EINA_ERROR_OUT_OF_MEMORY);
    else
       pool->over++;
+#ifndef NVALGRIND
+   VALGRIND_MAKE_MEM_NOACCESS(mem, pool->item_size);
+#endif
 
 on_exit:
 #ifdef EFL_HAVE_THREADS
@@ -115,6 +139,10 @@ on_exit:
 # else
    ReleaseMutex(pool->mutex);
 # endif
+#endif
+
+#ifndef NVALGRIND
+   VALGRIND_MEMPOOL_ALLOC(pool, mem, pool->item_size);
 #endif
    return mem;
 }
@@ -143,6 +171,10 @@ eina_one_big_free(void *data, void *ptr)
         free(ptr);
         pool->over--;
      }
+
+#ifndef NVALGRIND
+   VALGRIND_MEMPOOL_FREE(pool, ptr);
+#endif
 
 #ifdef EFL_HAVE_THREADS
 # ifdef EFL_HAVE_POSIX_THREADS
@@ -187,19 +219,16 @@ eina_one_big_init(const char *context,
         memcpy((char *)pool->name, context, length);
      }
 
-   pool->base = malloc(pool->item_size * pool->max);
-   if (!pool->base)
-     {
-        free(pool);
-        return NULL;
-     }
-
 #ifdef EFL_HAVE_THREADS
 # ifdef EFL_HAVE_POSIX_THREADS
    pthread_mutex_init(&pool->mutex, NULL);
 # else
    pool->mutex = CreateMutex(NULL, FALSE, NULL);
 # endif
+#endif
+
+#ifndef NVALGRIND
+   VALGRIND_CREATE_MEMPOOL(pool, 0, 1);
 #endif
 
    return pool;
@@ -221,9 +250,13 @@ eina_one_big_shutdown(void *data)
          pool->name);
 
    if (pool->over > 0)
-      INF("Bad news we are loosing track of pointer from mempool [%s]\n",
+      INF("Bad news we are losing track of pointer from mempool [%s]\n",
           pool->name);
 
+#endif
+
+#ifndef NVALGRIND
+   VALGRIND_DESTROY_MEMPOOL(pool);
 #endif
 
    free(pool->base);

@@ -266,6 +266,7 @@
 #include <stdlib.h>
 #include <fnmatch.h>
 #include <assert.h>
+#include <errno.h>
 
 #ifndef _MSC_VER
 # include <unistd.h>
@@ -340,6 +341,7 @@ static int _abort_level_on_critical = EINA_LOG_LEVEL_CRITICAL;
 #ifdef EFL_HAVE_THREADS
 
 static Eina_Bool _threads_enabled = EINA_FALSE;
+static Eina_Bool _threads_inited = EINA_FALSE;
 
 # ifdef EFL_HAVE_POSIX_THREADS
 
@@ -353,10 +355,10 @@ static pthread_t _main_thread;
 #  define CHECK_MAIN(...)                                         \
    do {                                                           \
       if (!IS_MAIN(pthread_self())) {                             \
-         fprintf(stderr,                        	          \
+         fprintf(stderr,                                          \
                  "ERR: not main thread! current=%lu, main=%lu\n", \
-                 (unsigned long)pthread_self(),			  \
-		 (unsigned long)_main_thread);                    \
+                 (unsigned long)pthread_self(),                   \
+                 (unsigned long)_main_thread);                    \
          return __VA_ARGS__;                                      \
       }                                                           \
    } while (0)
@@ -364,26 +366,38 @@ static pthread_t _main_thread;
 #  ifdef EFL_HAVE_POSIX_THREADS_SPINLOCK
 
 static pthread_spinlock_t _log_lock;
-#   define LOG_LOCK()                                                   \
-   if (_threads_enabled)                                                \
-  	 do {                                                           \
-            if (0) {                                                    \
-                fprintf(stderr, "+++LOG LOG_LOCKED!   [%s, %lu]\n",     \
-                        __FUNCTION__, (unsigned long)pthread_self()); } \
-            if (EINA_UNLIKELY(_threads_enabled)) {                      \
-                pthread_spin_lock(&_log_lock); }                        \
+
+static Eina_Bool _eina_log_spinlock_init(void)
+{
+   if (pthread_spin_init(&_log_lock, PTHREAD_PROCESS_PRIVATE) == 0)
+     return EINA_TRUE;
+
+   fprintf(stderr,
+           "ERROR: pthread_spin_init(%p, PTHREAD_PROCESS_PRIVATE): %s\n",
+           &_log_lock, strerror(errno));
+   return EINA_FALSE;
+}
+
+#   define LOG_LOCK()                                                  \
+   if (_threads_enabled)                                               \
+         do {                                                          \
+            if (0) {                                                   \
+               fprintf(stderr, "+++LOG LOG_LOCKED!   [%s, %lu]\n",     \
+                       __FUNCTION__, (unsigned long)pthread_self()); } \
+            if (EINA_UNLIKELY(_threads_enabled)) {                     \
+               pthread_spin_lock(&_log_lock); }                        \
          } while (0)
-#   define LOG_UNLOCK()                                                 \
-   if (_threads_enabled)                                                \
-         do {                                                           \
-            if (EINA_UNLIKELY(_threads_enabled)) {                      \
-                pthread_spin_unlock(&_log_lock); }                      \
-            if (0) {                                                    \
-               fprintf(stderr,                                          \
-                        "---LOG LOG_UNLOCKED! [%s, %lu]\n",             \
-                        __FUNCTION__, (unsigned long)pthread_self()); } \
+#   define LOG_UNLOCK()                                                \
+   if (_threads_enabled)                                               \
+         do {                                                          \
+            if (EINA_UNLIKELY(_threads_enabled)) {                     \
+               pthread_spin_unlock(&_log_lock); }                      \
+            if (0) {                                                   \
+               fprintf(stderr,                                         \
+                       "---LOG LOG_UNLOCKED! [%s, %lu]\n",             \
+                       __FUNCTION__, (unsigned long)pthread_self()); } \
          } while (0)
-#   define INIT() pthread_spin_init(&_log_lock, PTHREAD_PROCESS_PRIVATE)
+#   define INIT() _eina_log_spinlock_init()
 #   define SHUTDOWN() pthread_spin_destroy(&_log_lock)
 
 #  else /* ! EFL_HAVE_POSIX_THREADS_SPINLOCK */
@@ -539,13 +553,11 @@ eina_log_win32_color_get(const char *domain_str)
 }
 #endif
 
-// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 static inline unsigned int
 eina_log_pid_get(void)
 {
    return (unsigned int)getpid();
 }
-// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 
 static inline void
 eina_log_print_level_name_get(int level, const char **p_name)
@@ -641,10 +653,8 @@ eina_log_print_prefix_NOthreads_NOcolor_file_func(FILE *fp,
                                                   int line)
 {
    DECLARE_LEVEL_NAME(level);
-// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
    fprintf(fp, "%s<%u>:%s %s:%d %s() ", name, eina_log_pid_get(), 
            d->domain_str, file, line, fnc);
-// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 }
 
 static void
@@ -656,10 +666,8 @@ eina_log_print_prefix_NOthreads_NOcolor_NOfile_func(FILE *fp,
                                                     int line __UNUSED__)
 {
    DECLARE_LEVEL_NAME(level);
-// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
    fprintf(fp, "%s<%u>:%s %s() ", name, eina_log_pid_get(), d->domain_str, 
            fnc);
-// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 }
 
 static void
@@ -671,10 +679,8 @@ eina_log_print_prefix_NOthreads_NOcolor_file_NOfunc(FILE *fp,
                                                     int line)
 {
    DECLARE_LEVEL_NAME(level);
-// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
    fprintf(fp, "%s<%u>:%s %s:%d ", name, eina_log_pid_get(), d->domain_str, 
            file, line);
-// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 }
 
 /* No threads, color */
@@ -710,13 +716,9 @@ eina_log_print_prefix_NOthreads_color_file_func(FILE *fp,
                            FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
    fprintf(fp, " ");
 #else
-// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
    fprintf(fp, "%s%s<%u>" EINA_COLOR_RESET ":%s %s:%d "
-//End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
            EINA_COLOR_HIGH "%s()" EINA_COLOR_RESET " ",
-// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
            color, name, eina_log_pid_get(), d->domain_str, file, line, fnc);
-// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 #endif
 }
 
@@ -749,13 +751,9 @@ eina_log_print_prefix_NOthreads_color_NOfile_func(FILE *fp,
                            FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
    fprintf(fp, " ");
 #else
-// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
    fprintf(fp, "%s%s<%u>" EINA_COLOR_RESET ":%s "
-// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
            EINA_COLOR_HIGH "%s()" EINA_COLOR_RESET " ",
-// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
            color, name, eina_log_pid_get(), d->domain_str, fnc);
-// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 #endif
 }
 
@@ -783,10 +781,8 @@ eina_log_print_prefix_NOthreads_color_file_NOfunc(FILE *fp,
                            FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
    fprintf(fp, " %s:%d ", file, line);
 #else
-// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
    fprintf(fp, "%s%s<%u>" EINA_COLOR_RESET ":%s %s:%d ",
            color, name, eina_log_pid_get(), d->domain_str, file, line);
-// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 #endif
 }
 
@@ -806,17 +802,13 @@ eina_log_print_prefix_threads_NOcolor_file_func(FILE *fp,
    cur = SELF();
    if (IS_OTHER(cur))
      {
-// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
         fprintf(fp, "%s<%u>:%s[T:%lu] %s:%d %s() ",
                 name, eina_log_pid_get(), d->domain_str, 
                 (unsigned long)cur, file, line, fnc);
-// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
         return;
      }
-// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
    fprintf(fp, "%s<%u>:%s %s:%d %s() ", 
            name, eina_log_pid_get(), d->domain_str, file, line, fnc);
-// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 }
 
 static void
@@ -833,17 +825,13 @@ eina_log_print_prefix_threads_NOcolor_NOfile_func(FILE *fp,
    cur = SELF();
    if (IS_OTHER(cur))
      {
-// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
         fprintf(fp, "%s<%u>:%s[T:%lu] %s() ",
                 name, eina_log_pid_get(), d->domain_str, 
                 (unsigned long)cur, fnc);
-// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
         return;
      }
-// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
    fprintf(fp, "%s<%u>:%s %s() ", 
            name, eina_log_pid_get(), d->domain_str, fnc);
-// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 }
 
 static void
@@ -860,18 +848,14 @@ eina_log_print_prefix_threads_NOcolor_file_NOfunc(FILE *fp,
    cur = SELF();
    if (IS_OTHER(cur))
      {
-// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
         fprintf(fp, "%s<%u>:%s[T:%lu] %s:%d ",
                 name, eina_log_pid_get(), d->domain_str, (unsigned long)cur, 
                 file, line);
-// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
         return;
      }
-// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
    
    fprintf(fp, "%s<%u>:%s %s:%d ", 
            name, eina_log_pid_get(), d->domain_str, file, line);
-// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 }
 
 /* threads, color */
@@ -926,15 +910,11 @@ eina_log_print_prefix_threads_color_file_func(FILE *fp,
                                 FOREGROUND_BLUE);
         fprintf(fp, " ");
 # else
-// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
         fprintf(fp, "%s%s<%u>" EINA_COLOR_RESET ":%s[T:"
-// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
                 EINA_COLOR_ORANGE "%lu" EINA_COLOR_RESET "] %s:%d "
                 EINA_COLOR_HIGH "%s()" EINA_COLOR_RESET " ",
-// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
                 color, name, eina_log_pid_get() ,d->domain_str, 
                 (unsigned long)cur, file, line, fnc);
-// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 # endif
         return;
      }
@@ -947,13 +927,9 @@ eina_log_print_prefix_threads_color_file_func(FILE *fp,
                                                    fnc,
                                                    line);
 # else
-// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
    fprintf(fp, "%s%s<%u>" EINA_COLOR_RESET ":%s %s:%d "
-// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
            EINA_COLOR_HIGH "%s()" EINA_COLOR_RESET " ",
-// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
            color, name, eina_log_pid_get(), d->domain_str, file, line, fnc);
-// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 # endif
 }
 
@@ -1003,15 +979,11 @@ eina_log_print_prefix_threads_color_NOfile_func(FILE *fp,
                                 FOREGROUND_BLUE);
         fprintf(fp, " ");
 # else
-// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
         fprintf(fp, "%s%s<%u>" EINA_COLOR_RESET ":%s[T:"
-// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
                 EINA_COLOR_ORANGE "%lu" EINA_COLOR_RESET "] "
                 EINA_COLOR_HIGH "%s()" EINA_COLOR_RESET " ",
-// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
                 color, name, eina_log_pid_get(), d->domain_str, 
                 (unsigned long)cur, fnc);
-// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 # endif
         return;
      }
@@ -1024,13 +996,9 @@ eina_log_print_prefix_threads_color_NOfile_func(FILE *fp,
                                                      fnc,
                                                      line);
 # else
-// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
    fprintf(fp, "%s%s<%u>" EINA_COLOR_RESET ":%s "
-// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
            EINA_COLOR_HIGH "%s()" EINA_COLOR_RESET " ",
-// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
            color, name, eina_log_pid_get(), d->domain_str, fnc);
-// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 # endif
 }
 
@@ -1075,14 +1043,10 @@ eina_log_print_prefix_threads_color_file_NOfunc(FILE *fp,
                                 FOREGROUND_BLUE);
         fprintf(fp, "] %s:%d ", file, line);
 # else
-// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
         fprintf(fp, "%s%s<%u>" EINA_COLOR_RESET ":%s[T:"
-// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
                 EINA_COLOR_ORANGE "%lu" EINA_COLOR_RESET "] %s:%d ",
-// Start- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
                 color, name, eina_log_pid_get(), d->domain_str, 
                 (unsigned long)cur, file, line);
-// End- [SVN 53091 Merge] Please delete this comment when you merge 53091: add pid to eina log by seok.j.jeong
 # endif
         return;
      }
@@ -1473,6 +1437,103 @@ eina_log_term_color_supported(const char *term)
      }
 }
 
+static inline void
+eina_log_domain_unregister_unlocked(int domain)
+{
+   Eina_Log_Domain *d;
+
+   if ((unsigned int)domain >= _log_domains_count)
+      return;
+
+   d = &_log_domains[domain];
+   eina_log_domain_free(d);
+   d->deleted = 1;
+}
+
+static inline void
+eina_log_print_unlocked(int domain,
+                        Eina_Log_Level level,
+                        const char *file,
+                        const char *fnc,
+                        int line,
+                        const char *fmt,
+                        va_list args)
+{
+   Eina_Log_Domain *d;
+
+#ifdef EINA_SAFETY_CHECKS
+   if (EINA_UNLIKELY((unsigned int)domain >= _log_domains_count) ||
+       EINA_UNLIKELY(domain < 0))
+     {
+        if (file && fnc && fmt)
+           fprintf(
+              stderr,
+              "CRI: %s:%d %s() eina_log_print() unknown domain %d, original message format '%s'\n",
+              file,
+              line,
+              fnc,
+              domain,
+              fmt);
+        else
+           fprintf(
+              stderr,
+              "CRI: eina_log_print() unknown domain %d, original message format '%s'\n",
+              domain,
+              fmt ? fmt : "");
+
+        if (_abort_on_critical)
+           abort();
+
+        return;
+     }
+
+#endif
+   d = _log_domains + domain;
+#ifdef EINA_SAFETY_CHECKS
+   if (EINA_UNLIKELY(d->deleted))
+     {
+           fprintf(stderr,
+                "ERR: eina_log_print() domain %d is deleted\n",
+                domain);
+        return;
+     }
+
+#endif
+
+   if (level > d->level)
+      return;
+
+#ifdef _WIN32
+   {
+      char *wfmt;
+      char *tmp;
+
+      wfmt = strdup(fmt);
+      if (!wfmt)
+        {
+           fprintf(stderr, "ERR: %s: can not allocate memory\n", __FUNCTION__);
+           return;
+        }
+
+      tmp = wfmt;
+      while (strchr(tmp, "%"))
+        {
+           tmp++;
+           if (*tmp == 'z')
+              *tmp = 'I';
+        }
+      _print_cb(d, level, file, fnc, line, wfmt, _print_cb_data, args);
+      free(wfmt);
+   }
+#else
+   _print_cb(d, level, file, fnc, line, fmt, _print_cb_data, args);
+#endif
+
+   if (EINA_UNLIKELY(_abort_on_critical) &&
+       EINA_UNLIKELY(level <= _abort_level_on_critical))
+      abort();
+}
+
 /**
  * @endcond
  */
@@ -1632,16 +1693,17 @@ eina_log_shutdown(void)
  * @brief Activate the log mutex.
  *
  * This function activate the mutex in the eina log module. It is called by
- * eina_thread_init().
+ * eina_threads_init().
  *
- * @see eina_thread_init()
+ * @see eina_threads_init()
  */
 void
 eina_log_threads_init(void)
 {
+   if (_threads_inited) return;
    _main_thread = SELF();
-   if (INIT())
-      _threads_enabled = EINA_TRUE;
+   if (!INIT()) return;
+   _threads_inited = EINA_TRUE;
 }
 
 /**
@@ -1649,16 +1711,18 @@ eina_log_threads_init(void)
  * @brief Shut down the log mutex.
  *
  * This function shuts down the mutex in the log module.
- * It is called by eina_thread_shutdown().
+ * It is called by eina_threads_shutdown().
  *
- * @see eina_thread_shutdown()
+ * @see eina_threads_shutdown()
  */
 void
 eina_log_threads_shutdown(void)
 {
+   if (!_threads_inited) return;
    CHECK_MAIN();
    SHUTDOWN();
    _threads_enabled = EINA_FALSE;
+   _threads_inited = EINA_FALSE;
 }
 
 #endif
@@ -1789,13 +1853,18 @@ EAPI void
 eina_log_threads_enable(void)
 {
 #ifdef EFL_HAVE_THREADS
-   _threads_enabled = 1;
+   if (_threads_enabled) return;
+   if (!_threads_inited) eina_log_threads_init();
+   _threads_enabled = EINA_TRUE;
    eina_log_print_prefix_update();
 #endif
 }
 
 /**
  * Sets logging method to use.
+ *
+ * @param cb The callback to call when printing a log.
+ * @param data The data to pass to the callback.
  *
  * By default, eina_log_print_cb_stderr() is used.
  *
@@ -2031,7 +2100,7 @@ eina_log_abort_on_critical_level_get(void)
  * @param color Color of the domain name
  *
  * @return Domain index that will be used as the DOMAIN parameter on log
- *         macros. A negative return value means an log ocurred.
+ *         macros. A negative return value means an log occurred.
  *
  * @note MT: safe to call from any thread.
  */
@@ -2046,20 +2115,6 @@ eina_log_domain_register(const char *name, const char *color)
    r = eina_log_domain_register_unlocked(name, color);
    LOG_UNLOCK();
    return r;
-}
-
-
-static inline void
-eina_log_domain_unregister_unlocked(int domain)
-{
-   Eina_Log_Domain *d;
-
-   if ((unsigned int)domain >= _log_domains_count)
-      return;
-
-   d = &_log_domains[domain];
-   eina_log_domain_free(d);
-   d->deleted = 1;
 }
 
 /**
@@ -2083,7 +2138,7 @@ eina_log_domain_unregister(int domain)
  * Set the domain level given its name.
  *
  * This call has the same effect as setting
- * EINA_LOG_LEVELS=<domain_name>:<level>
+ * EINA_LOG_LEVELS=&lt;@p domain_name&gt;:&lt;@p level&gt;
  *
  * @param domain_name domain name to change the level. It may be of a
  *        still not registered domain. If the domain is not registered
@@ -2258,6 +2313,15 @@ eina_log_print_cb_stderr(const Eina_Log_Domain *d,
 /**
  * Alternative logging method, this will output to standard output stream.
  *
+ * @param d The domain.
+ * @param level The level.
+ * @param file The file which is logged.
+ * @param fnc The function which is logged.
+ * @param line The line which is logged.
+ * @param fmt The ouptut format to use.
+ * @param data Not used.
+ * @param args The arguments needed by the format.
+ *
  * This method will colorize output based on domain provided color and
  * message logging level. To disable color, set environment variable
  * EINA_LOG_COLOR_DISABLE=1. Similarly, to disable file and line
@@ -2289,6 +2353,15 @@ eina_log_print_cb_stdout(const Eina_Log_Domain *d,
 
 /**
  * Alternative logging method, this will output to given file stream.
+ *
+ * @param d The domain.
+ * @param level Not used.
+ * @param file The file which is logged.
+ * @param fnc The function which is logged.
+ * @param line The line which is logged.
+ * @param fmt The ouptut format to use.
+ * @param data The file which will store the output (as a FILE *).
+ * @param args The arguments needed by the format.
  *
  * This method will never output color.
  *
@@ -2322,96 +2395,13 @@ eina_log_print_cb_file(const Eina_Log_Domain *d,
      }
 
 #endif
-             fprintf(f, "%s %s:%d %s() ", d->name, file, line, fnc);
+   fprintf(f, "%s<%u> %s:%d %s() ", d->name, eina_log_pid_get(), 
+           file, line, fnc);
 #ifdef EFL_HAVE_THREADS
 end:
 #endif
    vfprintf(f, fmt, args);
    putc('\n', f);
-}
-
-static inline void
-eina_log_print_unlocked(int domain,
-                        Eina_Log_Level level,
-                        const char *file,
-                        const char *fnc,
-                        int line,
-                        const char *fmt,
-                        va_list args)
-{
-   Eina_Log_Domain *d;
-
-#ifdef EINA_SAFETY_CHECKS
-   if (EINA_UNLIKELY((unsigned int)domain >= _log_domains_count) ||
-       EINA_UNLIKELY(domain < 0))
-     {
-        if (file && fnc && fmt)
-           fprintf(
-              stderr,
-              "CRI: %s:%d %s() eina_log_print() unknown domain %d, original message format '%s'\n",
-              file,
-              line,
-              fnc,
-              domain,
-              fmt);
-        else
-           fprintf(
-              stderr,
-              "CRI: eina_log_print() unknown domain %d, original message format '%s'\n",
-              domain,
-              fmt ? fmt : "");
-
-        if (_abort_on_critical)
-           abort();
-
-        return;
-     }
-
-#endif
-   d = _log_domains + domain;
-#ifdef EINA_SAFETY_CHECKS
-   if (EINA_UNLIKELY(d->deleted))
-     {
-           fprintf(stderr,
-                "ERR: eina_log_print() domain %d is deleted\n",
-                domain);
-        return;
-     }
-
-#endif
-
-   if (level > d->level)
-      return;
-
-#ifdef _WIN32
-   {
-      char *wfmt;
-      char *tmp;
-
-      wfmt = strdup(fmt);
-      if (!wfmt)
-        {
-           fprintf(stderr, "ERR: %s: can not allocate memory\n", __FUNCTION__);
-           return;
-        }
-
-      tmp = wfmt;
-      while (strchr(tmp, "%"))
-        {
-           tmp++;
-           if (*tmp == 'z')
-              *tmp = 'I';
-        }
-      _print_cb(d, level, file, fnc, line, wfmt, _print_cb_data, args);
-      free(wfmt);
-   }
-#else
-   _print_cb(d, level, file, fnc, line, fmt, _print_cb_data, args);
-#endif
-
-   if (EINA_UNLIKELY(_abort_on_critical) &&
-       EINA_UNLIKELY(level <= _abort_level_on_critical))
-      abort();
 }
 
 /**
@@ -2487,6 +2477,7 @@ eina_log_print(int domain, Eina_Log_Level level, const char *file,
  * @param line originating line in @a file.
  * @param fmt printf-like format to use. Should not provide trailing
  *        '\n' as it is automatically included.
+ * @param args the arguments needed by the format.
  *
  * @note MT: this function may be called from different threads if
  *       eina_log_threads_enable() was called before.

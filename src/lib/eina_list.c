@@ -75,6 +75,7 @@
 #include "eina_config.h"
 #include "eina_private.h"
 #include "eina_error.h"
+#include "eina_log.h"
 #include "eina_mempool.h"
 
 /* undefs EINA_ARG_NONULL() so NULL checks are not compiled out! */
@@ -1788,7 +1789,7 @@ eina_list_sorted_merge(Eina_List *left, Eina_List *right, Eina_Compare_Cb func)
  * elements it will do a maximum of 20 comparisons. This is much
  * faster than the 1,000,000 comparisons made naively walking the list
  * from head to tail, so depending on the number of searches and
- * insertions, it may be worth to eina_list_sort() the list and do he
+ * insertions, it may be worth to eina_list_sort() the list and do the
  * searches later. As lists do not have O(1) access time, walking to
  * the correct node can be costly, consider worst case to be almost
  * O(n) pointer dereference (list walk).
@@ -1902,7 +1903,7 @@ end:
  * faster than the 1,000,000 comparisons made by
  * eina_list_search_unsorted_list(), so depending on the number of
  * searches and insertions, it may be worth to eina_list_sort() the
- * list and do he searches later. As said in
+ * list and do the searches later. As said in
  * eina_list_search_sorted_near_list(), lists do not have O(1) access
  * time, so walking to the correct node can be costly, consider worst
  * case to be almost O(n) pointer dereference (list walk).
@@ -1953,7 +1954,7 @@ eina_list_search_sorted_list(const Eina_List *list,
  * faster than the 1,000,000 comparisons made by
  * eina_list_search_unsorted(), so depending on the number of
  * searches and insertions, it may be worth to eina_list_sort() the
- * list and do he searches later. As said in
+ * list and do the searches later. As said in
  * eina_list_search_sorted_near_list(), lists do not have O(1) access
  * time, so walking to the correct node can be costly, consider worst
  * case to be almost O(n) pointer dereference (list walk).
@@ -2040,7 +2041,7 @@ eina_list_search_unsorted(const Eina_List *list,
 
 
 /**
- * @brief Returned a new iterator asociated to a list.
+ * @brief Returned a new iterator associated to a list.
  *
  * @param list The list.
  * @return A new iterator.
@@ -2088,7 +2089,7 @@ eina_list_iterator_new(const Eina_List *list)
 }
 
 /**
- * @brief Returned a new reversed iterator asociated to a list.
+ * @brief Returned a new reversed iterator associated to a list.
  *
  * @param list The list.
  * @return A new iterator.
@@ -2138,7 +2139,7 @@ eina_list_iterator_reversed_new(const Eina_List *list)
 }
 
 /**
- * @brief Returned a new accessor asociated to a list.
+ * @brief Returned a new accessor associated to a list.
  *
  * @param list The list.
  * @return A new accessor.
@@ -2152,30 +2153,30 @@ eina_list_iterator_reversed_new(const Eina_List *list)
 EAPI Eina_Accessor *
 eina_list_accessor_new(const Eina_List *list)
 {
-   Eina_Accessor_List *it;
+   Eina_Accessor_List *ac;
 
         eina_error_set(0);
-   it = calloc(1, sizeof (Eina_Accessor_List));
-   if (!it)
+   ac = calloc(1, sizeof (Eina_Accessor_List));
+   if (!ac)
      {
         eina_error_set(EINA_ERROR_OUT_OF_MEMORY);
         return NULL;
      }
 
-   EINA_MAGIC_SET(it,            EINA_MAGIC_LIST_ACCESSOR);
-   EINA_MAGIC_SET(&it->accessor, EINA_MAGIC_ACCESSOR);
+   EINA_MAGIC_SET(ac,            EINA_MAGIC_LIST_ACCESSOR);
+   EINA_MAGIC_SET(&ac->accessor, EINA_MAGIC_ACCESSOR);
 
-   it->head = list;
-   it->current = list;
-   it->index = 0;
+   ac->head = list;
+   ac->current = list;
+   ac->index = 0;
 
-   it->accessor.version = EINA_ACCESSOR_VERSION;
-   it->accessor.get_at = FUNC_ACCESSOR_GET_AT(eina_list_accessor_get_at);
-   it->accessor.get_container = FUNC_ACCESSOR_GET_CONTAINER(
+   ac->accessor.version = EINA_ACCESSOR_VERSION;
+   ac->accessor.get_at = FUNC_ACCESSOR_GET_AT(eina_list_accessor_get_at);
+   ac->accessor.get_container = FUNC_ACCESSOR_GET_CONTAINER(
          eina_list_accessor_get_container);
-   it->accessor.free = FUNC_ACCESSOR_FREE(eina_list_accessor_free);
+   ac->accessor.free = FUNC_ACCESSOR_FREE(eina_list_accessor_free);
 
-   return &it->accessor;
+   return &ac->accessor;
 }
 
 /**

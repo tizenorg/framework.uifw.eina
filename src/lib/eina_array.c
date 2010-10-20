@@ -118,6 +118,7 @@
 #include "eina_config.h"
 #include "eina_private.h"
 #include "eina_error.h"
+#include "eina_log.h"
 
 /* undefs EINA_ARG_NONULL() so NULL checks are not compiled out! */
 #include "eina_safety_checks.h"
@@ -449,7 +450,7 @@ eina_array_free(Eina_Array *array)
  * @brief Set the step of an array.
  *
  * @param array The array.
- * @param sizeof_array Should be the value returned by sizeof (Eina_Array).
+ * @param sizeof_eina_array Should be the value returned by sizeof(Eina_Array).
  * @param step The count of pointers to add when increasing the array size.
  *
  * This function sets the step of @p array to @p step. For performance
@@ -638,7 +639,7 @@ eina_array_remove(Eina_Array *array, Eina_Bool (*keep)(void *data,
 }
 
 /**
- * @brief Returned a new iterator asociated to an array.
+ * @brief Returned a new iterator associated to an array.
  *
  * @param array The array.
  * @return A new iterator.
@@ -680,7 +681,7 @@ eina_array_iterator_new(const Eina_Array *array)
 }
 
 /**
- * @brief Returned a new accessor asociated to an array.
+ * @brief Returned a new accessor associated to an array.
  *
  * @param array The array.
  * @return A new accessor.
@@ -694,31 +695,31 @@ eina_array_iterator_new(const Eina_Array *array)
 EAPI Eina_Accessor *
 eina_array_accessor_new(const Eina_Array *array)
 {
-   Eina_Accessor_Array *it;
+   Eina_Accessor_Array *ac;
 
    EINA_SAFETY_ON_NULL_RETURN_VAL(array, NULL);
    EINA_MAGIC_CHECK_ARRAY(array);
 
    eina_error_set(0);
-   it = calloc(1, sizeof (Eina_Accessor_Array));
-   if (!it)
+   ac = calloc(1, sizeof (Eina_Accessor_Array));
+   if (!ac)
      {
         eina_error_set(EINA_ERROR_OUT_OF_MEMORY);
         return NULL;
      }
 
-   EINA_MAGIC_SET(it,            EINA_MAGIC_ARRAY_ACCESSOR);
-   EINA_MAGIC_SET(&it->accessor, EINA_MAGIC_ACCESSOR);
+   EINA_MAGIC_SET(ac,            EINA_MAGIC_ARRAY_ACCESSOR);
+   EINA_MAGIC_SET(&ac->accessor, EINA_MAGIC_ACCESSOR);
 
-   it->array = array;
+   ac->array = array;
 
-   it->accessor.version = EINA_ACCESSOR_VERSION;
-   it->accessor.get_at = FUNC_ACCESSOR_GET_AT(eina_array_accessor_get_at);
-   it->accessor.get_container = FUNC_ACCESSOR_GET_CONTAINER(
+   ac->accessor.version = EINA_ACCESSOR_VERSION;
+   ac->accessor.get_at = FUNC_ACCESSOR_GET_AT(eina_array_accessor_get_at);
+   ac->accessor.get_container = FUNC_ACCESSOR_GET_CONTAINER(
          eina_array_accessor_get_container);
-   it->accessor.free = FUNC_ACCESSOR_FREE(eina_array_accessor_free);
+   ac->accessor.free = FUNC_ACCESSOR_FREE(eina_array_accessor_free);
 
-   return &it->accessor;
+   return &ac->accessor;
 }
 
 /**
