@@ -18,7 +18,7 @@ m4_define([lt_age], v_min)
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
  
-AC_INIT([eina], [v_ver.beta], [enlightenment-devel@lists.sourceforge.net])
+AC_INIT([eina], [v_ver.beta2], [enlightenment-devel@lists.sourceforge.net])
 AC_PREREQ([2.59])
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_MACRO_DIR([m4])
@@ -122,19 +122,21 @@ fi
 AC_SUBST(EINA_CONFIGURE_MAGIC_DEBUG)
 
 # Valgrind
-want_valgrind="no"
+want_valgrind="auto"
+have_valgrind="no"
 
 AC_MSG_CHECKING(whether to enable build with valgrind)
 AC_ARG_ENABLE(valgrind,
-  AC_HELP_STRING([--enable-valgrind], [enable valgrind fixes to stop false reports]),
+  AC_HELP_STRING([--enable-valgrind], [improve valgrind support by hinting it of our memory usages, having it to report proper mempool leaks.]),
   [want_valgrind=$enableval]
 )
 AC_MSG_RESULT($want_valgrind)
 
-if test x$want_valgrind = "xyes"; then
+if test "x${want_valgrind}" = "xyes" -o "x${want_valgrind}" = "xauto"; then
     PKG_CHECK_MODULES(VALGRIND, valgrind >= 2.4.0,
         [
          requirement_eina="valgrind ${requirement_eina}"
+         have_valgrind="yes"
         ],
         [
          AC_DEFINE(NVALGRIND, 1, [Valgrind support disabled])
@@ -343,18 +345,22 @@ AC_C_INLINE
 AC_C___ATTRIBUTE__
 AC_PROG_CC_STDC
 
+have_win32="no"
 EINA_CPPFLAGS=""
 EINA_CFLAGS=""
 case "$host_os" in
    mingw32ce*)
       EINA_CPPFLAGS="-D_WIN32_WCE=0x0420"
       EINA_CFLAGS="${EVIL_CFLAGS}"
+      have_win32="yes"
       ;;
    mingw*)
       EINA_CPPFLAGS="-D_WIN32_WINNT=0x0501"
       EINA_CFLAGS="${EVIL_CFLAGS}"
+      have_win32="yes"
       ;;
 esac
+AM_CONDITIONAL([EINA_HAVE_WIN32], [test "x$have_win32" = "xyes"])
 
 m4_ifdef([v_mic],
    [
@@ -520,6 +526,15 @@ if test "x${have_iconv}" = "xyes" ; then
    AC_DEFINE([HAVE_ICONV], [1], [Set to 1 if iconv library is installed])
 fi
 
+#check for dirfd API presence
+have_dirfd="no"
+AC_CHECK_FUNCS([dirfd], [have_dirfd="yes"], [])
+if test "x${dirfd}" = "xyes"; then
+   AC_DEFINE(HAVE_DIRFD)
+fi
+AC_CHECK_FUNCS([openat], [AC_DEFINE(HAVE_OPENAT)], [])
+AC_CHECK_FUNCS([statat], [AC_DEFINE(HAVE_STATAT)], [])
+AC_CHECK_FUNCS([fpathconf], [AC_DEFINE(HAVE_FPATHCONF)], [])
 
 ### Modules
 
@@ -615,6 +630,7 @@ echo "  Magic debug..........: ${have_magic_debug}"
 echo "  Safety checks........: ${have_safety_checks}"
 echo "  Maximum log level....: ${with_max_log_level}"
 echo "  Report string usage..: ${have_stringshare_usage}"
+echo "  Valgrind support.....: ${have_valgrind}"
 echo "  Default mempool......: ${have_default_mempool}"
 echo "  Thread Support.......: ${have_threads}"
 if test "${have_threads}" = "POSIX" ; then
@@ -623,6 +639,7 @@ echo "    debug usage........: ${have_debug_threads}"
 fi
 echo "  Amalgamation.........: ${do_amalgamation}"
 echo "  Iconv support........: ${have_iconv}"
+echo "  File dirfd...........: ${have_dirfd}"
 echo
 echo "  Documentation........: ${build_doc}"
 echo "  Tests................: ${enable_tests}"

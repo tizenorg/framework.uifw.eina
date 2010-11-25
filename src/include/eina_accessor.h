@@ -38,48 +38,86 @@
 
 /**
  * @typedef Eina_Accessor
- * Type for accessors.
+ * Abstract type for accessors.
  */
 typedef struct _Eina_Accessor Eina_Accessor;
 
+/**
+ * @typedef Eina_Accessor_Get_At_Callback
+ * Type for a callback that returns the data of a container as the given index.
+ */
 typedef Eina_Bool (*Eina_Accessor_Get_At_Callback)(Eina_Accessor *it,
-                                                   unsigned int index,
-                                                   void **data);
+                                                   unsigned int   index,
+                                                   void         **data);
+
+/**
+ * @typedef Eina_Accessor_Get_Container_Callback
+ * Type for a callback that returns the container.
+ */
 typedef void *(*Eina_Accessor_Get_Container_Callback)(Eina_Accessor *it);
+
+/**
+ * @typedef Eina_Accessor_Free_Callback
+ * Type for a callback that frees the container.
+ */
 typedef void (*Eina_Accessor_Free_Callback)(Eina_Accessor *it);
+
+/**
+ * @typedef Eina_Accessor_Lock_Callback
+ * Type for a callback that lock the container.
+ */
 typedef Eina_Bool (*Eina_Accessor_Lock_Callback)(Eina_Accessor *it);
 
 struct _Eina_Accessor
 {
 #define EINA_ACCESSOR_VERSION 1
-   int version;
+   int                                  version; /**< Version of the Accessor API. */
 
-   Eina_Accessor_Get_At_Callback get_at               EINA_ARG_NONNULL(1, 3) EINA_WARN_UNUSED_RESULT;
-   Eina_Accessor_Get_Container_Callback get_container EINA_ARG_NONNULL(1) EINA_WARN_UNUSED_RESULT;
-   Eina_Accessor_Free_Callback free                   EINA_ARG_NONNULL(1);
+   Eina_Accessor_Get_At_Callback        get_at        EINA_ARG_NONNULL(1, 3) EINA_WARN_UNUSED_RESULT; /**< Callback called when a data element is requested. */
+   Eina_Accessor_Get_Container_Callback get_container EINA_ARG_NONNULL(1) EINA_WARN_UNUSED_RESULT; /**< Callback called when the container is requested. */
+   Eina_Accessor_Free_Callback          free          EINA_ARG_NONNULL(1); /**< Callback called when the container is freed. */
 
-   Eina_Accessor_Lock_Callback lock   EINA_WARN_UNUSED_RESULT;
-   Eina_Accessor_Lock_Callback unlock EINA_WARN_UNUSED_RESULT;
+   Eina_Accessor_Lock_Callback          lock          EINA_WARN_UNUSED_RESULT; /**< Callback called when the container is locked. */
+   Eina_Accessor_Lock_Callback          unlock        EINA_WARN_UNUSED_RESULT; /**< Callback called when the container is unlocked. */
 
 #define EINA_MAGIC_ACCESSOR 0x98761232
    EINA_MAGIC
 };
 
-#define FUNC_ACCESSOR_GET_AT(Function) ((Eina_Accessor_Get_At_Callback)Function)
+/**
+ * @def FUNC_ACCESSOR_GET_AT(Function)
+ * Helper macro to cast @p Function to a Eina_Accessor_Get_At_Callback.
+ */
+#define FUNC_ACCESSOR_GET_AT(Function)        ((Eina_Accessor_Get_At_Callback)Function)
+
+/**
+ * @def FUNC_ACCESSOR_GET_CONTAINER(Function)
+ * Helper macro to cast @p Function to a Eina_Accessor_Get_Container_Callback.
+ */
 #define FUNC_ACCESSOR_GET_CONTAINER(Function) ((Eina_Accessor_Get_Container_Callback)Function)
-#define FUNC_ACCESSOR_FREE(Function) ((Eina_Accessor_Free_Callback)Function)
-#define FUNC_ACCESSOR_LOCK(Function) ((Eina_Accessor_Lock_Callback)Function)
+
+/**
+ * @def FUNC_ACCESSOR_FREE(Function)
+ * Helper macro to cast @p Function to a Eina_Accessor_Free_Callback.
+ */
+#define FUNC_ACCESSOR_FREE(Function)          ((Eina_Accessor_Free_Callback)Function)
+
+/**
+ * @def FUNC_ACCESSOR_LOCK(Function)
+ * Helper macro to cast @p Function to a Eina_Iterator_Lock_Callback.
+ */
+#define FUNC_ACCESSOR_LOCK(Function)          ((Eina_Accessor_Lock_Callback)Function)
 
 EAPI void      eina_accessor_free(Eina_Accessor *accessor) EINA_ARG_NONNULL(1);
 EAPI Eina_Bool eina_accessor_data_get(Eina_Accessor *accessor,
-                                      unsigned int position,
-                                      void **data) EINA_ARG_NONNULL(1);
-EAPI void *    eina_accessor_container_get(Eina_Accessor *accessor) EINA_ARG_NONNULL(1) EINA_PURE;
-EAPI void      eina_accessor_over(Eina_Accessor *accessor,
-                                  Eina_Each_Cb cb,
-                                  unsigned int start,
-                                  unsigned int end,
-                                  const void *fdata) EINA_ARG_NONNULL(1, 2);
+                                      unsigned int   position,
+                                      void         **data) EINA_ARG_NONNULL(1);
+EAPI void *eina_accessor_container_get(Eina_Accessor *accessor) EINA_ARG_NONNULL(1) EINA_PURE;
+EAPI void  eina_accessor_over(Eina_Accessor *accessor,
+                              Eina_Each_Cb   cb,
+                              unsigned int   start,
+                              unsigned int   end,
+                              const void    *fdata) EINA_ARG_NONNULL(1, 2);
 EAPI Eina_Bool eina_accessor_lock(Eina_Accessor *accessor) EINA_ARG_NONNULL(1);
 EAPI Eina_Bool eina_accessor_unlock(Eina_Accessor *accessor) EINA_ARG_NONNULL(1);
 
@@ -132,8 +170,8 @@ EAPI Eina_Bool eina_accessor_unlock(Eina_Accessor *accessor) EINA_ARG_NONNULL(1)
  *    rather in the accessors implementations to keep them as simple
  *    and fast as possible.
  */
-#define EINA_ACCESSOR_FOREACH(accessor, counter, data)			\
-  for ((counter) = 0;							\
+#define EINA_ACCESSOR_FOREACH(accessor, counter, data)                  \
+  for ((counter) = 0;                                                   \
        eina_accessor_data_get((accessor), (counter), (void **)&(data)); \
        (counter)++)
 

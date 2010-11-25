@@ -24,8 +24,10 @@
 #include <string.h>
 
 #ifdef EFL_HAVE_POSIX_THREADS
-#include <pthread.h>
+# include <pthread.h>
 #endif
+
+#include <assert.h>
 
 #ifdef EFL_HAVE_WIN32_THREADS
 # define WIN32_LEAN_AND_MEAN
@@ -35,22 +37,26 @@
 
 #include "eina_mempool.h"
 #include "eina_trash.h"
+#include "eina_inlist.h"
+#include "eina_log.h"
 
 #ifndef NVALGRIND
 # include <valgrind/memcheck.h>
 #endif
 
-#ifdef DEBUG
 #include "eina_private.h"
-#include "eina_log.h"
-
-static int _eina_mempool_log_dom = -1;
 
 #ifdef INF
 #undef INF
 #endif
 #define INF(...) EINA_LOG_DOM_INFO(_eina_mempool_log_dom, __VA_ARGS__)
+
+#ifdef WRN
+#undef WRN
 #endif
+#define WRN(...) EINA_LOG_DOM_WARN(_eina_one_big_mp_log_dom, __VA_ARGS__)
+
+static int _eina_one_big_mp_log_dom = -1;
 
 typedef struct _One_Big One_Big;
 struct _One_Big
@@ -67,9 +73,13 @@ struct _One_Big
    unsigned char *base;
 
    Eina_Trash *empty;
+   Eina_Inlist *over_list;
 
 #ifdef EFL_HAVE_THREADS
 # ifdef EFL_HAVE_POSIX_THREADS
+#  ifdef EFL_DEBUG_THREADS
+   pthread_t self;
+#  endif
    pthread_mutex_t mutex;
 # else
    HANDLE mutex;
@@ -84,10 +94,19 @@ eina_one_big_malloc(void *data, __UNUSED__ unsigned int size)
    unsigned char *mem = NULL;
 
 #ifdef EFL_HAVE_THREADS
+   if (_threads_activated)
+     {
 # ifdef EFL_HAVE_POSIX_THREADS
-   pthread_mutex_lock(&pool->mutex);
+        pthread_mutex_lock(&pool->mutex);
 # else
-   WaitForSingleObject(pool->mutex, INFINITE);
+        WaitForSingleObject(pool->mutex, INFINITE);
+# endif
+     }
+# ifdef EFL_HAVE_POSIX_THREADS
+#  ifdef EFL_DEBUG_THREADS
+   else
+     assert(pthread_equal(pool->self, pthread_self()));
+#  endif
 # endif
 #endif
 
@@ -123,22 +142,31 @@ eina_one_big_malloc(void *data, __UNUSED__ unsigned int size)
 
  retry_smaller:
    eina_error_set(0);
-   mem = malloc(pool->item_size);
+   mem = malloc(sizeof(Eina_Inlist) + pool->item_size);
    if (!mem)
       eina_error_set(EINA_ERROR_OUT_OF_MEMORY);
    else
-      pool->over++;
+     {
+        pool->over++;
+        memset(mem, 0, sizeof(Eina_Inlist));
+        pool->over_list = eina_inlist_append(pool->over_list, 
+                                             (Eina_Inlist *)mem);
+        mem = ((unsigned char *)mem) + sizeof(Eina_Inlist);
+     }
 #ifndef NVALGRIND
    VALGRIND_MAKE_MEM_NOACCESS(mem, pool->item_size);
 #endif
 
 on_exit:
 #ifdef EFL_HAVE_THREADS
+   if (_threads_activated)
+     {
 # ifdef EFL_HAVE_POSIX_THREADS
-   pthread_mutex_unlock(&pool->mutex);
+        pthread_mutex_unlock(&pool->mutex);
 # else
-   ReleaseMutex(pool->mutex);
+        ReleaseMutex(pool->mutex);
 # endif
+     }
 #endif
 
 #ifndef NVALGRIND
@@ -153,10 +181,19 @@ eina_one_big_free(void *data, void *ptr)
    One_Big *pool = data;
 
 #ifdef EFL_HAVE_THREADS
+   if (_threads_activated)
+     {
 # ifdef EFL_HAVE_POSIX_THREADS
-   pthread_mutex_lock(&pool->mutex);
+        pthread_mutex_lock(&pool->mutex);
 # else
-   WaitForSingleObject(pool->mutex, INFINITE);
+        WaitForSingleObject(pool->mutex, INFINITE);
+# endif
+     }
+# ifdef EFL_HAVE_POSIX_THREADS
+#  ifdef EFL_DEBUG_THREADS
+   else
+     assert(pthread_equal(pool->self, pthread_self()));
+#  endif
 # endif
 #endif
 
@@ -168,7 +205,22 @@ eina_one_big_free(void *data, void *ptr)
      }
    else
      {
-        free(ptr);
+#ifndef NDEBUG
+        Eina_Inlist *it;
+#endif
+        Eina_Inlist *il;
+
+        il = (Eina_Inlist *)(((unsigned char *)ptr) - sizeof(Eina_Inlist));
+
+#ifndef NDEBUG
+        for (it = pool->over_list; it != NULL; it = it->next)
+          if (it == il) break;
+
+        assert(it != NULL);
+#endif
+
+        pool->over_list = eina_inlist_remove(pool->over_list, il);
+        free(il);
         pool->over--;
      }
 
@@ -177,11 +229,14 @@ eina_one_big_free(void *data, void *ptr)
 #endif
 
 #ifdef EFL_HAVE_THREADS
+   if (_threads_activated)
+     {
 # ifdef EFL_HAVE_POSIX_THREADS
-   pthread_mutex_unlock(&pool->mutex);
+        pthread_mutex_unlock(&pool->mutex);
 # else
-   ReleaseMutex(pool->mutex);
+        ReleaseMutex(pool->mutex);
 # endif
+     }
 #endif
 }
 
@@ -221,6 +276,9 @@ eina_one_big_init(const char *context,
 
 #ifdef EFL_HAVE_THREADS
 # ifdef EFL_HAVE_POSIX_THREADS
+#  ifdef EFL_DEBUG_THREADS
+   pool->self = pthread_self();
+#  endif
    pthread_mutex_init(&pool->mutex, NULL);
 # else
    pool->mutex = CreateMutex(NULL, FALSE, NULL);
@@ -237,29 +295,67 @@ eina_one_big_init(const char *context,
 static void
 eina_one_big_shutdown(void *data)
 {
-   One_Big *pool;
+   One_Big *pool = data;
 
-   pool = data;
-
-   if (!pool) return ;
-
-#ifdef DEBUG
-   if (pool->usage > 0)
-      INF(
-         "Bad news we are destroying memory still referenced in mempool [%s]\n",
-         pool->name);
+   if (!pool) return;
+#ifdef EFL_HAVE_THREADS
+   if (_threads_activated)
+     {
+# ifdef EFL_HAVE_POSIX_THREADS
+        pthread_mutex_lock(&pool->mutex);
+# else
+        WaitForSingleObject(pool->mutex, INFINITE);
+# endif
+     }
+# ifdef EFL_HAVE_POSIX_THREADS
+#  ifdef EFL_DEBUG_THREADS
+   else
+     assert(pthread_equal(pool->self, pthread_self()));
+#  endif
+# endif
+#endif
 
    if (pool->over > 0)
-      INF("Bad news we are losing track of pointer from mempool [%s]\n",
-          pool->name);
-
-#endif
+     {
+// FIXME: should we warn here? one_big mempool exceeded its alloc and now
+// mempool is cleaning up the mess created. be quiet for now as we were before
+// but edje seems to be a big offender at the moment! bad cedric! :)
+//        WRN(
+//            "Pool [%s] over by %i. cleaning up for you", 
+//            pool->name, pool->over);
+        while (pool->over_list)
+          {
+             Eina_Inlist *il = pool->over_list;
+             pool->over_list = eina_inlist_remove(pool->over_list, il);
+             free(il);
+             pool->over--;
+          }
+     }
+   if (pool->over > 0)
+     {
+        WRN(
+            "Pool [%s] still over by %i\n", 
+            pool->name, pool->over);
+     }
 
 #ifndef NVALGRIND
    VALGRIND_DESTROY_MEMPOOL(pool);
 #endif
 
-   free(pool->base);
+   if (pool->base) free(pool->base);
+
+#ifdef EFL_HAVE_THREADS
+   if (_threads_activated)
+     {
+# ifdef EFL_HAVE_POSIX_THREADS
+        pthread_mutex_unlock(&pool->mutex);
+        pthread_mutex_destroy(&pool->mutex);
+# else
+        ReleaseMutex(pool->mutex);
+        CloseHandle(pool->mutex);
+# endif
+     }
+#endif
    free(pool);
 }
 
@@ -278,9 +374,9 @@ static Eina_Mempool_Backend _eina_one_big_mp_backend = {
 Eina_Bool one_big_init(void)
 {
 #ifdef DEBUG
-   _eina_mempool_log_dom = eina_log_domain_register("eina_one_big_mempool",
-                                                    EINA_LOG_COLOR_DEFAULT);
-   if (_eina_mempool_log_dom < 0)
+   _eina_one_big_mp_log_dom = eina_log_domain_register("eina_one_big_mempool",
+                                                       EINA_LOG_COLOR_DEFAULT);
+   if (_eina_one_big_mp_log_dom < 0)
      {
         EINA_LOG_ERR("Could not register log domain: eina_one_big_mempool");
         return EINA_FALSE;
@@ -294,8 +390,8 @@ void one_big_shutdown(void)
 {
    eina_mempool_unregister(&_eina_one_big_mp_backend);
 #ifdef DEBUG
-   eina_log_domain_unregister(_eina_mempool_log_dom);
-   _eina_mempool_log_dom = -1;
+   eina_log_domain_unregister(_eina_one_big_mp_log_dom);
+   _eina_one_big_mp_log_dom = -1;
 #endif
 }
 

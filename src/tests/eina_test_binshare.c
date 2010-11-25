@@ -39,7 +39,6 @@ START_TEST(eina_binshare_simple)
    const char *t1;
 
    eina_init();
-   eina_binshare_init();
 
    t0 = eina_binshare_add_length(TEST0, TEST0_SIZE);
    t1 = eina_binshare_add_length(TEST1, TEST1_SIZE);
@@ -57,7 +56,6 @@ START_TEST(eina_binshare_simple)
    eina_binshare_del(t0);
    eina_binshare_del(t1);
 
-   eina_binshare_shutdown();
    eina_shutdown();
 }
 END_TEST
@@ -68,7 +66,6 @@ START_TEST(eina_binshare_small)
    int i;
 
    eina_init();
-   eina_binshare_init();
 
    for (i = 1; i < 3; i++)
      {
@@ -93,7 +90,6 @@ START_TEST(eina_binshare_small)
         eina_binshare_del(t0);
         eina_binshare_del(t1);
      }
-        eina_binshare_shutdown();
    eina_shutdown();
 }
 END_TEST
@@ -105,7 +101,6 @@ START_TEST(eina_binshare_test_share)
    const char *t1;
 
    eina_init();
-   eina_binshare_init();
 
    t0 = eina_binshare_add_length(TEST0, TEST0_SIZE);
    t1 = eina_binshare_add_length(TEST0, TEST0_SIZE);
@@ -119,7 +114,6 @@ START_TEST(eina_binshare_test_share)
 
    eina_binshare_del(t0);
    eina_binshare_del(t1);
-   eina_binshare_shutdown();
    eina_shutdown();
 }
 END_TEST
@@ -130,7 +124,6 @@ START_TEST(eina_binshare_putstuff)
    int i;
 
    eina_init();
-   eina_binshare_init();
 
    for (i = 10000; i > 0; --i)
      {
@@ -141,7 +134,6 @@ START_TEST(eina_binshare_putstuff)
         fail_if(tmp != eina_binshare_add_length(build, strlen(build)));
         fail_if((int)strlen(build) != eina_binshare_length(tmp));
      }
-        eina_binshare_shutdown();
    eina_shutdown();
 }
 END_TEST
@@ -155,7 +147,6 @@ START_TEST(eina_binshare_collision)
    srand(time(NULL));
 
    eina_init();
-   eina_binshare_init();
 
    ea = eina_array_new(256);
    fail_if(!ea);
@@ -191,7 +182,6 @@ START_TEST(eina_binshare_collision)
    for (i = 0; i < 1000; ++i)
       eina_binshare_del(eina_array_pop(ea));
 
-      eina_binshare_shutdown();
    eina_shutdown();
 
    eina_array_free(ea);
