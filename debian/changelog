@@ -1,3 +1,12 @@
+eina (1.0.0.001+svn.55075slp2+build01) unstable; urgency=low
+
+  * [SVN 55075 Merge]
+  * Update to SVN Revision 55075.
+  * Git: 165.213.180.234:/git/slp/pkgs/eina
+  * Tag: eina_1.0.0.001+svn.55075slp2+build01
+
+ -- Myoungwoon Kim <myoungwoon.kim@samsung.com>  Thu, 02 Dec 2010 08:45:42 +0900
+
 eina (1.0.0.001+svn.51480slp2+build04) unstable; urgency=low
 
   * [SVN 54761 Merge]
