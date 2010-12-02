@@ -80,7 +80,7 @@ EAPI void        eina_array_free(Eina_Array *array) EINA_ARG_NONNULL(1);
 EAPI void        eina_array_step_set(Eina_Array  *array,
                                      unsigned int sizeof_eina_array,
                                      unsigned int step) EINA_ARG_NONNULL(1);
-static inline void eina_array_clean(Eina_Array *array) EINA_ARG_NONNULL(1);
+EAPI void eina_array_clean(Eina_Array *array) EINA_ARG_NONNULL(1);
 EAPI void eina_array_flush(Eina_Array *array) EINA_ARG_NONNULL(1);
 EAPI Eina_Bool eina_array_remove(Eina_Array * array,
                                  Eina_Bool (*keep)(void *data, void *gdata),
@@ -92,7 +92,7 @@ static inline void     *eina_array_data_get(const Eina_Array *array,
                                             unsigned int      idx) EINA_ARG_NONNULL(1);
 static inline void      eina_array_data_set(const Eina_Array *array,
                                             unsigned int      idx,
-                                            const void       *data) EINA_ARG_NONNULL(1);
+                                            const void       *data) EINA_ARG_NONNULL(1, 3);
 static inline unsigned int eina_array_count_get(const Eina_Array *array) EINA_ARG_NONNULL(1);
 EAPI Eina_Iterator        *eina_array_iterator_new(const Eina_Array *array) EINA_MALLOC EINA_ARG_NONNULL(1) EINA_WARN_UNUSED_RESULT;
 EAPI Eina_Accessor        *eina_array_accessor_new(const Eina_Array *array) EINA_MALLOC EINA_ARG_NONNULL(1) EINA_WARN_UNUSED_RESULT;
