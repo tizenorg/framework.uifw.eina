@@ -26,6 +26,7 @@
 #include <stdarg.h>
 #ifndef _WIN32
 # include <time.h>
+# include <sys/time.h>
 #else
 # define WIN32_LEAN_AND_MEAN
 # include <windows.h>
@@ -87,7 +88,15 @@ _eina_counter_time_get(Eina_Nano_Time *tp)
 # elif defined(CLOCK_REALTIME)
    return clock_gettime(CLOCK_REALTIME, tp);
 # else
-   return gettimeofday(tp, NULL);
+   struct timeval tv;
+
+   if (gettimeofday(&tv, NULL))
+     return -1;
+
+   tp->tv_sec = tv.tv_sec;
+   tp->tv_nsec = tv.tv_usec * 1000L;
+
+   return 0;
 # endif
 }
 #else

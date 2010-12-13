@@ -18,7 +18,7 @@ m4_define([lt_age], v_min)
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
 
-AC_INIT([eina], [v_ver.beta2], [enlightenment-devel@lists.sourceforge.net])
+AC_INIT([eina], [v_ver.beta3], [enlightenment-devel@lists.sourceforge.net])
 AC_PREREQ([2.59])
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_MACRO_DIR([m4])
@@ -320,7 +320,7 @@ fi
 AC_HEADER_ASSERT
 AC_HEADER_DIRENT
 AC_HEADER_TIME
-
+EFL_CHECK_PATH_MAX
 
 ### Checks for types
 AC_CHECK_HEADER([inttypes.h],
