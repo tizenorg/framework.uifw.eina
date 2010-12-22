@@ -41,6 +41,8 @@ void *alloca (size_t);
 #include <windows.h>
 #undef WIN32_LEAN_AND_MEAN
 
+#include <Evil.h>
+
 #include "eina_config.h"
 #include "eina_private.h"
 
@@ -66,7 +68,7 @@ struct _Eina_File_Iterator
 
    WIN32_FIND_DATA data;
    HANDLE          handle;
-   int             length;
+   size_t          length;
    Eina_Bool       is_last : 1;
 
    char            dir[1];
@@ -78,7 +80,7 @@ struct _Eina_File_Direct_Iterator
 
    WIN32_FIND_DATA       data;
    HANDLE                handle;
-   int                   length;
+   size_t                length;
    Eina_Bool             is_last : 1;
 
    Eina_File_Direct_Info info;
