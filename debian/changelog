@@ -1,3 +1,11 @@
+eina (1.0.0.001+svn.55767slp2+build02) unstable; urgency=low
+
+  * Package Upload
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.55767slp2+build02
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Mon, 03 Jan 2011 20:06:49 +0900
+
 eina (1.0.0.001+svn.55578slp2+build01) unstable; urgency=low
 
   * [SVN EFL Migration] eina in SLP is merged with SVN r55578
