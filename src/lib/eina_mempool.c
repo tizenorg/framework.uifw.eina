@@ -72,7 +72,7 @@ _new_va(const char *name,
 
    eina_error_set(0);
    be = eina_hash_find(_backends, name);
-   if (!be)
+   if ((!be) || (!be->init))
       goto on_error;
 
    err = EINA_ERROR_OUT_OF_MEMORY;

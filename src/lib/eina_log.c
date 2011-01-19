@@ -693,7 +693,10 @@ eina_log_print_prefix_NOthreads_color_file_func(FILE *fp,
                                                 int line)
 {
    DECLARE_LEVEL_NAME_COLOR(level);
-#ifdef _WIN32
+#ifdef _WIN32_WCE
+   fprintf(fp, "%s<%u>:%s %s:%d %s() ", name, eina_log_pid_get(), 
+           d->domain_str, file, line, fnc);
+#elif _WIN32
    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
                            color);
    fprintf(fp, "%s", name);
@@ -731,7 +734,10 @@ eina_log_print_prefix_NOthreads_color_NOfile_func(FILE *fp,
                                                   int line __UNUSED__)
 {
    DECLARE_LEVEL_NAME_COLOR(level);
-#ifdef _WIN32
+#ifdef _WIN32_WCE
+   fprintf(fp, "%s<%u>:%s %s() ", name, eina_log_pid_get(), d->domain_str, 
+           fnc);
+#elif _WIN32
    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
                            color);
    fprintf(fp, "%s", name);
@@ -766,7 +772,10 @@ eina_log_print_prefix_NOthreads_color_file_NOfunc(FILE *fp,
                                                   int line)
 {
    DECLARE_LEVEL_NAME_COLOR(level);
-#ifdef _WIN32
+#ifdef _WIN32_WCE
+   fprintf(fp, "%s<%u>:%s %s:%d ", name, eina_log_pid_get(), d->domain_str, 
+           file, line);
+#elif _WIN32
    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
                            color);
    fprintf(fp, "%s", name);
@@ -1183,22 +1192,13 @@ eina_log_domain_new(Eina_Log_Domain *d, const char *name, const char *color)
    d->level = EINA_LOG_LEVEL_UNKNOWN;
    d->deleted = EINA_FALSE;
 
-   if (name)
-     {
-        if ((color) && (!_disable_color))
-           d->domain_str = eina_log_domain_str_get(name, color);
-        else
-           d->domain_str = eina_log_domain_str_get(name, NULL);
-
-        d->name = strdup(name);
-        d->namelen = strlen(name);
-     }
+   if ((color) && (!_disable_color))
+      d->domain_str = eina_log_domain_str_get(name, color);
    else
-     {
-        d->domain_str = NULL;
-        d->name = NULL;
-        d->namelen = 0;
-     }
+      d->domain_str = eina_log_domain_str_get(name, NULL);
+
+   d->name = strdup(name);
+   d->namelen = strlen(name);
 
    return d;
 }
