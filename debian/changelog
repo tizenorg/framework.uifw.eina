@@ -1,3 +1,11 @@
+eina (1.0.0.001+svn.57387slp2+build01) unstable; urgency=low
+
+  * [SVN EFL Migration] eina in SLP is merged with SVN r57387
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.57387slp2+build01
+
+ -- Myungjae Lee <mjae.lee@samsung.com>  Mon, 07 Mar 2011 17:27:06 +0900
+
 eina (1.0.0.001+svn.56209slp2+build06) unstable; urgency=low
 
   * [unicode] 56806 is updated for textblock bug
