@@ -1,4 +1,29 @@
-20YY-MM-2DD  NAME OF RELEASER
+2011-01-29  Carsten Haitzler (The Rasterman)
 
-	MAJOR.MINOR.MICRO release
-        
+        1.0.0 release
+
+2011-02-01  Cedric Bail
+
+	* Improve scalability and raw speed of Chained Mempool.
+
+2011-02-08  Tom Hacohen
+
+	* Added eina_unicode_strndup
+
+2011-02-16  Mike Blumenkrantz
+
+        * Added EINA_INLIST_FOREACH_SAFE
+
+2011-02-16  Tom Hacohen
+
+	* Added eina_unicode_utf8* functions for utf8 string handling
+	and conversions to and from Eina_Unicode
+
+2011-02-17  Mike Blumenkrantz
+
+        * Added eina_list_move* functions for moving list node data to other lists
+
+2011-02-24  Vincent Torri
+
+        * Fix a compilation failure when --disable-posix-threads
+	--disable-valgrind are passed to configure
