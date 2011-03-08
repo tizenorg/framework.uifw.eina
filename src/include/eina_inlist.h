@@ -58,9 +58,11 @@ struct _Eina_Inlist
    Eina_Inlist *prev; /**< previous node */
    Eina_Inlist *last; /**< last node */
 };
-
+/** Used for declaring an inlist member in a struct */
 #define EINA_INLIST Eina_Inlist __in_list
+/** Utility macro to get the inlist object of a struct */
 #define EINA_INLIST_GET(Inlist)         (& ((Inlist)->__in_list))
+/** Utility macro to get the container object of an inlist */
 #define EINA_INLIST_CONTAINER_GET(ptr,                          \
                                   type) ((type *)((char *)ptr - \
                                                   offsetof(type, __in_list)))
@@ -96,6 +98,10 @@ EAPI Eina_Accessor *eina_inlist_accessor_new(const Eina_Inlist *in_list) EINA_MA
 #define EINA_INLIST_FOREACH(list, l)                                     \
   for (l = NULL, l = (list ? _EINA_INLIST_CONTAINER(l, list) : NULL); l; \
        l = (EINA_INLIST_GET(l)->next ? _EINA_INLIST_CONTAINER(l, EINA_INLIST_GET(l)->next) : NULL))
+#define EINA_INLIST_FOREACH_SAFE(list, list2, l) \
+   for (l = (list ? _EINA_INLIST_CONTAINER(l, list) : NULL), list2 = l ? ((EINA_INLIST_GET(l) ? EINA_INLIST_GET(l)->next : NULL)) : NULL; \
+        l; \
+        l = _EINA_INLIST_CONTAINER(l, list2), list2 = list2 ? list2->next : NULL)
 #define EINA_INLIST_REVERSE_FOREACH(list, l)                                \
   for (l = NULL, l = (list ? _EINA_INLIST_CONTAINER(l, list->last) : NULL); \
        l; l = (EINA_INLIST_GET(l)->prev ? _EINA_INLIST_CONTAINER(l, EINA_INLIST_GET(l)->prev) : NULL))
