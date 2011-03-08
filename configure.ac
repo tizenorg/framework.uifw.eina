@@ -2,11 +2,11 @@
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
 m4_define([v_maj], [1])
 m4_define([v_min], [0])
-m4_define([v_mic], [999])
+m4_define([v_mic], [0])
 m4_define([v_rev], m4_esyscmd([(svnversion "${SVN_REPO_PATH:-.}" | grep -v export || echo 0) | awk -F : '{printf("%s\n", $1);}' | tr -d ' :MSP\n']))
 m4_if(v_rev, [0], [m4_define([v_rev], m4_esyscmd([git log 2> /dev/null | (grep -m1 git-svn-id || echo 0) | sed -e 's/.*@\([0-9]*\).*/\1/' | tr -d '\n']))])
 ##--   When released, remove the dnl on the below line
-dnl m4_undefine([v_rev])
+m4_undefine([v_rev])
 ##--   When doing snapshots - change soname. remove dnl on below line
 dnl m4_define([relname], [ver-pre-svn-07])
 dnl m4_define([v_rel], [-release relname])
@@ -18,7 +18,7 @@ m4_define([lt_age], v_min)
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
 
-AC_INIT([eina], [v_ver], [enlightenment-devel@lists.sourceforge.net])
+AC_INIT([eina], [v_ver.beta3], [enlightenment-devel@lists.sourceforge.net])
 AC_PREREQ([2.59])
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_MACRO_DIR([m4])
@@ -330,22 +330,15 @@ fi
 AC_HEADER_ASSERT
 AC_HEADER_DIRENT
 AC_HEADER_TIME
-AC_CHECK_HEADERS([unistd.h libgen.h])
 EFL_CHECK_PATH_MAX
 
 ### Checks for types
 AC_CHECK_HEADER([inttypes.h],
-   [
-    EINA_CONFIGURE_HAVE_INTTYPES_H="#define EINA_HAVE_INTTYPES_H"
-    AC_DEFINE(HAVE_INTTYPES_H, 1, [Define to 1 if you have the <inttypes.h> header file.])
-   ])
+		[EINA_CONFIGURE_HAVE_INTTYPES_H="#define EINA_HAVE_INTTYPES_H"])
 AC_SUBST(EINA_CONFIGURE_HAVE_INTTYPES_H)
 
 AC_CHECK_HEADER([stdint.h],
-   [
-    EINA_CONFIGURE_HAVE_STDINT_H="#define EINA_HAVE_STDINT_H"
-    AC_DEFINE(HAVE_STDINT_H, 1, [Define to 1 if you have the <stdint.h> header file.])
-   ])
+		[EINA_CONFIGURE_HAVE_STDINT_H="#define EINA_HAVE_STDINT_H"])
 AC_SUBST(EINA_CONFIGURE_HAVE_STDINT_H)
 
 AC_CHECK_SIZEOF(wchar_t)
