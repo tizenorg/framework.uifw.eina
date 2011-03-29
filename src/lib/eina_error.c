@@ -41,7 +41,7 @@
  * or a lib should manage. Then, when an error can occur, use
  * eina_error_set(), and when errors are managed, use
  * eina_error_get(). If eina_error_set() is used to set an error, do
- * not forget to call before eina_error_set(), to remove previous set
+ * not forget to call before eina_error_set0), to remove previous set
  * errors.
  *
  * Here is an example of use:
@@ -149,7 +149,6 @@
 /* undefs EINA_ARG_NONULL() so NULL checks are not compiled out! */
 #include "eina_safety_checks.h"
 #include "eina_error.h"
-#include "eina_stringshare.h"
 
 /* TODO
  * + add a wrapper for assert?
@@ -270,7 +269,7 @@ eina_error_shutdown(void)
 
    for (; eem < eem_end; eem++)
       if (eem->string_allocated)
-         eina_stringshare_del(eem->string);
+         free((char *)eem->string);
 
          free(_eina_errors);
    _eina_errors = NULL;
@@ -304,7 +303,7 @@ eina_error_shutdown(void)
  * @brief Register a new error type.
  *
  * @param msg The description of the error. It will be duplicated using
- *        eina_stringshare_add().
+ *        strdup().
  * @return The unique number identifier for this error.
  *
  * This function stores in a list the error message described by
@@ -326,7 +325,7 @@ eina_error_msg_register(const char *msg)
       return 0;
 
    eem->string_allocated = EINA_TRUE;
-   eem->string = eina_stringshare_add(msg);
+   eem->string = strdup(msg);
    if (!eem->string)
      {
         _eina_errors_count--;
@@ -379,7 +378,7 @@ eina_error_msg_static_register(const char *msg)
  * This function modifies the message associated with @p error and changes
  * it to @p msg.  If the error was previously registered by @ref eina_error_msg_static_register
  * then the string will not be duplicated, otherwise the previous message
- * will be unrefed and @p msg copied.
+ * will be freed and @p msg copied.
  *
  * @see eina_error_msg_register()
  */
@@ -397,10 +396,10 @@ eina_error_msg_modify(Eina_Error error, const char *msg)
      {
         const char *tmp;
 
-        if (!(tmp = eina_stringshare_add(msg)))
+        if (!(tmp = strdup(msg)))
            return EINA_FALSE;
 
-        eina_stringshare_del(_eina_errors[error - 1].string);
+        free((void *)_eina_errors[error - 1].string);
         _eina_errors[error - 1].string = tmp;
         return EINA_TRUE;
      }
@@ -459,32 +458,6 @@ eina_error_set(Eina_Error err)
    _eina_last_error = err;
 }
 
-/**
- * @brief Find the #Eina_Error corresponding to a message string
- * @param msg The error message string to match (NOT #NULL)
- * @return The #Eina_Error matching @p msg, or 0 on failure
- * This function attempts to match @p msg with its corresponding #Eina_Error value.
- * If no such value is found, 0 is returned.
- */
-EAPI Eina_Error
-eina_error_find(const char *msg)
-{
-   size_t i;
-
-   EINA_SAFETY_ON_NULL_RETURN_VAL(msg, 0);
-
-   for (i = 0; i < _eina_errors_count; i++)
-     {
-        if (_eina_errors[i].string_allocated)
-          {
-             if (_eina_errors[i].string == msg)
-               return i;
-          }
-        if (!strcmp(_eina_errors[i].string, msg))
-          return i;
-     }
-   return 0;
-}
 /**
  * @}
  */
