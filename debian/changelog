@@ -1,3 +1,11 @@
+eina (1.0.0.001+svn.57993slp2+build02) unstable; urgency=low
+
+  * Rollback
+  * Git: slp-scm.sec.samsung.net:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.57993slp2+build02
+
+ -- Shinwoo Kim <cinoo.kim@samsung.com>  Tue, 29 Mar 2011 23:12:14 +0900
+
 eina (1.0.0.001+svn.57993slp2+build01) unstable; urgency=low
 
   * [SVN EFL Migration] eina in SLP is merged with SVN r57993
