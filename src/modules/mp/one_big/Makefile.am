@@ -10,9 +10,6 @@ AM_CPPFLAGS = \
 @EFL_EINA_BUILD@ \
 @VALGRIND_CFLAGS@
 
-if EINA_BUILD_ONE_BIG
-if !EINA_STATIC_BUILD_ONE_BIG
-
 controllerdir = $(libdir)/eina/modules/mp/one_big/$(MODULE_ARCH)
 controller_LTLIBRARIES = module.la
 
@@ -26,9 +23,8 @@ module_la_LIBTOOLFLAGS = --tag=disable-static
 
 install-data-hook:
 	rm -f $(DESTDIR)$(controllerdir)/$(controller_LTLIBRARIES)
-
-endif
-endif
+uninstall-hook:
+	rm -f $(DESTDIR)$(controllerdir)/module.*
 
 clean-local:
 	rm -rf *.gcno

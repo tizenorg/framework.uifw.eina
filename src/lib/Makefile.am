@@ -13,6 +13,7 @@ base_sources = \
 eina_accessor.c \
 eina_array.c \
 eina_benchmark.c \
+eina_binbuf.c \
 eina_binshare.c \
 eina_convert.c \
 eina_counter.c \
@@ -31,12 +32,15 @@ eina_main.c \
 eina_matrixsparse.c \
 eina_mempool.c \
 eina_module.c \
+eina_object.c \
+eina_prefix.c \
 eina_quadtree.c \
 eina_rbtree.c \
 eina_rectangle.c \
 eina_safety_checks.c \
 eina_sched.c \
 eina_share_common.c \
+eina_simple_xml_parser.c \
 eina_str.c \
 eina_strbuf.c \
 eina_strbuf_common.c \
@@ -45,8 +49,7 @@ eina_tiler.c \
 eina_unicode.c \
 eina_ustrbuf.c \
 eina_ustringshare.c \
-eina_value.c \
-eina_simple_xml_parser.c
+eina_value.c
 
 if EINA_HAVE_WIN32
 base_sources += eina_file_win32.c
@@ -58,16 +61,17 @@ EXTRA_DIST = \
 eina_share_common.h \
 eina_private.h \
 eina_strbuf_common.h \
-eina_strbuf_template_c.x
+eina_strbuf_template_c.x \
+eina_binbuf_template_c.x
 
 
+
+if EINA_STATIC_BUILD_BUDDY
+base_sources += $(top_srcdir)/src/modules/mp/buddy/eina_buddy.c
+endif
 
 if EINA_STATIC_BUILD_CHAINED_POOL
 base_sources += $(top_srcdir)/src/modules/mp/chained_pool/eina_chained_mempool.c
-endif
-
-if EINA_STATIC_BUILD_ONE_BIG
-base_sources += $(top_srcdir)/src/modules/mp/one_big/eina_one_big.c
 endif
 
 if EINA_STATIC_BUILD_EMEMOA_FIXED
@@ -80,6 +84,10 @@ endif
 
 if EINA_STATIC_BUILD_FIXED_BITMAP
 base_sources += $(top_srcdir)/src/modules/mp/fixed_bitmap/eina_fixed_bitmap.c
+endif
+
+if EINA_STATIC_BUILD_ONE_BIG
+base_sources += $(top_srcdir)/src/modules/mp/one_big/eina_one_big.c
 endif
 
 if EINA_STATIC_BUILD_PASS_THROUGH

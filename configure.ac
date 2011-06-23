@@ -110,6 +110,24 @@ EFL_CHECK_THREADS(
    [have_threads="no"])
 EFL_CHECK_SPINLOCK([have_posix_threads_spinlock="yes"], [have_posix_threads_spinlock="no"])
 
+if ! test "x${have_threads}" = "xno" ; then
+   EINA_CONFIGURE_HAVE_THREADS="#define EINA_HAVE_THREADS"
+fi
+AC_SUBST(EINA_CONFIGURE_HAVE_THREADS)
+AM_CONDITIONAL([EINA_HAVE_THREADS], [! test "x${have_threads}" = "xno"])
+
+if ! test "x${have_debug_threads}" = "xno"; then
+   EINA_CONFIGURE_HAVE_DEBUG_THREADS="#define EINA_HAVE_DEBUG_THREADS"
+fi
+AC_SUBST(EINA_CONFIGURE_HAVE_DEBUG_THREADS)
+AM_CONDITIONAL([EINA_DEBUG_THREADS], [! test "x${have_debug_threads}" = "xno"])
+
+if ! test "x${have_on_off_threads}" = "xno"; then
+   EINA_CONFIGURE_HAVE_ON_OFF_THREADS="#define EINA_HAVE_ON_OFF_THREADS"
+fi
+AC_SUBST(EINA_CONFIGURE_HAVE_ON_OFF_THREADS)
+AM_CONDITIONAL([EINA_ON_OFF_THREADS], [! test "x${have_on_off_threads}" = "xno"])
+
 ### Additional options to configure
 
 # Magic debug
@@ -270,6 +288,7 @@ AM_CONDITIONAL(EINA_ENABLE_BENCHMARK_E17, test "x${enable_benchmark_e17}" = "xye
 
 ### Checks for programs
 AC_PROG_CC
+AC_PROG_CXX
 
 # pkg-config
 PKG_PROG_PKG_CONFIG
@@ -363,6 +382,7 @@ AC_C_INLINE
 AC_C___ATTRIBUTE__
 AC_PROG_CC_STDC
 
+have_wince="no"
 have_win32="no"
 EINA_CPPFLAGS=""
 EINA_CFLAGS=""
@@ -371,6 +391,7 @@ case "$host_os" in
       EINA_CPPFLAGS="-D_WIN32_WCE=0x0420"
       EINA_CFLAGS="${EVIL_CFLAGS}"
       have_win32="yes"
+      have_wince="yes"
       ;;
    mingw*)
       EINA_CPPFLAGS="-D_WIN32_WINNT=0x0501"
@@ -378,6 +399,7 @@ case "$host_os" in
       have_win32="yes"
       ;;
 esac
+AM_CONDITIONAL([EINA_HAVE_WINCE], [test "x$have_wince" = "xyes"])
 AM_CONDITIONAL([EINA_HAVE_WIN32], [test "x$have_win32" = "xyes"])
 
 m4_ifdef([v_mic],
@@ -460,6 +482,7 @@ AC_ARG_WITH([iconv-link],
    [
     LIBS="$withval $LIBS"
     have_iconv="yes"
+    iconv_libs=$withval
    ])
 
 AC_MSG_CHECKING(for explicit iconv link options)
@@ -507,7 +530,10 @@ iconv_t ic;
 size_t count;
 count = iconv(ic, NULL, NULL, NULL, NULL);
              ]])],
-         [have_iconv="yes"],
+         [
+          have_iconv="yes"
+          iconv_libs="-liconv"
+         ],
          [
           have_iconv="no"
           LIBS=${LIBS_save}
@@ -531,7 +557,10 @@ count = iconv(ic, NULL, NULL, NULL, NULL);
 iconv_t ic;
 size_t count = iconv(ic, NULL, NULL, NULL, NULL);
              ]])],
-         [have_iconv="yes"],
+         [
+          have_iconv="yes"
+          iconv_libs="-liconv_plug"
+         ],
          [
           have_iconv="no"
           LIBS=${LIBS_save}
@@ -540,6 +569,8 @@ size_t count = iconv(ic, NULL, NULL, NULL, NULL);
       AC_MSG_RESULT([${have_iconv}])
    fi
 fi
+
+AC_SUBST([iconv_libs])
 
 if test "x${have_iconv}" = "xyes" ; then
    AC_DEFINE([HAVE_ICONV], [1], [Set to 1 if iconv library is installed])
@@ -590,8 +621,16 @@ fi
 
 EFL_CHECK_BENCHMARK([enable_benchmark="yes"], [enable_benchmark="no"])
 EINA_BENCH_MODULE([glib], [${enable_benchmark}], [glib-2.0], [enable_benchmark_glib="yes"], [enable_benchmark_glib="no"])
+if test -n "$CXX" && test "x$enable_benchmark" = "xyes" ; then
+   AC_DEFINE_UNQUOTED([CITYHASH_BENCH], [1], [enable bench tests for google hash method])
+fi
+AM_CONDITIONAL([CITYHASH_BENCH], [test -n "$CXX" && test "x$enable_benchmark" = "xyes"])
 
 AC_SUBST(requirement_eina)
+
+### Build and install examples
+EFL_CHECK_BUILD_EXAMPLES([enable_build_examples="yes"], [enable_build_examples="no"])
+EFL_CHECK_INSTALL_EXAMPLES([enable_install_examples="yes"], [enable_install_examples="no"])
 
 ### Create the .pc.in file according to the major version
 #cat > ${srcdir}/eina-${VMAJ}.pc.in << EOF
@@ -614,6 +653,7 @@ Makefile
 eina.pc
 eina.spec
 doc/Makefile
+doc/Doxyfile
 src/Makefile
 src/include/Makefile
 src/include/eina_config.h
@@ -628,6 +668,7 @@ src/modules/mp/fixed_bitmap/Makefile
 src/modules/mp/buddy/Makefile
 src/modules/mp/one_big/Makefile
 src/tests/Makefile
+src/examples/Makefile
 ])
 
 AC_OUTPUT
@@ -655,6 +696,7 @@ echo "  Thread Support.......: ${have_threads}"
 if test "${have_threads}" = "POSIX" ; then
 echo "    spinlock...........: ${have_posix_threads_spinlock}"
 echo "    debug usage........: ${have_debug_threads}"
+echo "    on/off support.....: ${have_on_off_threads}"
 fi
 echo "  Amalgamation.........: ${do_amalgamation}"
 echo "  Iconv support........: ${have_iconv}"
@@ -663,6 +705,8 @@ echo
 echo "  Documentation........: ${build_doc}"
 echo "  Tests................: ${enable_tests}"
 echo "  Coverage.............: ${enable_coverage}"
+echo "  Examples.............: ${enable_build_examples}"
+echo "  Examples installed...: ${enable_install_examples}"
 echo "  Benchmark............: ${enable_benchmark}"
 if test "x${enable_benchmark}" = "xyes" ; then
 echo "    Glib...............: ${enable_benchmark_glib}"
@@ -676,13 +720,13 @@ echo "    SSE2...............: ${have_sse2}"
 echo "    ALTIVEC............: ${have_altivec}"
 echo
 echo "  Memory pools:"
+echo "    Buddy..............: ${enable_buddy}"
 echo "    Chained pool.......: ${enable_chained_pool}"
 echo "    Ememoa fixed.......: ${enable_ememoa_fixed}"
 echo "    Ememoa unknown.....: ${enable_ememoa_unknown}"
 echo "    Fixed bitmap.......: ${enable_fixed_bitmap}"
-echo "    Pass through.......: ${enable_pass_through}"
-echo "    Buddy..............: ${enable_buddy}"
 echo "    One big............: ${enable_one_big}"
+echo "    Pass through.......: ${enable_pass_through}"
 echo
 echo "Compilation............: make (or gmake)"
 echo "  CPPFLAGS.............: $CPPFLAGS"

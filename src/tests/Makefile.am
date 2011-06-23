@@ -37,6 +37,7 @@ eina_test_stringshare.c \
 eina_test_ustringshare.c\
 eina_test_ustr.c	\
 eina_test_binshare.c    \
+eina_test_binbuf.c	\
 eina_test_array.c 	\
 eina_test_error.c	\
 eina_test_sched.c       \
@@ -61,7 +62,8 @@ eina_test_matrixsparse.c \
 eina_test_tiler.c       \
 eina_test_strbuf.c	\
 eina_test_str.c		\
-eina_test_quadtree.c
+eina_test_quadtree.c	\
+eina_test_simple_xml_parser.c
 
 eina_suite_LDADD = @CHECK_LIBS@ $(top_builddir)/src/lib/libeina.la -lm
 
@@ -90,7 +92,7 @@ bench_PROGRAMS = eina_bench
 eina_bench_SOURCES = 	\
 eina_bench.c 		\
 eina_bench_sort.c	\
-eina_bench_hash.c 	\
+eina_bench_hash.c	\
 eina_bench_stringshare.c \
 eina_bench_convert.c	\
 eina_bench_mempool.c	\
@@ -108,7 +110,18 @@ evas_object_list.c \
 evas_stringshare.c \
 eina_bench_quad.c
 
+if CITYHASH_BENCH
+noinst_LTLIBRARIES = libcity.la
+libcity_la_SOURCES = city.cc
+
+nodist_EXTRA_eina_bench_SOURCES = dummy.cc
+eina_bench_LDADD = @GLIB_LIBS@ $(top_builddir)/src/lib/libeina.la libcity.la
+else
 eina_bench_LDADD = @GLIB_LIBS@ $(top_builddir)/src/lib/libeina.la
+
+endif
+
+
 
 endif
 

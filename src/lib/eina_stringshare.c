@@ -22,13 +22,6 @@
  * if not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * @page tutorial_stringshare_page Stringshare Tutorial
- *
- * to be written...
- *
- */
-
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
@@ -54,10 +47,6 @@ void *alloca (size_t);
 #include <stdio.h>
 #include <string.h>
 
-#ifdef EFL_HAVE_POSIX_THREADS
-# include <pthread.h>
-#endif
-
 #ifdef HAVE_EVIL
 # include <Evil.h>
 #endif
@@ -69,6 +58,7 @@ void *alloca (size_t);
 #include "eina_error.h"
 #include "eina_log.h"
 #include "eina_stringshare.h"
+#include "eina_lock.h"
 
 /* undefs EINA_ARG_NONULL() so NULL checks are not compiled out! */
 #include "eina_safety_checks.h"
@@ -78,27 +68,8 @@ void *alloca (size_t);
 static Eina_Share *stringshare_share;
 static const char EINA_MAGIC_STRINGSHARE_NODE_STR[] = "Eina Stringshare Node";
 
-#ifdef EFL_HAVE_THREADS
 extern Eina_Bool _share_common_threads_activated;
-
-# ifdef EFL_HAVE_POSIX_THREADS
-static pthread_mutex_t _mutex_small = PTHREAD_MUTEX_INITIALIZER;
-#  define STRINGSHARE_LOCK_SMALL() if(_share_common_threads_activated) \
-      pthread_mutex_lock(&_mutex_small)
-#  define STRINGSHARE_UNLOCK_SMALL() if(_share_common_threads_activated) \
-      pthread_mutex_unlock(&_mutex_small)
-# else /* EFL_HAVE_WIN32_THREADS */
-static HANDLE _mutex_small = NULL;
-#  define STRINGSHARE_LOCK_SMALL() if(_share_common_threads_activated) \
-      WaitForSingleObject(_mutex_small, INFINITE)
-#  define STRINGSHARE_UNLOCK_SMALL() if(_share_common_threads_activated) \
-      ReleaseMutex(_mutex_small)
-
-# endif /* EFL_HAVE_WIN32_THREADS */
-#else /* EFL_HAVE_THREADS */
-# define STRINGSHARE_LOCK_SMALL() do {} while (0)
-# define STRINGSHARE_UNLOCK_SMALL() do {} while (0)
-#endif
+static Eina_Lock _mutex_small;
 
 /* Stringshare optimizations */
 static const unsigned char _eina_stringshare_single[512] = {
@@ -425,6 +396,7 @@ error:
 static void
 _eina_stringshare_small_init(void)
 {
+   eina_lock_new(&_mutex_small);
    memset(&_eina_small_share, 0, sizeof(_eina_small_share));
 }
 
@@ -455,6 +427,8 @@ _eina_stringshare_small_shutdown(void)
            free(bucket);
         *p_bucket = NULL;
      }
+
+   eina_lock_free(&_mutex_small);
 }
 
 static void
@@ -561,48 +535,11 @@ eina_stringshare_shutdown(void)
 *                                   API                                      *
 *============================================================================*/
 
-/**
- * @addtogroup Eina_Stringshare_Group Stringshare
- *
- * These functions allow you to store one copy of a string, and use it
- * throughout your program.
- *
- * This is a method to reduce the number of duplicated strings kept in
- * memory. It's pretty common for the same strings to be dynamically
- * allocated repeatedly between applications and libraries, especially in
- * circumstances where you could have multiple copies of a structure that
- * allocates the string. So rather than duplicating and freeing these
- * strings, you request a read-only pointer to an existing string and
- * only incur the overhead of a hash lookup.
- *
- * It sounds like micro-optimizing, but profiling has shown this can have
- * a significant impact as you scale the number of copies up. It improves
- * string creation/destruction speed, reduces memory use and decreases
- * memory fragmentation, so a win all-around.
- *
- * For more information, you can look at the @ref tutorial_stringshare_page.
- *
- * @{
- */
-
-/**
- * @brief Note that the given string has lost an instance.
- *
- * @param str string The given string.
- *
- * This function decreases the reference counter associated to @p str
- * if it exists. If that counter reaches 0, the memory associated to
- * @p str is freed. If @p str is NULL, the function returns
- * immediately.
- *
- * Note that if the given pointer is not shared or NULL, bad things
- * will happen, likely a segmentation fault.
- */
 EAPI void
 eina_stringshare_del(const char *str)
 {
    int slen;
-   DBG("str=%p (%s)", str, str ? str : "");
+
    if (!str)
       return;
 
@@ -623,40 +560,18 @@ eina_stringshare_del(const char *str)
    else if (slen < 4)
      {
         eina_share_common_population_del(stringshare_share, slen);
-        STRINGSHARE_LOCK_SMALL();
+        eina_lock_take(&_mutex_small);
         _eina_stringshare_small_del(str, slen);
-        STRINGSHARE_UNLOCK_SMALL();
+        eina_lock_release(&_mutex_small);
         return;
      }
 
    eina_share_common_del(stringshare_share, str);
 }
 
-/**
- * @brief Retrieve an instance of a string for use in a program.
- *
- * @param   str The string to retrieve an instance of.
- * @param   slen The string size (<= strlen(str)).
- * @return  A pointer to an instance of the string on success.
- *          @c NULL on failure.
- *
- * This function retrieves an instance of @p str. If @p str is
- * @c NULL, then @c NULL is returned. If @p str is already stored, it
- * is just returned and its reference counter is increased. Otherwise
- * it is added to the strings to be searched and a duplicated string
- * of @p str is returned.
- *
- * This function does not check string size, but uses the
- * exact given size. This can be used to share_common part of a larger
- * buffer or substring.
- *
- * @see eina_share_common_add()
- */
 EAPI const char *
 eina_stringshare_add_length(const char *str, unsigned int slen)
 {
-   DBG("str=%p (%.*s), slen=%u", str, slen, str ? str : "", slen);
-
    if ((!str) || (slen <= 0))
       return "";
    else if (slen == 1)
@@ -665,9 +580,9 @@ eina_stringshare_add_length(const char *str, unsigned int slen)
      {
         const char *s;
 
-        STRINGSHARE_LOCK_SMALL();
+        eina_lock_take(&_mutex_small);
         s = _eina_stringshare_small_add(str, slen);
-        STRINGSHARE_UNLOCK_SMALL();
+        eina_lock_release(&_mutex_small);
         return s;
      }
 
@@ -675,25 +590,6 @@ eina_stringshare_add_length(const char *str, unsigned int slen)
                                        sizeof(char), sizeof(char));
 }
 
-/**
- * @brief Retrieve an instance of a string for use in a program.
- *
- * @param   str The NULL terminated string to retrieve an instance of.
- * @return  A pointer to an instance of the string on success.
- *          @c NULL on failure.
- *
- * This function retrieves an instance of @p str. If @p str is
- * @c NULL, then @c NULL is returned. If @p str is already stored, it
- * is just returned and its reference counter is increased. Otherwise
- * it is added to the strings to be searched and a duplicated string
- * of @p str is returned.
- *
- * The string @p str must be NULL terminated ('@\0') and its full
- * length will be used. To use part of the string or non-null
- * terminated, use eina_stringshare_add_length() instead.
- *
- * @see eina_stringshare_add_length()
- */
 EAPI const char *
 eina_stringshare_add(const char *str)
 {
@@ -715,26 +611,6 @@ eina_stringshare_add(const char *str)
    return eina_stringshare_add_length(str, slen);
 }
 
-/**
- * @brief Retrieve an instance of a string for use in a program
- * from a format string.
- *
- * @param   fmt The NULL terminated format string to retrieve an instance of.
- * @return  A pointer to an instance of the string on success.
- *          @c NULL on failure.
- *
- * This function retrieves an instance of @p fmt. If @p fmt is
- * @c NULL, then @c NULL is returned. If @p fmt is already stored, it
- * is just returned and its reference counter is increased. Otherwise
- * it is added to the strings to be searched and a duplicated string
- * is returned.
- *
- * The format string @p fmt must be NULL terminated ('@\0') and its full
- * length will be used. To use part of the format string or non-null
- * terminated, use eina_stringshare_nprintf() instead.
- *
- * @see eina_stringshare_nprintf()
- */
 EAPI const char *
 eina_stringshare_printf(const char *fmt, ...)
 {
@@ -759,27 +635,6 @@ eina_stringshare_printf(const char *fmt, ...)
    return ret;
 }
 
-/**
- * @brief Retrieve an instance of a string for use in a program
- * from a format string.
- *
- * @param   fmt The NULL terminated format string to retrieve an instance of.
- * @param   args The va_args for @p fmt
- * @return  A pointer to an instance of the string on success.
- *          @c NULL on failure.
- *
- * This function retrieves an instance of @p fmt with @p args. If @p fmt is
- * @c NULL, then @c NULL is returned. If @p fmt with @p args is already stored, it
- * is just returned and its reference counter is increased. Otherwise
- * it is added to the strings to be searched and a duplicated string
- * is returned.
- *
- * The format string @p fmt must be NULL terminated ('@\0') and its full
- * length will be used. To use part of the format string or non-null
- * terminated, use eina_stringshare_nprintf() instead.
- *
- * @see eina_stringshare_nprintf()
- */
 EAPI const char *
 eina_stringshare_vprintf(const char *fmt, va_list args)
 {
@@ -801,25 +656,6 @@ eina_stringshare_vprintf(const char *fmt, va_list args)
    return ret;
 }
 
-/**
- * @brief Retrieve an instance of a string for use in a program
- * from a format string with size limitation.
- * @param   len The length of the format string to use
- * @param   fmt The format string to retrieve an instance of.
- * @return  A pointer to an instance of the string on success.
- *          @c NULL on failure.
- *
- * This function retrieves an instance of @p fmt limited by @p len. If @p fmt is
- * @c NULL or @p len is < 1, then @c NULL is returned. If the resulting string
- * is already stored, it is returned and its reference counter is increased. Otherwise
- * it is added to the strings to be searched and a duplicated string
- * is returned.
- *
- * @p len length of the format string will be used. To use the
- * entire format string, use eina_stringshare_printf() instead.
- *
- * @see eina_stringshare_printf()
- */
 EAPI const char *
 eina_stringshare_nprintf(unsigned int len, const char *fmt, ...)
 {
@@ -845,25 +681,10 @@ eina_stringshare_nprintf(unsigned int len, const char *fmt, ...)
    return eina_stringshare_add_length(tmp, len);
 }
 
-/**
- * Increment references of the given shared string.
- *
- * @param str The shared string.
- * @return    A pointer to an instance of the string on success.
- *            @c NULL on failure.
- *
- * This is similar to eina_share_common_add(), but it's faster since it will
- * avoid lookups if possible, but on the down side it requires the parameter
- * to be shared before, in other words, it must be the return of a previous
- * eina_share_common_add().
- *
- * There is no unref since this is the work of eina_share_common_del().
- */
 EAPI const char *
 eina_stringshare_ref(const char *str)
 {
    int slen;
-   DBG("str=%p (%s)", str, str ? str : "");
 
    if (!str)
       return eina_share_common_ref(stringshare_share, str);
@@ -891,9 +712,9 @@ eina_stringshare_ref(const char *str)
         const char *s;
         eina_share_common_population_add(stringshare_share, slen);
 
-        STRINGSHARE_LOCK_SMALL();
+        eina_lock_take(&_mutex_small);
         s = _eina_stringshare_small_add(str, slen);
-        STRINGSHARE_UNLOCK_SMALL();
+        eina_lock_release(&_mutex_small);
 
         return s;
      }
@@ -901,17 +722,6 @@ eina_stringshare_ref(const char *str)
    return eina_share_common_ref(stringshare_share, str);
 }
 
-/**
- * @brief Note that the given string @b must be shared.
- *
- * @param str the shared string to know the length. It is safe to
- *        give NULL, in that case -1 is returned.
- *
- * This function is a cheap way to known the length of a shared
- * string. Note that if the given pointer is not shared, bad
- * things will happen, likely a segmentation fault. If in doubt, try
- * strlen().
- */
 EAPI int
 eina_stringshare_strlen(const char *str)
 {
@@ -934,12 +744,6 @@ eina_stringshare_strlen(const char *str)
    return len;
 }
 
-/**
- * @brief Dump the contents of the share_common.
- *
- * This function dumps all strings in the share_common to stdout with a
- * DDD: prefix per line and a memory usage summary.
- */
 EAPI void
 eina_stringshare_dump(void)
 {
@@ -947,8 +751,3 @@ eina_stringshare_dump(void)
                           _eina_stringshare_small_dump,
                           sizeof(_eina_stringshare_single));
 }
-
-/**
- * @}
- */
-

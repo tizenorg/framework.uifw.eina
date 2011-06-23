@@ -91,33 +91,7 @@ eina_accessor_shutdown(void)
 *                                   API                                      *
 *============================================================================*/
 
-/**
- * @addtogroup Eina_Accessor_Group Accessor Functions
- *
- * @brief These functions manage accessor on containers.
- *
- * These functions allow to access elements of a container in a
- * generic way, without knowing which container is used (a bit like
- * iterators in the C++ STL). Accessors allows random access (that is, any
- * element in the container). For sequential access, see
- * @ref Eina_Iterator_Group.
- *
- * An accessor is created from container data types, so no creation
- * function is available here. An accessor is deleted with
- * eina_accessor_free(). To get the data of an element at a given
- * position, use eina_accessor_data_get(). To call a function on
- * chosen elements of a container, use eina_accessor_over().
- *
- * @{
- */
 
-/**
- * @brief Free an accessor.
- *
- * @param accessor The accessor to free.
- *
- * This function frees @p accessor if it is not @c NULL;
- */
 EAPI void
 eina_accessor_free(Eina_Accessor *accessor)
 {
@@ -127,15 +101,6 @@ eina_accessor_free(Eina_Accessor *accessor)
    accessor->free(accessor);
 }
 
-/**
- * @brief Return the container of an accessor.
- *
- * @param accessor The accessor.
- * @return The container which created the accessor.
- *
- * This function returns the container which created @p accessor. If
- * @p accessor is @c NULL, this function returns @c NULL.
- */
 EAPI void *
 eina_accessor_container_get(Eina_Accessor *accessor)
 {
@@ -145,19 +110,6 @@ eina_accessor_container_get(Eina_Accessor *accessor)
    return accessor->get_container(accessor);
 }
 
-/**
- * @brief Retrieve the data of an accessor at a given position.
- *
- * @param accessor The accessor.
- * @param position The position of the element.
- * @param data The pointer that stores the data to retrieve.
- * @return #EINA_TRUE on success, #EINA_FALSE otherwise.
- *
- * This function retrieves the data of the element pointed by
- * @p accessor at the porition @p position, and stores it in
- * @p data. If @p accessor is @c NULL or if an error occurred,
- * #EINA_FALSE is returned, otherwise EINA_TRUE is returned.
- */
 EAPI Eina_Bool
 eina_accessor_data_get(Eina_Accessor *accessor,
                        unsigned int position,
@@ -170,22 +122,6 @@ eina_accessor_data_get(Eina_Accessor *accessor,
    return accessor->get_at(accessor, position, data);
 }
 
-/**
- * @brief Iterate over the container and execute a callback on chosen elements.
- *
- * @param accessor The accessor.
- * @param cb The callback called on the chosen elements.
- * @param start The position of the first element.
- * @param end The position of the last element.
- * @param fdata The data passed to the callback.
- *
- * This function iterates over the elements pointed by @p accessor,
- * starting from the element at position @p start and ending to the
- * element at position @p end. For Each element, the callback
- * @p cb is called with the data @p fdata. If @p accessor is @c NULL
- * or if @p start is greter or equal than @p end, the function returns
- * immediately.
- */
 EAPI void
 eina_accessor_over(Eina_Accessor *accessor,
                    Eina_Each_Cb cb,
@@ -217,17 +153,6 @@ eina_accessor_over(Eina_Accessor *accessor,
    (void) eina_accessor_unlock(accessor);
 }
 
-/**
- * @brief Lock the container of the accessor.
- *
- * @param accessor The accessor.
- * @return #EINA_TRUE on success, #EINA_FALSE otherwise.
- *
- * If the container of the @p accessor permit it, it will be locked.
- * If @p accessor is @c NULL or if a problem occurred, #EINA_FALSE is
- * returned, otherwise #EINA_TRUE is returned. If the container
- * is not lockable, it will return EINA_TRUE.
- */
 EAPI Eina_Bool
 eina_accessor_lock(Eina_Accessor *accessor)
 {
@@ -239,18 +164,6 @@ eina_accessor_lock(Eina_Accessor *accessor)
    return EINA_TRUE;
 }
 
-/**
- * @brief Unlock the container of the accessor.
- *
- * @param accessor The accessor.
- * @return #EINA_TRUE on success, #EINA_FALSE otherwise.
- *
- * If the container of the @p accessor permit it and was previously
- * locked, it will be unlocked. If @p accessor is @c NULL or if a
- * problem occurred, #EINA_FALSE is returned, otherwise #EINA_TRUE
- * is returned. If the container is not lockable, it will return
- * EINA_TRUE.
- */
 EAPI Eina_Bool
 eina_accessor_unlock(Eina_Accessor *accessor)
 {
@@ -261,7 +174,3 @@ eina_accessor_unlock(Eina_Accessor *accessor)
       return accessor->unlock(accessor);
    return EINA_TRUE;
 }
-
-/**
- * @}
- */

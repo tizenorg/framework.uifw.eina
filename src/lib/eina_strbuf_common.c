@@ -76,6 +76,7 @@ eina_strbuf_common_shutdown(void)
  * @internal
  *
  * init the buffer
+ * @param csize the character size
  * @param buf the buffer to init
  *
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
@@ -102,6 +103,7 @@ _eina_strbuf_common_init(size_t csize, Eina_Strbuf *buf)
  * @internal
  *
  * resize the buffer
+ * @param csize the character size
  * @param buf the buffer to resize
  * @param size the minimum size of the buffer
  *
@@ -151,6 +153,7 @@ _eina_strbuf_common_resize(size_t csize, Eina_Strbuf *buf, size_t size)
  *
  * If required, enlarge the buffer to fit the new size.
  *
+ * @param csize the character size
  * @param buf the buffer to resize
  * @param size the minimum size of the buffer
  *
@@ -168,6 +171,7 @@ _eina_strbuf_common_grow(size_t csize, Eina_Strbuf *buf, size_t size)
  *
  * insert string of known length at random within existing strbuf limits.
  *
+ * @param csize the character size
  * @param buf the buffer to resize, must be valid.
  * @param str the string to copy, must be valid (!NULL and smaller than @a len)
  * @param len the amount of bytes in @a str to copy, must be valid.
@@ -204,8 +208,10 @@ _eina_strbuf_common_insert_length(size_t csize,
 *============================================================================*/
 
 /**
+ * @internal
  * @brief Create a new string buffer.
  *
+ * @param csize the character size
  * @return Newly allocated string buffer instance.
  *
  * This function creates a new string buffer. On error, @c NULL is
@@ -237,6 +243,7 @@ eina_strbuf_common_new(size_t csize)
 }
 
 /**
+ * @internal
  * @brief Free a string buffer.
  *
  * @param buf The string buffer to free.
@@ -252,8 +259,10 @@ eina_strbuf_common_free(Eina_Strbuf *buf)
 }
 
 /**
+ * @internal
  * @brief Reset a string buffer.
  *
+ * @param csize the character size
  * @param buf The string buffer to reset.
  *
  * This function reset @p buf: the buffer len is set to 0, and the
@@ -268,8 +277,10 @@ eina_strbuf_common_reset(size_t csize, Eina_Strbuf *buf)
 }
 
 /**
+ * @internal
  * @brief Append a string to a buffer, reallocating as necessary.
  *
+ * @param csize the character size
  * @param buf The string buffer to append to.
  * @param str The string to append.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
@@ -300,9 +311,11 @@ eina_strbuf_common_append(size_t csize,
 }
 
 /**
+ * @internal
  * @brief Append a string to a buffer, reallocating as necessary,
  * limited by the given length.
  *
+ * @param csize the character size
  * @param buf The string buffer to append to.
  * @param str The string to append.
  * @param maxlen The maximum number of characters to append.
@@ -340,8 +353,10 @@ eina_strbuf_common_append_n(size_t csize,
 }
 
 /**
+ * @internal
  * @brief Append a string of exact length to a buffer, reallocating as necessary.
  *
+ * @param csize the character size
  * @param buf The string buffer to append to.
  * @param str The string to append.
  * @param length The exact length to use.
@@ -376,8 +391,10 @@ eina_strbuf_common_append_length(size_t csize,
 }
 
 /**
+ * @internal
  * @brief Insert a string to a buffer, reallocating as necessary.
  *
+ * @param csize the character size
  * @param buf The string buffer to insert.
  * @param str The string to insert.
  * @param pos The position to insert the string.
@@ -403,8 +420,10 @@ eina_strbuf_common_insert(size_t csize,
 }
 
 /**
+ * @internal
  * @brief Insert a string to a buffer, reallocating as necessary. Limited by maxlen.
  *
+ * @param csize the character size
  * @param buf The string buffer to insert to.
  * @param str The string to insert.
  * @param maxlen The maximum number of chars to insert.
@@ -437,8 +456,10 @@ eina_strbuf_common_insert_n(size_t csize,
 }
 
 /**
+ * @internal
  * @brief Insert a string of exact length to a buffer, reallocating as necessary.
  *
+ * @param csize the character size
  * @param buf The string buffer to insert to.
  * @param str The string to insert.
  * @param length The exact length to use.
@@ -471,9 +492,11 @@ eina_strbuf_common_insert_length(size_t csize,
 }
 
 /**
+ * @internal
  * @brief Append a character to a string buffer, reallocating as
  * necessary.
  *
+ * @param csize the character size
  * @param buf The string buffer to append to.
  * @param c The char to append.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
@@ -493,9 +516,11 @@ eina_strbuf_common_append_char(size_t csize, Eina_Strbuf *buf, const void *c)
 }
 
 /**
+ * @internal
  * @brief Insert a character to a string buffer, reallocating as
  * necessary.
  *
+ * @param csize the character size
  * @param buf The string buffer to insert to.
  * @param c The char to insert.
  * @param pos The position to insert the char.
@@ -517,8 +542,10 @@ eina_strbuf_common_insert_char(size_t csize,
 }
 
 /**
+ * @internal
  * @brief Remove a slice of the given string buffer.
  *
+ * @param csize the character size
  * @param buf The string buffer to remove a slice.
  * @param start The initial (inclusive) slice position to start
  *        removing, in bytes.
@@ -557,6 +584,7 @@ eina_strbuf_common_remove(size_t csize,
 }
 
 /**
+ * @internal
  * @brief Retrieve a pointer to the contents of a string buffer
  *
  * @param buf The string buffer.
@@ -576,8 +604,10 @@ eina_strbuf_common_string_get(const Eina_Strbuf *buf)
 }
 
 /**
+ * @internal
  * @brief Steal the contents of a string buffer.
  *
+ * @param csize the character size
  * @param buf The string buffer to steal.
  * @return The current string in the string buffer.
  *
@@ -600,8 +630,10 @@ eina_strbuf_common_string_steal(size_t csize, Eina_Strbuf *buf)
 }
 
 /**
+ * @internal
  * @brief Free the contents of a string buffer but not the buffer.
  *
+ * @param csize the character size
  * @param buf The string buffer to free the string of.
  *
  * This function frees the string contained in @p buf without freeing
@@ -615,6 +647,7 @@ eina_strbuf_common_string_free(size_t csize, Eina_Strbuf *buf)
 }
 
 /**
+ * @internal
  * @brief Retrieve the length of the string buffer content.
  *
  * @param buf The string buffer.
@@ -627,18 +660,6 @@ eina_strbuf_common_length_get(const Eina_Strbuf *buf)
 {
    return buf->len;
 }
-
-/**
- * @addtogroup Eina_String_Buffer_Group String Buffer
- *
- * @brief These functions provide string buffers management.
- *
- * The String Buffer data type is designed to be a mutable string,
- * allowing to append, prepend or insert a string to a buffer.
- *
- * @{
- */
-
 
 /**
  * @cond LOCAL
@@ -669,18 +690,6 @@ static const char __STRBUF_STR_MAGIC_STR[] = "Eina Strbuf";
  */
 
 
-/**
- * @brief Replace the n-th string with an other string.
- *
- * @param buf The string buffer to work with.
- * @param str The string to replace.
- * @param with The replaceing string.
- * @param n The number of the fitting string.
- * @return #EINA_TRUE on success, #EINA_FALSE on failure.
- *
- * This function replaces the n-th occurrence of @p str in @p buf with
- * @p with. It returns #EINA_FALSE on failure, #EINA_TRUE otherwise.
- */
 EAPI Eina_Bool
 eina_strbuf_replace(Eina_Strbuf *buf,
                     const char *str,
@@ -724,18 +733,6 @@ eina_strbuf_replace(Eina_Strbuf *buf,
    return EINA_TRUE;
 }
 
-/**
- * @brief Replace all strings with an other string.
-
- * @param buf the string buffer to work with.
- * @param str The string to replace.
- * @param with The replaceing string.
- * @return How often the string was replaced.
- *
- * This function replaces all the occurrences of @p str in @ buf with
- * the string @p with. This function returns the number of times @p str
- * has been replaced. On failure, it returns 0.
- */
 EAPI int
 eina_strbuf_replace_all(Eina_Strbuf *buf, const char *str, const char *with)
 {
@@ -811,7 +808,3 @@ eina_strbuf_replace_all(Eina_Strbuf *buf, const char *str, const char *with)
    free(tmp_buf);
    return n;
 }
-
-/**
- * @}
- */

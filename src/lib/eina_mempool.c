@@ -80,8 +80,25 @@ _new_va(const char *name,
    if (!mp)
       goto on_error;
 
-   /* FIXME why backend is not a pointer? */
-   mp->backend = *be;
+   /* Work around ABI incompability introduced in Eina 1.1 */
+#define SBP(Property) mp->backend.Property = be->Property;
+   SBP(name);
+   SBP(init);
+   SBP(free);
+   SBP(alloc);
+   SBP(realloc);
+   SBP(garbage_collect);
+   SBP(statistics);
+   SBP(shutdown);
+#undef SBP
+
+   if (be->repack)
+     {
+        mp->backend2 = calloc(1, sizeof (Eina_Mempool_Backend_ABI2));
+        if (mp->backend2)
+          mp->backend2->repack = be->repack;
+     }
+
    mp->backend_data = mp->backend.init(context, options, args);
 
    return mp;
@@ -92,19 +109,15 @@ on_error:
 }
 
 /* Built-in backend's prototypes */
+
+#ifdef EINA_STATIC_BUILD_BUDDY
+Eina_Bool buddy_init(void);
+void      buddy_shutdown(void);
+#endif
+
 #ifdef EINA_STATIC_BUILD_CHAINED_POOL
 Eina_Bool chained_init(void);
 void      chained_shutdown(void);
-#endif
-
-#ifdef EINA_STATIC_BUILD_PASS_THROUGH
-Eina_Bool pass_through_init(void);
-void      pass_through_shutdown(void);
-#endif
-
-#ifdef EINA_STATIC_BUILD_EMEMOA_UNKNOWN
-Eina_Bool ememoa_unknown_init(void);
-void      ememoa_unknown_shutdown(void);
 #endif
 
 #ifdef EINA_STATIC_BUILD_EMEMOA_FIXED
@@ -112,19 +125,24 @@ Eina_Bool ememoa_fixed_init(void);
 void      ememoa_fixed_shutdown(void);
 #endif
 
+#ifdef EINA_STATIC_BUILD_EMEMOA_UNKNOWN
+Eina_Bool ememoa_unknown_init(void);
+void      ememoa_unknown_shutdown(void);
+#endif
+
 #ifdef EINA_STATIC_BUILD_FIXED_BITMAP
 Eina_Bool fixed_bitmap_init(void);
 void      fixed_bitmap_shutdown(void);
 #endif
 
-#ifdef EINA_STATIC_BUILD_BUDDY
-Eina_Bool buddy_init(void);
-void      buddy_shutdown(void);
-#endif
-
 #ifdef EINA_STATIC_BUILD_ONE_BIG
 Eina_Bool one_big_init(void);
 void      one_big_shutdown(void);
+#endif
+
+#ifdef EINA_STATIC_BUILD_PASS_THROUGH
+Eina_Bool pass_through_init(void);
+void      pass_through_shutdown(void);
 #endif
 
 /**
@@ -213,26 +231,26 @@ eina_mempool_init(void)
    eina_module_list_load(_modules);
 
    /* builtin backends */
+#ifdef EINA_STATIC_BUILD_BUDDY
+   buddy_init();
+#endif
 #ifdef EINA_STATIC_BUILD_CHAINED_POOL
    chained_init();
-#endif
-#ifdef EINA_STATIC_BUILD_PASS_THROUGH
-   pass_through_init();
-#endif
-#ifdef EINA_STATIC_BUILD_EMEMOA_UNKNOWN
-   ememoa_unknown_init();
 #endif
 #ifdef EINA_STATIC_BUILD_EMEMOA_FIXED
    ememoa_fixed_init();
 #endif
+#ifdef EINA_STATIC_BUILD_EMEMOA_UNKNOWN
+   ememoa_unknown_init();
+#endif
 #ifdef EINA_STATIC_BUILD_FIXED_BITMAP
    fixed_bitmap_init();
 #endif
-#ifdef EINA_STATIC_BUILD_BUDDY
-   buddy_init();
-#endif
 #ifdef EINA_STATIC_BUILD_ONE_BIG
    one_big_init();
+#endif
+#ifdef EINA_STATIC_BUILD_PASS_THROUGH
+   pass_through_init();
 #endif
 
    return EINA_TRUE;
@@ -248,26 +266,26 @@ Eina_Bool
 eina_mempool_shutdown(void)
 {
    /* builtin backends */
+#ifdef EINA_STATIC_BUILD_BUDDY
+   buddy_shutdown();
+#endif
 #ifdef EINA_STATIC_BUILD_CHAINED_POOL
    chained_shutdown();
-#endif
-#ifdef EINA_STATIC_BUILD_PASS_THROUGH
-   pass_through_shutdown();
-#endif
-#ifdef EINA_STATIC_BUILD_EMEMOA_UNKNOWN
-   ememoa_unknown_shutdown();
 #endif
 #ifdef EINA_STATIC_BUILD_EMEMOA_FIXED
    ememoa_fixed_shutdown();
 #endif
+#ifdef EINA_STATIC_BUILD_EMEMOA_UNKNOWN
+   ememoa_unknown_shutdown();
+#endif
 #ifdef EINA_STATIC_BUILD_FIXED_BITMAP
    fixed_bitmap_shutdown();
 #endif
-#ifdef EINA_STATIC_BUILD_BUDDY
-   buddy_shutdown();
-#endif
 #ifdef EINA_STATIC_BUILD_ONE_BIG
    one_big_shutdown();
+#endif
+#ifdef EINA_STATIC_BUILD_PASS_THROUGH
+   pass_through_shutdown();
 #endif
    /* dynamic backends */
    eina_module_list_free(_modules);
@@ -286,42 +304,6 @@ eina_mempool_shutdown(void)
 /*============================================================================*
 *                                   API                                      *
 *============================================================================*/
-
-/**
- * @addtogroup Eina_Memory_Pool_Group Memory Pool
- *
- * @brief These functions provide memory pool management.
- *
- * Several mempool are available:
- *
- * @li @c buddy: It uses the
- * <a href="http://en.wikipedia.org/wiki/Buddy_memory_allocation">"buddy
- * allocator" algorithm</a> but the Eina implementation differs in the
- * sense that the chunk information is not stored on the chunk itself,
- * but on another memory area. This is useful for cases where the
- * memory to manage might be slower to access, or limited (like video
- * memory).
- * @li @c chained_pool: It is the default one. It allocates a big
- * chunk of memory with malloc() and split the result in chunks of the
- * requested size that are pushed inside a stack. When requested, it
- * takes this pointer from the stack to give them to whoever wants
- * them.
- * @li @c ememoa_fixed and @c ememoa_unknown: experimental allocators
- * which could be useful when a fixed amount of memory is needed.
- * @li @c fixed_bitmap: It allocates with malloc) 32* the requested
- * size and push the pool pointer in an rbtree. To find empty space in
- * a pool, it will just search for the first bit set in an int (32
- * bits). Then, when a pointer is freed, it will do a search inside
- * the rbtree.
- * @li @c pass_through: it just call malloc() and free(). It may be
- * faster on some computers than using our own allocators (like having
- * a huge L2 cache, over 4MB).
- * @li @c one_big: It call just one time malloc for the requested number
- * of items. Usefull when you know in advance how many object of some
- * type will live during the life of the mempool.
- *
- * @{
- */
 
 EAPI Eina_Mempool *
 eina_mempool_add(const char *name,
@@ -352,7 +334,17 @@ EAPI void eina_mempool_del(Eina_Mempool *mp)
    EINA_SAFETY_ON_NULL_RETURN(mp->backend.shutdown);
    DBG("mp=%p", mp);
    mp->backend.shutdown(mp->backend_data);
+   free(mp->backend2);
    free(mp);
+}
+
+EAPI void eina_mempool_repack(Eina_Mempool *mp, Eina_Mempool_Repack_Cb cb, void *data)
+{
+   EINA_SAFETY_ON_NULL_RETURN(mp);
+   EINA_SAFETY_ON_NULL_RETURN(mp->backend2);
+   EINA_SAFETY_ON_NULL_RETURN(mp->backend2->repack);
+   DBG("mp=%p", mp);
+   mp->backend2->repack(mp->backend_data, cb, data);
 }
 
 EAPI void eina_mempool_gc(Eina_Mempool *mp)
@@ -393,7 +385,3 @@ eina_mempool_alignof(unsigned int size)
 
    return ((size / align) + 1) * align;
 }
-
-/**
- * @}
- */

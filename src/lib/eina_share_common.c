@@ -77,6 +77,7 @@
 #include "eina_rbtree.h"
 #include "eina_error.h"
 #include "eina_log.h"
+#include "eina_lock.h"
 
 /* undefs EINA_ARG_NONULL() so NULL checks are not compiled out! */
 #include "eina_safety_checks.h"
@@ -96,6 +97,7 @@
 static const char EINA_MAGIC_SHARE_STR[] = "Eina Share";
 static const char EINA_MAGIC_SHARE_HEAD_STR[] = "Eina Share Head";
 
+static int _eina_share_common_count = 0;
 
 #define EINA_MAGIC_CHECK_SHARE_COMMON_HEAD(d, unlock, ...)      \
    do {                                                          \
@@ -169,27 +171,9 @@ struct _Eina_Share_Common_Head
    Eina_Share_Common_Node builtin_node;
 };
 
-#ifdef EFL_HAVE_THREADS
 Eina_Bool _share_common_threads_activated = EINA_FALSE;
 
-# ifdef EFL_HAVE_POSIX_THREADS
-static pthread_mutex_t _mutex_big = PTHREAD_MUTEX_INITIALIZER;
-#  define SHARE_COMMON_LOCK_BIG() if(_share_common_threads_activated) \
-      pthread_mutex_lock(&_mutex_big)
-#  define SHARE_COMMON_UNLOCK_BIG() if(_share_common_threads_activated) \
-      pthread_mutex_unlock(&_mutex_big)
-# else /* EFL_HAVE_WIN32_THREADS */
-static HANDLE _mutex_big = NULL;
-#  define SHARE_COMMON_LOCK_BIG() if(_share_common_threads_activated) \
-      WaitForSingleObject(_mutex_big, INFINITE)
-#  define SHARE_COMMON_UNLOCK_BIG() if(_share_common_threads_activated) \
-      ReleaseMutex(_mutex_big)
-
-# endif /* EFL_HAVE_WIN32_THREADS */
-#else /* EFL_HAVE_THREADS */
-# define SHARE_COMMON_LOCK_BIG() do {} while (0)
-# define SHARE_COMMON_UNLOCK_BIG() do {} while (0)
-#endif
+static Eina_Lock _mutex_big;
 
 #ifdef EINA_SHARE_COMMON_USAGE
 struct _Eina_Share_Common_Population
@@ -269,7 +253,7 @@ _eina_share_common_population_stats(Eina_Share *share)
 void
 eina_share_common_population_add(Eina_Share *share, int slen)
 {
-   SHARE_COMMON_LOCK_BIG();
+   eina_lock_take(&_mutex_big);
 
    share->population.count++;
    if (share->population.count > share->population.max)
@@ -284,19 +268,19 @@ eina_share_common_population_add(Eina_Share *share, int slen)
               share->population_group[slen].count;
      }
 
-   SHARE_COMMON_UNLOCK_BIG();
+   eina_lock_release(&_mutex_big);
 }
 
 void
 eina_share_common_population_del(Eina_Share *share, int slen)
 {
-   SHARE_COMMON_LOCK_BIG();
+   eina_lock_take(&_mutex_big);
 
    share->population.count--;
    if (slen < 4)
       share->population_group[slen].count--;
 
-   SHARE_COMMON_UNLOCK_BIG();
+   eina_lock_release(&_mutex_big);
 }
 
 static void
@@ -571,7 +555,7 @@ eina_iterator_array_check(const Eina_Rbtree *rbtree __UNUSED__,
 {
    Eina_Share_Common_Node *node;
 
-   SHARE_COMMON_LOCK_BIG();
+   eina_lock_take(&_mutex_big);
 
    fdata->used += sizeof(Eina_Share_Common_Head);
    for (node = head->head; node; node = node->next)
@@ -585,7 +569,7 @@ eina_iterator_array_check(const Eina_Rbtree *rbtree __UNUSED__,
         fdata->unique++;
      }
 
-   SHARE_COMMON_UNLOCK_BIG();
+   eina_lock_release(&_mutex_big);
 
    return EINA_TRUE;
 }
@@ -616,9 +600,9 @@ eina_share_common_init(Eina_Share **_share,
                        const char *node_magic_STR)
 {
    Eina_Share *share;
+
    share = *_share = calloc(sizeof(Eina_Share), 1);
-   if (!share)
-      return EINA_FALSE;
+   if (!share) goto on_error;
 
    if (_eina_share_common_log_dom < 0) /*Only register if not already */
       _eina_share_common_log_dom = eina_log_domain_register(
@@ -628,7 +612,7 @@ eina_share_common_init(Eina_Share **_share,
    if (_eina_share_common_log_dom < 0)
      {
         EINA_LOG_ERR("Could not register log domain: eina_share_common");
-        return EINA_FALSE;
+        goto on_error;
      }
 
    share->share = calloc(1, sizeof(Eina_Share_Common));
@@ -640,7 +624,7 @@ eina_share_common_init(Eina_Share **_share,
              _eina_share_common_log_dom = -1;
           }
 
-        return EINA_FALSE;
+        goto on_error;
      }
 
    share->node_magic = node_magic;
@@ -652,7 +636,17 @@ eina_share_common_init(Eina_Share **_share,
    EINA_MAGIC_SET(share->share, EINA_MAGIC_SHARE);
 
    _eina_share_common_population_init(share);
+
+   /* below is the common part among other all eina_share_common user */
+   if (_eina_share_common_count++ != 0)
+     return EINA_TRUE;
+
+   eina_lock_new(&_mutex_big);
    return EINA_TRUE;
+
+ on_error:
+   _eina_share_common_count--;
+   return EINA_FALSE;
 }
 
 /**
@@ -672,7 +666,7 @@ eina_share_common_shutdown(Eina_Share **_share)
    unsigned int i;
    Eina_Share *share = *_share;
 
-   SHARE_COMMON_LOCK_BIG();
+   eina_lock_take(&_mutex_big);
 
    _eina_share_common_population_stats(share);
 
@@ -694,10 +688,17 @@ eina_share_common_shutdown(Eina_Share **_share)
         _eina_share_common_log_dom = -1;
      }
 
-   SHARE_COMMON_UNLOCK_BIG();
+   eina_lock_release(&_mutex_big);
 
    free(*_share);
    *_share = NULL;
+
+   /* below is the common part among other all eina_share_common user */
+   if (--_eina_share_common_count != 0)
+     return EINA_TRUE;
+
+   eina_lock_free(&_mutex_big);
+
    return EINA_TRUE;
 }
 
@@ -765,7 +766,7 @@ eina_share_common_add_length(Eina_Share *share,
    hash_num = hash & 0xFF;
    hash = (hash >> 8) & EINA_SHARE_COMMON_MASK;
 
-   SHARE_COMMON_LOCK_BIG();
+   eina_lock_take(&_mutex_big);
    p_bucket = share->share->buckets + hash_num;
 
    ed = _eina_share_common_find_hash(*p_bucket, hash);
@@ -777,27 +778,27 @@ eina_share_common_add_length(Eina_Share *share,
                                                     str,
                                                     slen,
                                                     null_size);
-        SHARE_COMMON_UNLOCK_BIG();
+        eina_lock_release(&_mutex_big);
         return s;
      }
 
-   EINA_MAGIC_CHECK_SHARE_COMMON_HEAD(ed, SHARE_COMMON_UNLOCK_BIG(), NULL);
+   EINA_MAGIC_CHECK_SHARE_COMMON_HEAD(ed, eina_lock_release(&_mutex_big), NULL);
 
    el = _eina_share_common_head_find(ed, str, slen);
    if (el)
      {
         EINA_MAGIC_CHECK_SHARE_COMMON_NODE(el,
                                            share->node_magic,
-                                           SHARE_COMMON_UNLOCK_BIG());
+                                           eina_lock_release(&_mutex_big));
         el->references++;
-                                           SHARE_COMMON_UNLOCK_BIG();
+                                           eina_lock_release(&_mutex_big);
         return el->str;
      }
 
    el = _eina_share_common_node_alloc(slen, null_size);
    if (!el)
      {
-                                           SHARE_COMMON_UNLOCK_BIG();
+                                           eina_lock_release(&_mutex_big);
         return NULL;
      }
 
@@ -806,7 +807,7 @@ eina_share_common_add_length(Eina_Share *share,
    ed->head = el;
    _eina_share_common_population_head_add(share, ed);
 
-   SHARE_COMMON_UNLOCK_BIG();
+   eina_lock_release(&_mutex_big);
 
    return el->str;
 }
@@ -819,13 +820,12 @@ eina_share_common_ref(Eina_Share *share, const char *str)
    if (!str)
       return NULL;
 
-   SHARE_COMMON_LOCK_BIG();
+   eina_lock_take(&_mutex_big);
    node = _eina_share_common_node_from_str(str, share->node_magic);
    if (!node) return str;
    node->references++;
-   DBG("str=%p refs=%u", str, node->references);
 
-   SHARE_COMMON_UNLOCK_BIG();
+   eina_lock_release(&_mutex_big);
 
    eina_share_common_population_add(share, node->length);
 
@@ -845,7 +845,7 @@ eina_share_common_del(Eina_Share *share, const char *str)
    if (!str)
       return;
 
-   SHARE_COMMON_LOCK_BIG();
+   eina_lock_take(&_mutex_big);
 
    node = _eina_share_common_node_from_str(str, share->node_magic);
    if (!node)
@@ -856,12 +856,10 @@ eina_share_common_del(Eina_Share *share, const char *str)
    if (node->references > 1)
      {
         node->references--;
-        DBG("str=%p refs=%u", str, node->references);
-        SHARE_COMMON_UNLOCK_BIG();
+        eina_lock_release(&_mutex_big);
         return;
      }
 
-   DBG("str=%p refs=0, delete.", str);
    node->references = 0;
 
    hash = eina_hash_superfast(str, slen);
@@ -873,7 +871,7 @@ eina_share_common_del(Eina_Share *share, const char *str)
    if (!ed)
       goto on_error;
 
-   EINA_MAGIC_CHECK_SHARE_COMMON_HEAD(ed, SHARE_COMMON_UNLOCK_BIG());
+   EINA_MAGIC_CHECK_SHARE_COMMON_HEAD(ed, eina_lock_release(&_mutex_big));
 
    if (!_eina_share_common_head_remove_node(ed, node))
       goto on_error;
@@ -886,12 +884,12 @@ eina_share_common_del(Eina_Share *share, const char *str)
    else
       _eina_share_common_population_head_del(share, ed);
 
-   SHARE_COMMON_UNLOCK_BIG();
+   eina_lock_release(&_mutex_big);
 
    return;
 
 on_error:
-   SHARE_COMMON_UNLOCK_BIG();
+   eina_lock_release(&_mutex_big);
    /* possible segfault happened before here, but... */
    CRITICAL("EEEK trying to del non-shared share_common \"%s\"", str);
 }
@@ -927,7 +925,7 @@ eina_share_common_dump(Eina_Share *share, void (*additional_dump)(
    printf("DDD:   len   ref string\n");
    printf("DDD:-------------------\n");
 
-   SHARE_COMMON_LOCK_BIG();
+   eina_lock_take(&_mutex_big);
    for (i = 0; i < EINA_SHARE_COMMON_BUCKETS; i++)
      {
         if (!share->share->buckets[i])
@@ -971,7 +969,7 @@ eina_share_common_dump(Eina_Share *share, void (*additional_dump)(
               share->population_group[i].max);
 #endif
 
-   SHARE_COMMON_UNLOCK_BIG();
+   eina_lock_release(&_mutex_big);
 }
 
 /**
