@@ -1,3 +1,11 @@
+eina (1.0.0.001+svn.60288slp2+build01) unstable; urgency=low
+
+  * [SVN EFL Migration] eina in SLP is merged with SVN r60288
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.60288slp2+build01
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Fri, 24 Jun 2011 18:09:32 +0900
+
 eina (1.0.0.001+svn.58157slp2+build02) unstable; urgency=low
 
   * [eina_simple_xml_parser added] Partial upstream merge.
