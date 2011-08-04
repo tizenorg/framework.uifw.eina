@@ -1,3 +1,11 @@
+eina (1.0.0.001+svn.60288slp2+build03) unstable; urgency=low
+
+  * [Bug Fix] mutex lock is not released in error cases in eina_share_common functions
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.60288slp2+build03
+
+ -- Myungjae Lee <mjae.lee@samsung.com>  Thu, 04 Aug 2011 12:34:00 +0900
+
 eina (1.0.0.001+svn.60288slp2+build01) unstable; urgency=low
 
   * [SVN EFL Migration] eina in SLP is merged with SVN r60288
