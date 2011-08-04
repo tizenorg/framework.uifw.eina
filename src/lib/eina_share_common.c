@@ -822,7 +822,11 @@ eina_share_common_ref(Eina_Share *share, const char *str)
 
    eina_lock_take(&_mutex_big);
    node = _eina_share_common_node_from_str(str, share->node_magic);
-   if (!node) return str;
+   if (!node)
+     {
+        eina_lock_release(&_mutex_big);
+        return str;
+     }
    node->references++;
 
    eina_lock_release(&_mutex_big);
@@ -849,7 +853,7 @@ eina_share_common_del(Eina_Share *share, const char *str)
 
    node = _eina_share_common_node_from_str(str, share->node_magic);
    if (!node)
-      return;
+      goto on_error;
 
    slen = node->length;
    eina_share_common_population_del(share, slen);
