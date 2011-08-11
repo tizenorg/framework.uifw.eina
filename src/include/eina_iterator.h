@@ -100,8 +100,6 @@
  * container, use eina_iterator_foreach().
  * 
  * Here an @ref eina_iterator_example "example"
- *
- * @{
  */
 
 /**
@@ -232,14 +230,15 @@ EAPI Eina_Bool eina_iterator_next(Eina_Iterator *iterator,
  * @brief Iterate over the container and execute a callback on each element.
  *
  * @param iterator The iterator.
- * @param cb The callback called on each iteration.
+ * @param callback The callback called on each iteration.
  * @param fdata The data passed to the callback.
  *
  * This function iterates over the elements pointed by @p iterator,
  * beginning from the current element. For Each element, the callback
  * @p cb is called with the data @p fdata. If @p iterator is @c NULL,
  * the function returns immediately. Also, if @p cb returns @c
- * EINA_FALSE, the iteration stops at that point.
+ * EINA_FALSE, the iteration stops at that point, if @p cb returns @c EINA_TRUE
+ * the iteration continues.
  */
 EAPI void eina_iterator_foreach(Eina_Iterator *iterator,
                                 Eina_Each_Cb   callback,
@@ -252,10 +251,13 @@ EAPI void eina_iterator_foreach(Eina_Iterator *iterator,
  * @param iterator The iterator.
  * @return #EINA_TRUE on success, #EINA_FALSE otherwise.
  *
- * If the container of the @p iterator permit it, it will be locked.
- * If @p iterator is @c NULL or if a problem occurred, #EINA_FALSE is
- * returned, otherwise #EINA_TRUE is returned. If the container
- * is not lockable, it will return EINA_TRUE.
+ * If the container of the @p iterator permits it, it will be locked. When a
+ * container is locked calling eina_iterator_foreach() on it will return
+ * immediately. If @p iterator is @c NULL or if a problem occurred, #EINA_FALSE
+ * is returned, otherwise #EINA_TRUE is returned. If the container isn't
+ * lockable, it will return EINA_TRUE.
+ *
+ * @warning None of the existing eina data structures are lockable.
  */
 EAPI Eina_Bool eina_iterator_lock(Eina_Iterator *iterator) EINA_ARG_NONNULL(1);
 
@@ -265,11 +267,13 @@ EAPI Eina_Bool eina_iterator_lock(Eina_Iterator *iterator) EINA_ARG_NONNULL(1);
  * @param iterator The iterator.
  * @return #EINA_TRUE on success, #EINA_FALSE otherwise.
  *
- * If the container of the @p iterator permit it and was previously
+ * If the container of the @p iterator permits it and was previously
  * locked, it will be unlocked. If @p iterator is @c NULL or if a
  * problem occurred, #EINA_FALSE is returned, otherwise #EINA_TRUE
  * is returned. If the container is not lockable, it will return
  * EINA_TRUE.
+ *
+ * @warning None of the existing eina data structures are lockable.
  */
 EAPI Eina_Bool eina_iterator_unlock(Eina_Iterator *iterator) EINA_ARG_NONNULL(1);
 
@@ -308,6 +312,9 @@ EAPI Eina_Bool eina_iterator_unlock(Eina_Iterator *iterator) EINA_ARG_NONNULL(1)
  *    it will walk the list twice, but it serves as an example. For
  *    optimized version use EINA_LIST_FREE()
  *
+ * @warning The order in which the elements will be traversed depends on the
+ * underlying container and @b shouldn't be relied upon.
+ *
  * @warning unless explicitly stated in functions returning iterators,
  *    do not modify the iterated object while you walk it, in this
  *    example using lists, do not remove list nodes or you might
@@ -318,10 +325,6 @@ EAPI Eina_Bool eina_iterator_unlock(Eina_Iterator *iterator) EINA_ARG_NONNULL(1)
 #define EINA_ITERATOR_FOREACH(itr,                                   \
                               data) while (eina_iterator_next((itr), \
                                                               (void **)(void *)&(data)))
-
-/**
- * @}
- */
 
 /**
  * @}

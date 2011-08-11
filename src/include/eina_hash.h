@@ -118,6 +118,44 @@
  */
 
 /**
+ * @example eina_hash_03.c
+ * Same example as @ref hash_01_example_page but using a "string small" hash
+ * table instead of "string superfast".
+ */
+
+/**
+ * @example eina_hash_04.c
+ * Same example as @ref hash_01_example_page but using a "string djb2" hash
+ * table instead of "string superfast".
+ */
+
+/**
+ * @example eina_hash_05.c
+ * Same example as @ref hash_01_example_page but using a "int32" hash
+ * table instead of "string superfast".
+ */
+
+/**
+ * @example eina_hash_06.c
+ * Same example as @ref hash_01_example_page but using a "int64" hash
+ * table instead of "string superfast".
+ */
+
+/**
+ * @example eina_hash_07.c
+ * Same example as @ref hash_01_example_page but using a "pointer" hash
+ * table instead of "string superfast".
+ */
+
+/**
+ * @example eina_hash_08.c
+ * This example shows the the usage of eina_hash_add(), eina_hash_add_by_hash(),
+ * eina_hash_direct_add_by_hash(), eina_hash_del(), eina_hash_del_by_key_hash(),
+ * eina_hash_del_by_key(), eina_hash_del_by_data(), eina_hash_find_by_hash() and
+ * eina_hash_modify_by_hash().
+ */
+
+/**
  * @addtogroup Eina_Hash_Group Hash Table
  *
  * @brief Hash table management. Useful for mapping keys to values.
@@ -146,7 +184,9 @@
  * (argument of @ref eina_hash_new too). The following picture ilustrates the
  * basic idea:
  *
- * @image html 01_hash-table.png
+ * @htmlonly
+ * <img src="01_hash-table.png" width="500" />
+ * @endhtmlonly
  * @image latex 01_hash-table.eps
  *
  * Adding an element to the hash table is made of:
@@ -165,15 +205,37 @@
  * @section hashtable_perf Performance
  *
  * As said before, the performance depends on the load factor. So trying to keep
- * it as small as possible will improve the hash table performance. But
+ * the load factor as small as possible will improve the hash table performance. But
  * increasing the buckets_power_size will also increase the memory consumption.
  * The default hash table creation functions already have a good number of
  * buckets, enough for most cases. Particularly for strings, if just a few keys
  * (less than 30) will be added to the hash table, @ref
- * eina_hash_string_small_new should be used. If just stringshared keys are
- * being added, use @ref eina_hash_stringshared_new. If a lot of keys will be
- * added to the hash table (e.g. more than 1000), then it's better to increase
- * the buckets_power_size. See @ref eina_hash_new for more details.
+ * eina_hash_string_small_new should be used, since it will reduce the memory
+ * consumption for the buckets, and you still won't have many collisions.
+ * However, @ref eina_hash_string_small_new still uses the same hash calculation
+ * function that @ref eina_hash_string_superfast_new, which is more complex than
+ * @ref eina_hash_string_djb2_new. The latter has a faster hash computation
+ * function, but that will imply on a not so good distribution. But if just a
+ * few keys are being added, this is not a problem, it will still have not many
+ * collisions and be faster to calculate the hash than in a hash created with
+ * @ref eina_hash_string_small_new and @ref eina_hash_string_superfast_new.
+ *
+ * A simple comparison between them would be:
+ *
+ * @li @c djb2 - faster hash function - 256 buckets (higher memory consumption)
+ * @li @c string_small - slower hash function but less collisions - 32 buckets
+ * (lower memory consumption)
+ * @li @c string_superfast - slower hash function but less collisions - 256 buckets
+ * (higher memory consumption)
+ *
+ * Basically for a very small number of keys (10 or less), @c djb2 should be
+ * used, or @c string_small if you have a restriction on memory usage. And for a
+ * higher number of keys, @c string_superfast should be always preferred.
+ *
+ * If just stringshared keys are being added, use @ref
+ * eina_hash_stringshared_new. If a lot of keys will be added to the hash table
+ * (e.g. more than 1000), then it's better to increase the buckets_power_size.
+ * See @ref eina_hash_new for more details.
  *
  * When adding a new key to a hash table, use @ref eina_hash_add or @ref
  * eina_hash_direct_add (the latter if this key is already stored elsewhere). If
@@ -185,10 +247,19 @@
  * @section hashtable_tutorial Tutorial
  *
  * These examples show many Eina_Hash functions in action:
- * @li @ref hash_01_example_page
- * @li @ref hash_02_example_page
- *
- * @{
+ * <ul>
+ * <li> @ref hash_01_example_page
+ * <li> @ref hash_02_example_page
+ * <li> Different types of hash in use:
+ *      <ul>
+ *      <li> @ref eina_hash_03.c "string small"
+ *      <li> @ref eina_hash_04.c "string djb2"
+ *      <li> @ref eina_hash_05.c "int32"
+ *      <li> @ref eina_hash_06.c "int64"
+ *      <li> @ref eina_hash_07.c "pointer"
+ *      </ul>
+ * <li> @ref eina_hash_08.c "Different add and delete functions"
+ * </ul>
  */
 
 /**
@@ -239,8 +310,9 @@ typedef Eina_Bool    (*Eina_Hash_Foreach)(const Eina_Hash *hash, const void *key
  * @param key_length_cb The function called when getting the size of the key.
  * @param key_cmp_cb The function called when comparing the keys.
  * @param key_hash_cb The function called when getting the values.
- * @param data_free_cb The function called on each value when the hash
- * table is freed. @c NULL can be passed as callback.
+ * @param data_free_cb The function called on each value when the hash table is
+ * freed, or when an item is deleted from it. @c NULL can be passed as
+ * callback.
  * @param buckets_power_size The size of the buckets.
  * @return The new hash table.
  *
@@ -250,6 +322,10 @@ typedef Eina_Bool    (*Eina_Hash_Foreach)(const Eina_Hash *hash, const void *key
  * are @c NULL, @c NULL is returned. If @p buckets_power_size is
  * smaller or equal than 2, or if it is greater or equal than 17,
  * @c NULL is returned.
+ *
+ * The number of buckets created will be 2 ^ @p buckets_power_size. This means
+ * that if @p buckets_power_size is 5, there will be created 32 buckets. for a
+ * @p buckets_power_size of 8, there will be 256 buckets.
  *
  * Pre-defined functions are available to create a hash table. See
  * eina_hash_string_djb2_new(), eina_hash_string_superfast_new(),
@@ -264,10 +340,23 @@ EAPI Eina_Hash *eina_hash_new(Eina_Key_Length key_length_cb,
                               int             buckets_power_size) EINA_MALLOC EINA_WARN_UNUSED_RESULT EINA_ARG_NONNULL(2, 3);
 
 /**
+ * @brief Redefine the callback that clean the data of a hash
+ *
+ * @param hash The given hash table
+ * @param data_free_cb The function called on each value when the hash
+ * table is freed, or when an item is deleted from it. @c NULL can be passed as
+ * callback.
+ * @since 1.1
+ * See @ref eina_hash_new.
+ */
+EAPI void eina_hash_free_cb_set(Eina_Hash *hash, Eina_Free_Cb data_free_cb) EINA_ARG_NONNULL(1);
+
+/**
  * @brief Create a new hash table using the djb2 algorithm.
  *
  * @param data_free_cb The function called on each value when the hash table
- * is freed. @c NULL can be passed as callback.
+ * is freed, or when an item is deleted from it. @c NULL can be passed as
+ * callback.
  * @return The new hash table.
  *
  * This function creates a new hash table using the djb2 algorithm for
@@ -281,7 +370,8 @@ EAPI Eina_Hash *eina_hash_string_djb2_new(Eina_Free_Cb data_free_cb);
  * @brief Create a new hash table for use with strings.
  *
  * @param data_free_cb The function called on each value when the hash table
- * is freed. @c NULL can be passed as callback.
+ * is freed, or when an item is deleted from it. @c NULL can be passed as
+ * callback.
  * @return The new hash table.
  *
  * This function creates a new hash table using the superfast algorithm
@@ -296,7 +386,8 @@ EAPI Eina_Hash *eina_hash_string_superfast_new(Eina_Free_Cb data_free_cb);
  * @brief Create a new hash table for use with strings with small bucket size.
  *
  * @param data_free_cb  The function called on each value when the hash table
- * is freed. @c NULL can be passed as callback.
+ * is freed, or when an item is deleted from it. @c NULL can be passed as
+ * callback.
  * @return  The new hash table.
  *
  * This function creates a new hash table using the superfast algorithm
@@ -313,7 +404,8 @@ EAPI Eina_Hash *eina_hash_string_small_new(Eina_Free_Cb data_free_cb);
  * @brief Create a new hash table for use with 32bit integers.
  *
  * @param data_free_cb  The function called on each value when the hash table
- * is freed. @c NULL can be passed as callback.
+ * is freed, or when an item is deleted from it. @c NULL can be passed as
+ * callback.
  * @return  The new hash table.
  *
  * This function creates a new hash table where keys are 32bit integers.
@@ -331,7 +423,8 @@ EAPI Eina_Hash *eina_hash_int32_new(Eina_Free_Cb data_free_cb);
  * @brief Create a new hash table for use with 64bit integers.
  *
  * @param data_free_cb  The function called on each value when the hash table
- * is freed. @c NULL can be passed as callback.
+ * is freed, or when an item is deleted from it. @c NULL can be passed as
+ * callback.
  * @return  The new hash table.
  *
  * This function creates a new hash table where keys are 64bit integers.
@@ -348,7 +441,8 @@ EAPI Eina_Hash *eina_hash_int64_new(Eina_Free_Cb data_free_cb);
  * @brief Create a new hash table for use with pointers.
  *
  * @param data_free_cb  The function called on each value when the hash table
- * is freed. @c NULL can be passed as callback.
+ * is freed, or when an item is deleted from it. @c NULL can be passed as
+ * callback.
  * @return  The new hash table.
  *
  * This function creates a new hash table using the int64/int32 algorithm for
@@ -364,7 +458,8 @@ EAPI Eina_Hash *eina_hash_pointer_new(Eina_Free_Cb data_free_cb);
  * @brief Create a new hash table optimized for stringshared values.
  *
  * @param data_free_cb  The function called on each value when the hash table
- * is freed. @c NULL can be passed as callback.
+ * is freed, or when an item is deleted from it. @c NULL can be passed as
+ * callback.
  * @return  The new hash table.
  *
  * This function creates a new hash table optimized for stringshared
@@ -388,18 +483,19 @@ EAPI Eina_Hash *eina_hash_stringshared_new(Eina_Free_Cb data_free_cb);
 /**
  * @brief Add an entry to the given hash table.
  *
- * @param hash The given hash table.
- * @param key A unique key.
- * @param data Data to associate with the string given by @p key.
+ * @param hash The given hash table. Cannot be @c NULL.
+ * @param key A unique key. Cannot be @c NULL.
+ * @param data Data to associate with the string given by @p key. Cannot be @c
+ * NULL.
  * @return #EINA_FALSE if an error occurred, #EINA_TRUE otherwise.
  *
- * This function adds @p key to @p hash. @p hash, @p key and @p data
- * can be @c NULL, in that case #EINA_FALSE is returned. @p key is
+ * This function adds @p key to @p hash. @p key is
  * expected to be unique within the hash table. Key uniqueness varies
  * depending on the type of @p hash: a stringshared @ref Eina_Hash
- * need only have unique pointers for keys, but the strings in the
- * pointers may be identical. All other hash types require the strings
- * themselves to be unique. Failure to use sufficient uniqueness will
+ * need to have unique pointers (which implies unique strings).
+ * All other string hash types require the strings
+ * themselves to be unique. Pointer, int32 and int64 hashes need to have these
+ * values as unique. Failure to use sufficient uniqueness will
  * result in unexpected results when inserting data pointers accessed
  * with eina_hash_find(), and removed with eina_hash_del(). Key
  * strings are case sensitive. If an error occurs, eina_error_get()
@@ -415,18 +511,19 @@ EAPI Eina_Bool  eina_hash_add(Eina_Hash  *hash,
  * @brief Add an entry to the given hash table without duplicating the string
  * key.
  *
- * @param hash The given hash table.  Can be @c NULL.
- * @param key A unique key.  Can be @c NULL.
- * @param data Data to associate with the string given by @p key.
+ * @param hash The given hash table. Cannot be @c NULL.
+ * @param key A unique key. Cannot be @c NULL.
+ * @param data Data to associate with the string given by @p key. Cannot be @c
+ * NULL
  * @return #EINA_FALSE if an error occurred, #EINA_TRUE otherwise.
  *
- * This function adds @p key to @p hash. @p hash, @p key and @p data
- * can be @c NULL, in that case #EINA_FALSE is returned. @p key is
+ * This function adds @p key to @p hash. @p key is
  * expected to be unique within the hash table. Key uniqueness varies
  * depending on the type of @p hash: a stringshared @ref Eina_Hash
- * need only have unique pointers for keys, but the strings in the
- * pointers may be identical. All other hash types require the strings
- * themselves to be unique. Failure to use sufficient uniqueness will
+ * need have unique pointers (which implies unique strings).
+ * All other string hash types require the strings
+ * themselves to be unique. Pointer, int32 and int64 hashes need to have these
+ * values as unique. Failure to use sufficient uniqueness will
  * result in unexpected results when inserting data pointers accessed
  * with eina_hash_find(), and removed with eina_hash_del(). This
  * function does not make a copy of @p key, so it must be a string
@@ -589,16 +686,17 @@ EAPI int       eina_hash_population(const Eina_Hash *hash) EINA_ARG_NONNULL(1);
 /**
  * @brief Add an entry to the given hash table.
  *
- * @param hash The given hash table.
- * @param key A unique key.
+ * @param hash The given hash table. Cannot be @c NULL.
+ * @param key A unique key. Cannot be @c NULL.
  * @param key_length The length of the key.
  * @param key_hash The hash that will always match key.
- * @param data The data to associate with the string given by the key.
+ * @param data The data to associate with the string given by the key. Cannot be
+ * @c NULL.
  * @return #EINA_FALSE if an error occurred, #EINA_TRUE otherwise.
  *
  * This function adds @p key to @p hash. @p hash, @p key and @p data
- * can be @c NULL, in that case #EINA_FALSE is returned. @p key is
- * expected to be a unique string within the hash table. Otherwise,
+ * cannot be @c NULL, in that case #EINA_FALSE is returned. @p key is
+ * expected to be a unique within the hash table. Otherwise,
  * one cannot be sure which inserted data pointer will be accessed
  * with @ref eina_hash_find, and removed with @ref eina_hash_del. Do
  * not forget to count '\\0' for string when setting the value of
@@ -608,6 +706,8 @@ EAPI int       eina_hash_population(const Eina_Hash *hash) EINA_ARG_NONNULL(1);
  * occurs, eina_error_get() should be used to determine if an
  * allocation error occurred during this function. This function
  * returns #EINA_FALSE if an error occurred, #EINA_TRUE otherwise.
+ *
+ * @see eina_hash_add()
  */
 EAPI Eina_Bool eina_hash_add_by_hash(Eina_Hash  *hash,
                                      const void *key,
@@ -619,17 +719,18 @@ EAPI Eina_Bool eina_hash_add_by_hash(Eina_Hash  *hash,
  * @brief Add an entry to the given hash table and do not duplicate the string
  * key.
  *
- * @param hash The given hash table.  Can be @c NULL.
- * @param key A unique key.  Can be @c NULL.
+ * @param hash The given hash table. Cannot be @c NULL.
+ * @param key A unique key. Cannot be @c NULL.
  * @param key_length Should be the length of @p key (don't forget to count
  * '\\0' for string).
  * @param key_hash The hash that will always match key.
- * @param data Data to associate with the string given by @p key.
+ * @param data Data to associate with the string given by @p key. Cannot be @c
+ * NULL.
  * @return #EINA_FALSE if an error occurred, #EINA_TRUE otherwise.
  *
  * This function adds @p key to @p hash. @p hash, @p key and @p data
  * can be @c NULL, in that case #EINA_FALSE is returned. @p key is
- * expected to be a unique string within the hash table. Otherwise,
+ * expected to be unique within the hash table. Otherwise,
  * one cannot be sure which inserted data pointer will be accessed
  * with @ref eina_hash_find, and removed with @ref eina_hash_del. This
  * function does not make a copy of @p key so it must be a string
@@ -641,6 +742,8 @@ EAPI Eina_Bool eina_hash_add_by_hash(Eina_Hash  *hash,
  * occurs, eina_error_get() should be used to determine if an
  * allocation error occurred during this function. This function
  * returns #EINA_FALSE if an error occurred, #EINA_TRUE otherwise.
+ *
+ * @see eina_hash_direct_add()
  */
 EAPI Eina_Bool eina_hash_direct_add_by_hash(Eina_Hash  *hash,
                                             const void *key,
@@ -652,8 +755,8 @@ EAPI Eina_Bool eina_hash_direct_add_by_hash(Eina_Hash  *hash,
  * @brief Remove the entry identified by a key and a key hash from the given
  * hash table.
  *
- * @param hash The given hash table.
- * @param key The key.
+ * @param hash The given hash table. Cannot be @c NULL.
+ * @param key The key. Cannot be @c NULL.
  * @param key_length The length of the key.
  * @param key_hash The hash that always match the key.
  * @return #EINA_FALSE if an error occurred, #EINA_TRUE otherwise.
@@ -680,8 +783,8 @@ EAPI Eina_Bool eina_hash_del_by_key_hash(Eina_Hash  *hash,
  * This version will calculate key length and hash by using functions
  * provided to hash creation function.
  *
- * @param hash The given hash table.
- * @param key  The key.
+ * @param hash The given hash table. Cannot be @c NULL.
+ * @param key  The key. Cannot be @c NULL.
  * @return #EINA_FALSE if an error occurred, #EINA_TRUE otherwise.
  *
  * This function removes the entry identified by @p key from @p
@@ -704,8 +807,8 @@ EAPI Eina_Bool eina_hash_del_by_key(Eina_Hash  *hash,
  *
  * This version is slow since there is no quick access to nodes based on data.
  *
- * @param hash The given hash table.
- * @param data The data value to search and remove.
+ * @param hash The given hash table. Cannot be @c NULL.
+ * @param data The data value to search and remove. Cannot be @c NULL.
  * @return #EINA_FALSE if an error occurred, #EINA_TRUE otherwise.
  *          thing goes fine.
  *
@@ -729,7 +832,7 @@ EAPI Eina_Bool eina_hash_del_by_data(Eina_Hash  *hash,
  * If @p key is @c NULL, then @p data is used to find a match to
  * remove.
  *
- * @param hash The given hash table.
+ * @param hash The given hash table. Cannot be @c NULL.
  * @param key The key.
  * @param key_length The length of the key.
  * @param key_hash The hash that always match the key.
@@ -740,7 +843,7 @@ EAPI Eina_Bool eina_hash_del_by_data(Eina_Hash  *hash,
  * @p key_hash, or @p data, from @p hash. If a free function was given to
  * the  callback on creation, it will be called for the data being
  * deleted. If @p hash is @c NULL, the functions returns immediately
- * #EINA_FALSE. If @p key is @c NULL, then @p key_hash and @p key_hash
+ * #EINA_FALSE. If @p key is @c NULL, then @p key_length and @p key_hash
  * are ignored and @p data is used to find a match to remove,
  * otherwise @p key and @p key_hash are used and @p data is not
  * required and can be @c NULL. Do not forget to count '\\0' for
@@ -760,7 +863,7 @@ EAPI Eina_Bool eina_hash_del_by_hash(Eina_Hash  *hash,
 /**
  * @brief Retrieve a specific entry in the given hash table.
  *
- * @param hash The given hash table.
+ * @param hash The given hash table. Cannot be @c NULL.
  * @param key The key of the entry to find.
  * @param key_length The length of the key.
  * @param key_hash The hash that always match the key
@@ -919,10 +1022,6 @@ static inline int eina_hash_int64(const unsigned long int *pkey,
                                   int                      len) EINA_ARG_NONNULL(1);
 
 #include "eina_inline_hash.x"
-
-/**
- * @}
- */
 
 /**
  * @}

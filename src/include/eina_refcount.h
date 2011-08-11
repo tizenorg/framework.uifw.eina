@@ -29,8 +29,6 @@
  * set of macro do provide helper that will force to use the
  * correct code in most case and reduce the bug likeliness.
  * Of course this without affecting speed !
- *
- * @{
  */
 
 /**
@@ -60,21 +58,12 @@ typedef int Eina_Refcount;
 /** Used when using referring to an object one more time */
 #define EINA_REFCOUNT_REF(Variable) (Variable)->__refcount++
 
-/** Used when removing a reference to an object. Free_Callback will automatically be called when necessary */
-#define EINA_REFCOUNT_UNREF(Variable, Free_Callback) \
-   do                                                \
-     {                                               \
-        if (--((Variable)->__refcount) == 0)         \
-           Free_Callback(Variable);                  \
-     }                                               \
-   while (0)
+/** Used when removing a reference to an object. The code just after will automatically be called when necessary */
+#define EINA_REFCOUNT_UNREF(Variable)		     \
+  if (--((Variable)->__refcount) == 0)
 
 /** Get refcounting value */
 #define EINA_REFCOUNT_GET(Variable) (Variable)->__refcount
-
-/**
- * @}
- */
 
 /**
  * @}

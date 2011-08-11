@@ -65,6 +65,7 @@ void *alloca (size_t);
 #include "eina_hash.h"
 #include "eina_list.h"
 #include "eina_lock.h"
+#include "eina_mmap.h"
 
 /*============================================================================*
  *                                  Local                                     *
@@ -750,7 +751,11 @@ eina_file_open(const char *filename, Eina_Bool shared)
    */
 
    if (shared)
+#ifdef HAVE_SHMOPEN
      fd = shm_open(filename, O_RDONLY, S_IRWXU | S_IRWXG | S_IRWXO);
+#else
+     return NULL;
+#endif
    else
      fd = open(filename, O_RDONLY, S_IRWXU | S_IRWXG | S_IRWXO);
 
@@ -770,7 +775,7 @@ eina_file_open(const char *filename, Eina_Bool shared)
    eina_lock_take(&_eina_file_lock_cache);
 
    file = eina_hash_find(_eina_file_cache, filename);
-   if ((file) &&
+   if ((file) && 
        ((file->mtime != file_stat.st_mtime) ||
         (file->length != (unsigned long long) file_stat.st_size) ||
         (file->inode != file_stat.st_ino)))
@@ -867,6 +872,7 @@ eina_file_map_all(Eina_File *file, Eina_File_Populate rule)
    if (file->length > EINA_HUGE_PAGE) flags |= MAP_HUGETLB;
 #endif
 
+   eina_mmap_safety_enabled_set(EINA_TRUE);
    eina_lock_take(&file->lock);
    if (file->global_map == MAP_FAILED)
      file->global_map = mmap(NULL, file->length, PROT_READ, flags, file->fd, 0);
@@ -900,6 +906,7 @@ eina_file_map_new(Eina_File *file, Eina_File_Populate rule,
    key[0] = offset;
    key[1] = length;
 
+   eina_mmap_safety_enabled_set(EINA_TRUE);
    eina_lock_take(&file->lock);
 
    map = eina_hash_find(file->map, &key);

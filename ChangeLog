@@ -46,7 +46,6 @@
 
 	* Add eina_inlist_sort.
 	* Add eina_mempool_repack.
-	* Add Eina_Object API, an helper for providing memory allocation with a redirection.
 
 2011-04-13  Cedric Bail & Vincent Torri
 
@@ -102,7 +101,20 @@
 
 	* Fix eina_hash_set to handle data == NULL like eina_hash_del.
 
-2011-06-3  Vincent Torri
+2011-06-03  Vincent Torri
 
         * Fix static linking with eina (iconv could potentially not be
 	passed to the linker)
+
+2011-06-15  Cedric Bail
+
+	* Add eina_hash_free_cb_set to change the free callback during the
+	life of an Eina_Hash.
+
+2011-06-23  Cedric Bail
+
+	* Add Eina_LockRW.
+
+2011-07-04  Carsten Haitzler (The Rasterman)
+
+	* Add eina_mmap safety handling.

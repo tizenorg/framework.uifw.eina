@@ -28,7 +28,7 @@
  * @page eina_accessor_example_01_page Eina_Accessor usage
  * @dontinclude eina_accessor_01.c
  *
- * We start by including neccessary headers, declaring variables and
+ * We start by including necessary headers, declaring variables and
  * initializing eina:
  * @skip #include
  * @until eina_init
@@ -92,7 +92,7 @@
  * position, use eina_accessor_data_get(). To call a function on
  * chosen elements of a container, use eina_accessor_over().
  *
- * @{
+ * See an example @ref eina_accessor_example_01_page "here".
  */
 
 /**
@@ -139,6 +139,10 @@ typedef void (*Eina_Accessor_Free_Callback)(Eina_Accessor *it);
  */
 typedef Eina_Bool (*Eina_Accessor_Lock_Callback)(Eina_Accessor *it);
 
+/**
+ * @struct _Eina_Accessor
+ * Type to provide random access to data structures.
+ */
 struct _Eina_Accessor
 {
 #define EINA_ACCESSOR_VERSION 1
@@ -245,10 +249,13 @@ EAPI void  eina_accessor_over(Eina_Accessor *accessor,
  * @param accessor The accessor.
  * @return #EINA_TRUE on success, #EINA_FALSE otherwise.
  *
- * If the container of the @p accessor permit it, it will be locked.
- * If @p accessor is @c NULL or if a problem occurred, #EINA_FALSE is
- * returned, otherwise #EINA_TRUE is returned. If the container
- * is not lockable, it will return EINA_TRUE.
+ * If the container of the @p accessor permits it, it will be locked. When a
+ * container is locked calling eina_accessor_over() on it will return
+ * immediately. If @p accessor is @c NULL or if a problem occurred, #EINA_FALSE
+ * is returned, otherwise #EINA_TRUE is returned. If the container isn't
+ * lockable, it will return EINA_TRUE.
+ *
+ * @warning None of the existing eina data structures are lockable.
  */
 EAPI Eina_Bool eina_accessor_lock(Eina_Accessor *accessor) EINA_ARG_NONNULL(1);
 
@@ -258,11 +265,13 @@ EAPI Eina_Bool eina_accessor_lock(Eina_Accessor *accessor) EINA_ARG_NONNULL(1);
  * @param accessor The accessor.
  * @return #EINA_TRUE on success, #EINA_FALSE otherwise.
  *
- * If the container of the @p accessor permit it and was previously
+ * If the container of the @p accessor permits it and was previously
  * locked, it will be unlocked. If @p accessor is @c NULL or if a
  * problem occurred, #EINA_FALSE is returned, otherwise #EINA_TRUE
  * is returned. If the container is not lockable, it will return
  * EINA_TRUE.
+ *
+ * @warning None of the existing eina data structures are lockable.
  */
 EAPI Eina_Bool eina_accessor_unlock(Eina_Accessor *accessor) EINA_ARG_NONNULL(1);
 
@@ -319,10 +328,6 @@ EAPI Eina_Bool eina_accessor_unlock(Eina_Accessor *accessor) EINA_ARG_NONNULL(1)
   for ((counter) = 0;                                                   \
        eina_accessor_data_get((accessor), (counter), (void **)(void *)&(data)); \
        (counter)++)
-
-/**
- * @}
- */
 
 /**
  * @}

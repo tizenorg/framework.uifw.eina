@@ -31,8 +31,8 @@ eina_magic.c \
 eina_main.c \
 eina_matrixsparse.c \
 eina_mempool.c \
+eina_mmap.c \
 eina_module.c \
-eina_object.c \
 eina_prefix.c \
 eina_quadtree.c \
 eina_rbtree.c \
@@ -50,6 +50,9 @@ eina_unicode.c \
 eina_ustrbuf.c \
 eina_ustringshare.c \
 eina_value.c
+
+# Will be back for developper after 1.1
+# eina_object.c
 
 if EINA_HAVE_WIN32
 base_sources += eina_file_win32.c
@@ -159,7 +162,7 @@ else
 libeina_la_SOURCES = $(base_sources)
 endif
 
-libeina_la_LIBADD = @EINA_LIBS@ @dlopen_libs@
+libeina_la_LIBADD = @iconv_libs@ @rt_libs@ @EINA_LIBS@ @dlopen_libs@
 libeina_la_LDFLAGS = -no-undefined @lt_enable_auto_import@ -version-info @version_info@ @release_info@ @EFL_PTHREAD_LIBS@
 libeina_la_CFLAGS = @EINA_CFLAGS@ @EFL_PTHREAD_CFLAGS@
 

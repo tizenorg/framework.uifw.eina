@@ -14,13 +14,29 @@ SRCS = \
 	eina_accessor_01.c \
 	eina_array_01.c \
 	eina_array_02.c \
+	eina_error_01.c \
+	eina_file_01.c \
 	eina_hash_01.c \
 	eina_hash_02.c \
+	eina_hash_03.c \
+	eina_hash_04.c \
+	eina_hash_05.c \
+	eina_hash_06.c \
+	eina_hash_07.c \
+	eina_hash_08.c \
 	eina_iterator_01.c \
 	eina_list_01.c \
 	eina_list_02.c \
 	eina_list_03.c \
-	eina_list_04.c
+	eina_list_04.c \
+	eina_log_01.c \
+	eina_log_02.c \
+	eina_log_03.c \
+	eina_inlist_01.c \
+	eina_inlist_02.c \
+	eina_inlist_03.c \
+	eina_str_01.c \
+	eina_strbuf_01.c
 
 pkglib_PROGRAMS =
 
@@ -34,12 +50,28 @@ pkglib_PROGRAMS += \
 	eina_accessor_01 \
     eina_array_01 \
 	eina_array_02 \
+	eina_error_01 \
+	eina_file_01 \
 	eina_hash_01 \
 	eina_hash_02 \
+	eina_hash_03 \
+	eina_hash_04 \
+	eina_hash_05 \
+	eina_hash_06 \
+	eina_hash_07 \
+	eina_hash_08 \
 	eina_iterator_01 \
 	eina_list_01 \
 	eina_list_02 \
 	eina_list_03 \
-	eina_list_04
+	eina_list_04 \
+	eina_log_01 \
+	eina_log_02 \
+	eina_log_03 \
+	eina_inlist_01 \
+	eina_inlist_02 \
+	eina_inlist_03 \
+	eina_str_01 \
+	eina_strbuf_01
 endif
 

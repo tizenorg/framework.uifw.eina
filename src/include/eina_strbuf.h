@@ -6,6 +6,35 @@
 
 #include "eina_types.h"
 
+
+/**
+ * @page tutorial_strbuf Eina_Strbuf example
+ * @dontinclude eina_strbuf_01.c
+ *
+ * First thing always is including Eina:
+ * @skipline #include
+ * @until #include
+ *
+ * Next we initialize eina and create a string buffer to play with:
+ * @until strbuf_new
+ *
+ * Here you can see two different ways of creating a buffer with the same
+ * contents. We could create them in simpler ways, but this gives us an
+ * opportunity to demonstrate several functions in action:
+ * @until strbuf_reset
+ * @until strbuf_reset
+ *
+ * Next we use the printf family of functions to create a formated string,
+ * add, remove and replace some content:
+ * @until strbuf_string_get
+ * @until strbuf_string_get
+ * @until strbuf_string_get
+ *
+ * Once done we free our string buffer, shut down Eina and end the application:
+ * @until }
+ *
+ * @example eina_strbuf_01.c
+ */
 /**
  * @addtogroup Eina_String_Buffer_Group String Buffer
  *
@@ -14,7 +43,7 @@
  * The String Buffer data type is designed to be a mutable string,
  * allowing to append, prepend or insert a string to a buffer.
  *
- * @{
+ * For more information see @ref tutorial_strbuf "this example".
  */
 
 /**
@@ -95,9 +124,9 @@ EAPI Eina_Bool eina_strbuf_append(Eina_Strbuf *buf, const char *str) EINA_ARG_NO
  * @param str The string to append.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
- * This function appends the escaped string @p str to @p buf. If @p
- * str can not be appended, #EINA_FALSE is returned, otherwise,
- * #EINA_TRUE is returned.
+ * This function escapes and then appends the string @p str to @p buf. If @p str
+ * can not be appended, #EINA_FALSE is returned, otherwise, #EINA_TRUE is
+ * returned.
  */
 EAPI Eina_Bool eina_strbuf_append_escaped(Eina_Strbuf *buf, const char *str) EINA_ARG_NONNULL(1, 2);
 
@@ -111,8 +140,8 @@ EAPI Eina_Bool eina_strbuf_append_escaped(Eina_Strbuf *buf, const char *str) EIN
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
  * This function appends at most @p maxlen characters of @p str to
- * @p buf. It can't appends more than the length of @p str. It
- * computes the length of @p str, so is slightly slower than
+ * @p buf. It can't append more than the length of @p str. It
+ * computes the length of @p str, so it is slightly slower than
  * eina_strbuf_append_length(). If the length is known beforehand,
  * consider using that variant (@p maxlen should then be checked so
  * that it is greater than the size of @p str). If @p str can not be
@@ -165,6 +194,10 @@ EAPI Eina_Bool eina_strbuf_append_char(Eina_Strbuf *buf, char c) EINA_ARG_NONNUL
  * @param fmt The string to append.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
+ * This function appends the string defined by the format @p fmt to @p buf. @p
+ * fmt must be of a valid format for printf family of functions. If it can't
+ * insert it, #EINA_FALSE is returned, otherwise #EINA_TRUE is returned.
+ *
  * @see eina_strbuf_append()
  */
 EAPI Eina_Bool eina_strbuf_append_printf(Eina_Strbuf *buf, const char *fmt, ...) EINA_ARG_NONNULL(1, 2) EINA_PRINTF(2, 3);
@@ -177,7 +210,7 @@ EAPI Eina_Bool eina_strbuf_append_printf(Eina_Strbuf *buf, const char *fmt, ...)
  * @param args The variable arguments.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
- * @see eina_strbuf_append()
+ * @see eina_strbuf_append_printf()
  */
 EAPI Eina_Bool eina_strbuf_append_vprintf(Eina_Strbuf *buf, const char *fmt, va_list args) EINA_ARG_NONNULL(1, 2);
 
@@ -206,7 +239,7 @@ EAPI Eina_Bool eina_strbuf_insert(Eina_Strbuf *buf, const char *str, size_t pos)
  * @param pos The position to insert the string.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
- * This function inserts the escaped string @p str to @p buf at
+ * This function escapes and inserts the string @p str to @p buf at
  * position @p pos. If @p buf can't insert @p str, #EINA_FALSE is
  * returned, otherwise #EINA_TRUE is returned.
  */
@@ -221,7 +254,7 @@ EAPI Eina_Bool eina_strbuf_insert_escaped(Eina_Strbuf *buf, const char *str, siz
  * @param pos The position to insert the string.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
- * This function inserts @p str ot @p buf at position @p pos, with at
+ * This function inserts @p str to @p buf at position @p pos, with at
  * most @p maxlen bytes. The number of inserted characters can not be
  * greater than the length of @p str. It computes the length of
  * @p str, so is slightly slower than eina_strbuf_insert_length(). If the
@@ -276,6 +309,11 @@ EAPI Eina_Bool eina_strbuf_insert_char(Eina_Strbuf *buf, char c, size_t pos) EIN
  * @param fmt The string to insert.
  * @param pos The position to insert the string.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
+ *
+ * This function insert a string as described by the format @p fmt to @p buf at
+ * the position @p pos. @p fmt must be of a valid format for printf family of
+ * functions. If it can't insert it, #EINA_FALSE is returned, otherwise
+ * #EINA_TRUE is returned.
  */
 EAPI Eina_Bool eina_strbuf_insert_printf(Eina_Strbuf *buf, const char *fmt, size_t pos, ...) EINA_ARG_NONNULL(1, 2) EINA_PRINTF(2, 4);
 
@@ -287,6 +325,8 @@ EAPI Eina_Bool eina_strbuf_insert_printf(Eina_Strbuf *buf, const char *fmt, size
  * @param pos The position to insert the string.
  * @param args The variable arguments.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
+ *
+ * @see eina_strbuf_insert_printf
  */
 EAPI Eina_Bool eina_strbuf_insert_vprintf(Eina_Strbuf *buf, const char *fmt, size_t pos, va_list args) EINA_ARG_NONNULL(1, 2);
 
@@ -298,7 +338,7 @@ EAPI Eina_Bool eina_strbuf_insert_vprintf(Eina_Strbuf *buf, const char *fmt, siz
  * @param str The string to prepend.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
- * This macro is calling eina_strbuf_insert() at position 0.If @p buf
+ * This macro is calling eina_strbuf_insert() at position 0. If @p buf
  * can't prepend it, #EINA_FALSE is returned, otherwise #EINA_TRUE is
  * returned.
  */
@@ -417,7 +457,8 @@ EAPI Eina_Bool eina_strbuf_remove(Eina_Strbuf *buf, size_t start, size_t end) EI
  * This function returns the string contained in @p buf. The returned
  * value must not be modified and will no longer be valid if @p buf is
  * modified. In other words, any eina_strbuf_append() or similar will
- * make that pointer invalid.
+ * make that pointer invalid. The pointer returned by this function <b>must
+ * not</b> be freed.
  *
  * @see eina_strbuf_string_steal()
  */
@@ -497,7 +538,7 @@ EAPI Eina_Bool eina_strbuf_replace(Eina_Strbuf *buf, const char *str, const char
  * @param with The replaceing string.
  * @return How often the string was replaced.
  *
- * This function replaces all the occurrences of @p str in @ buf with
+ * This function replaces all the occurrences of @p str in @p buf with
  * the string @p with. This function returns the number of times @p str
  * has been replaced. On failure, it returns 0.
  */

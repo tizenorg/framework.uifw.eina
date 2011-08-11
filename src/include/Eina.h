@@ -38,6 +38,7 @@
 /**
  * @mainpage Eina
  *
+ * @version 1.1
  * @author Albin "Lutin" Tonnerre <albin.tonnerre@@gmail.com>
  * @author Alexandre "diaxen" Becoulet <diaxen@@free.fr>
  * @author Andre Dieb <andre.dieb@@gmail.com>
@@ -60,7 +61,7 @@
  *
  * The Eina library is a library that implements an API for data types
  * in an efficient way. It also provides some useful tools like
- * openin shared libraries, errors management, type conversion,
+ * opening shared libraries, errors management, type conversion,
  * time accounting and memory pool.
  *
  * This library is cross-platform and can be compiled and used on
@@ -160,10 +161,10 @@ extern "C" {
 #include "eina_unicode.h"
 #include "eina_quadtree.h"
 #include "eina_simple_xml_parser.h"
-#include "eina_object.h"
 #include "eina_lock.h"
 #include "eina_prefix.h"
 #include "eina_refcount.h"
+#include "eina_mmap.h"
 
 #ifdef __cplusplus
 }

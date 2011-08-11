@@ -7,15 +7,69 @@
 #include "eina_types.h"
 
 /**
+ * @page tutorial_eina_string Eina String example
+ * @dontinclude eina_str_01.c
+ *
+ * Whenever using eina we need to include it:
+ * @skipline #include
+ * @line #include
+ *
+ * In our main function we declare(and initialize) some variables and initialize
+ * eina:
+ * @until eina_init
+ *
+ * It's frequentely necessary to split a string into its constituent parts,
+ * eina_str_split() make's it easy to do so:
+ * @until printf
+ *
+ * Another common need is to make a string uppercase or lowercase, so let's
+ * create a string and make it uppercase and then make it lowercase again:
+ * @until printf
+ * @until printf
+ *
+ * Next we use eina to check if our @p names string starts or ends with some
+ * values:
+ * @until Has
+ *
+ * When strings will be used in a terminal(or a number of other places) it
+ * necessary to escape certain characters that appear in them:
+ * @until printf
+ *
+ * Much as we previously split a string we will now join two strings:
+ * @until printf
+ *
+ * With strlcpy() we can copy what portion of the @p prologue fits in @p str and
+ * be sure that it's still NULL terminated:
+ * @until printf
+ *
+ * Since we are done with @p prologue and @p str we should free them:
+ * @until free(str
+ *
+ * Finally we see strlcat in action:
+ * @until printf("
+ *
+ * And then shut eina down and exit:
+ * @until }
+ * @example eina_str_01.c
+ */
+/**
  * @addtogroup Eina_String_Group String
  *
- * @brief These functions provide useful C string management.
+ * @brief Provide useful functions for C string manipulation.
  *
- * @{
+ * This group of functions allow you to more easily manipulate strings, they
+ * provide functionality not available through string.h.
+ *
+ * @warning Since these functions modify the strings they can't be used with
+ * shared strings(eina_stringshare).
+ *
+ * See an example @ref tutorial_eina_string "here".
  */
 
 /**
  * @addtogroup Eina_Tools_Group Tools
+ *
+ * For more information refer to the @ref tutorial_eina_string "string example".
  *
  * @{
  */
@@ -41,6 +95,10 @@
  * (unless @p siz is equal to 0). The returned value is the length of
  * @p src. If the returned value is greater than @p siz, truncation
  * occurred.
+ *
+ * @note The main difference between eina_strlcpy and strncpy is that this
+ * ensures @p dst is NULL terminated even if no NULL byte is found in the first
+ * @p siz bytes of src.
  */
 EAPI size_t          eina_strlcpy(char *dst, const char *src, size_t siz) EINA_ARG_NONNULL(1, 2);
 
@@ -95,8 +153,8 @@ EAPI Eina_Bool       eina_str_has_suffix(const char *str, const char *suffix) EI
  * @param ext The  extension to check for.
  * @return #EINA_TRUE if the string has the given extension, #EINA_FALSE otherwise.
  *
- * This function does the same like eina_str_has_suffix(), but with a
- * case insensitive compare.
+ * This function does the same as eina_str_has_suffix(), except it's case
+ * insensitive.
  */
 EAPI Eina_Bool       eina_str_has_extension(const char *str, const char *ext) EINA_PURE EINA_ARG_NONNULL(1, 2) EINA_WARN_UNUSED_RESULT;
 
@@ -118,6 +176,9 @@ EAPI Eina_Bool       eina_str_has_extension(const char *str, const char *ext) EI
  * newly allocated NULL-terminated array of strings or NULL if it fails to
  * allocate the array. To free it, free the first element of the array and the
  * array itself.
+ *
+ * @note If you need the number of elements in the returned array see
+ * eina_str_split_full().
  */
 EAPI char          **eina_str_split(const char *string, const char *delimiter, int max_tokens) EINA_ARG_NONNULL(1, 2) EINA_MALLOC EINA_WARN_UNUSED_RESULT;
 
@@ -194,14 +255,15 @@ EAPI char           *eina_str_convert(const char *enc_from, const char *enc_to, 
 
 
 /**
- * @brief Put a \ before and Space( ), \ or ' in a string.
+ * @brief Escape slashes, spaces and apostrophes in strings.
  *
  * @param str The string to escape.
  * @return The escaped string.
  *
- * This function returns a newly allocated escaped string on success,
- * @c NULL on failure. When not used anymore, the returned value must
- * be freed.
+ * Escaping is done by adding a slash "\" before any occurrence of slashes "\",
+ * spaces " " or apostrophes "'". This function returns a newly allocated
+ * escaped string on success, @c NULL on failure. When not used anymore, the
+ * returned value must be freed.
  */
 EAPI char           *eina_str_escape(const char *str) EINA_WARN_UNUSED_RESULT EINA_MALLOC EINA_ARG_NONNULL(1);
 
@@ -251,10 +313,6 @@ static inline size_t eina_str_join(char *dst, size_t size, char sep, const char 
 static inline size_t eina_strlen_bounded(const char *str, size_t maxlen) EINA_PURE EINA_WARN_UNUSED_RESULT EINA_ARG_NONNULL(1);
 
 #include "eina_inline_str.x"
-
-/**
- * @}
- */
 
 /**
  * @}

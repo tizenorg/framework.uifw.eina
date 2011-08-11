@@ -112,10 +112,10 @@ main(int argc, const char *argv[])
    // Now change the phone number
    eina_error_set(0);
    phone = eina_hash_set(phone_book, "Raul Seixas",
-			 strdup("+55 02 234-56789"));
+			 strdup("+55 02 222-22222"));
    if (phone)
      {
-	printf("Changing phone for Raul Seixas to +55 02 234-56789. ");
+	printf("Changing phone for Raul Seixas to +55 02 222-22222. ");
 	printf("Old phone was %s\n", phone);
 	free(phone);
      }
