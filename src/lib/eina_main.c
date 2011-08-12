@@ -28,6 +28,13 @@
 # undef WIN32_LEAN_AND_MEAN
 #endif
 
+#ifdef EFL_HAVE_THREADS
+# if !(defined(_WIN32_WCE)) && !(defined(_WIN32))
+#  include <sys/types.h>
+#  include <unistd.h>
+# endif
+#endif
+
 #include "eina_lock.h"
 #include "eina_config.h"
 #include "eina_private.h"
@@ -75,10 +82,23 @@ static int _eina_log_dom = -1;
 #define DBG(...) EINA_LOG_DOM_DBG(_eina_log_dom, __VA_ARGS__)
 
 EAPI Eina_Bool _eina_threads_activated = EINA_FALSE;
+EAPI Eina_Error EINA_ERROR_NOT_MAIN_LOOP = 0;
+
+static const char EINA_ERROR_NOT_MAIN_LOOP_STR[] = "Main loop thread check failed.";
+
+#ifdef EFL_HAVE_THREADS
+# ifdef _WIN32_WCE
+EAPI HANDLE _eina_main_loop;
+# elif defined(_WIN32)
+EAPI HANDLE _eina_main_loop;
+# else
+EAPI pthread_t _eina_main_loop;
+static pid_t _eina_pid;
+# endif
+#endif
 
 #ifdef EINA_HAVE_DEBUG_THREADS
 EAPI int _eina_threads_debug = 0;
-EAPI pthread_t _eina_main_loop;;
 EAPI pthread_mutex_t _eina_tracking_lock;
 EAPI Eina_Inlist *_eina_tracking = NULL;
 #endif
@@ -205,8 +225,21 @@ eina_init(void)
         return 0;
      }
 
-#ifdef EINA_HAVE_DEBUG_THREADS
+   EINA_ERROR_NOT_MAIN_LOOP = eina_error_msg_static_register(
+         EINA_ERROR_NOT_MAIN_LOOP_STR);
+
+#ifdef EFL_HAVE_THREADS
+# ifdef _WIN32_CE
+   _eina_main_loop = (HANDLE) GetCurrentThreadId();
+# elif defined (_WIN32)
+   _eina_main_loop = (HANDLE) GetCurrentThreadId();
+# else
    _eina_main_loop = pthread_self();
+   _eina_pid = getpid();
+# endif
+#endif
+
+#ifdef EINA_HAVE_DEBUG_THREADS
    pthread_mutex_init(&_eina_tracking_lock, NULL);
 
    if (getenv("EINA_DEBUG_THREADS"))
@@ -314,6 +347,37 @@ eina_threads_shutdown(void)
 #else
    return 0;
 #endif
+}
+
+EAPI Eina_Bool
+eina_main_loop_is(void)
+{
+#ifdef EFL_HAVE_THREADS
+   /* FIXME: need to check how to do this on windows */
+# ifdef _WIN32_CE
+   if (_eina_main_loop == (HANDLE) GetCurrentThreadId())
+     return EINA_TRUE;
+   return EINA_FALSE;
+# elif defined(_WIN32)
+   if (_eina_main_loop == (HANDLE) GetCurrentThreadId())
+     return EINA_TRUE;
+   return EINA_FALSE;
+# else
+   pid_t pid = getpid();
+
+   if (pid != _eina_pid)
+     {
+        /* This is in case of a fork, but don't like the solution */
+        _eina_pid = pid;
+        _eina_main_loop = pthread_self();
+        return EINA_TRUE;
+     }
+
+   if (pthread_equal(_eina_main_loop, pthread_self()))
+     return EINA_TRUE;
+# endif
+#endif
+   return EINA_FALSE;
 }
 
 /**
