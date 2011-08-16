@@ -58,7 +58,8 @@ eina_simple_xml_parser.h \
 eina_object.h \
 eina_lock.h \
 eina_prefix.h \
-eina_refcount.h
+eina_refcount.h \
+eina_mmap.h
 
 if EINA_HAVE_THREADS
 if EINA_HAVE_WINCE
