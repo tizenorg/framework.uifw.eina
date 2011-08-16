@@ -1,3 +1,13 @@
+eina (1.0.0.001+svn.60288slp2+build04) unstable; urgency=low
+
+  * Upload Package: SIGBUS handler override
+  * Important Changes
+        [eina_file]overrid sigbus handler in eina file mmap
+  * Git: 165.213.180.234:/slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.60288slp2+build04
+
+ -- Jiyoun Park <jy0703.park@samsung.com>  Tue, 16 Aug 2011 19:25:46 +0900
+
 eina (1.0.0.001+svn.60288slp2+build03) unstable; urgency=low
 
   * [Bug Fix] mutex lock is not released in error cases in eina_share_common functions
