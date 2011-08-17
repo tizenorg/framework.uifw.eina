@@ -22,8 +22,6 @@ Enlightenment Foundation Library providing optimized data types Eina is a multi-
     + Accessor: can access items of a container randomly
     + Iterator: can access items of a container sequentially
 
-
-
 %package devel
 Summary:    Data Type Library (devel)
 Group:      Development/Libraries
@@ -34,7 +32,7 @@ Enlightenment Foundation Library providing optimized data types (devel)
 
 
 %prep
-%setup -q -n %{name}
+%setup -q -n %{name}-%{version}
 
 
 %build
@@ -49,16 +47,9 @@ make %{?jobs:-j%jobs}
 rm -rf %{buildroot}
 %make_install
 
-
-
-
 %post -p /sbin/ldconfig
 
 %postun -p /sbin/ldconfig
-
-
-
-
 
 %files
 %defattr(-,root,root,-)
