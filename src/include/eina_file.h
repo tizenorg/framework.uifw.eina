@@ -1,5 +1,6 @@
 /* EINA - EFL data type library
  * Copyright (C) 2007-2008 Jorge Luis Zapata Muga
+ *                    2011 Cedric Bail
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -272,6 +273,21 @@ EAPI Eina_Iterator *eina_file_stat_ls(const char *dir) EINA_WARN_UNUSED_RESULT E
  * @see eina_file_ls()
  */
 EAPI Eina_Iterator *eina_file_direct_ls(const char *dir) EINA_WARN_UNUSED_RESULT EINA_ARG_NONNULL(1) EINA_MALLOC;
+
+/**
+ * @brief Sanitize file path.
+ *
+ * @param path The path to sanitize
+ *
+ * @return an allocated string with the sanitized path.
+ *
+ * This function take care of adding the current working directory if it's a
+ * relative path and also remove all '..' and '//' reference in the original
+ * path.
+ *
+ * @since 1.1
+ */
+EAPI char *eina_file_path_sanitize(const char *path);
 
 /**
  * @brief Get a read-only handler to a file.

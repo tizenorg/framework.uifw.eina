@@ -21,12 +21,6 @@
 
 #include <stdarg.h>
 
-#if HAVE___ATTRIBUTE__
-# define __UNUSED__ __attribute__((unused))
-#else
-# define __UNUSED__
-#endif
-
 #include "eina_magic.h"
 #include "eina_iterator.h"
 #include "eina_accessor.h"
@@ -47,6 +41,8 @@
 # define CLAMP(x, min, \
                max) (((x) > (max)) ? (max) : (((x) < (min)) ? (min) : (x)))
 #endif
+
+#define EINA_INLIST_JUMP_SIZE 256
 
 #define READBUFSIZ 65536
 

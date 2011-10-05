@@ -102,7 +102,8 @@ eina_lock_new(Eina_Lock *mutex)
    pthread_mutexattr_t attr;
 
 #ifdef EINA_HAVE_DEBUG_THREADS
-   assert(pthread_equal(_eina_main_loop, pthread_self()));
+   if (!_eina_threads_activated)
+     assert(pthread_equal(_eina_main_loop, pthread_self()));
 #endif
 
    if (pthread_mutexattr_init(&attr) != 0)
@@ -126,7 +127,8 @@ static inline void
 eina_lock_free(Eina_Lock *mutex)
 {
 #ifdef EINA_HAVE_DEBUG_THREADS
-   assert(pthread_equal(_eina_main_loop, pthread_self()));
+   if (!_eina_threads_activated)
+     assert(pthread_equal(_eina_main_loop, pthread_self()));
 #endif
 
    pthread_mutex_destroy(&(mutex->mutex));
@@ -283,7 +285,8 @@ eina_condition_new(Eina_Condition *cond, Eina_Lock *mutex)
 {
 #ifdef EINA_HAVE_DEBUG_THREADS
    assert(mutex != NULL);
-   assert(pthread_equal(_eina_main_loop, pthread_self()));
+   if (!_eina_threads_activated)
+     assert(pthread_equal(_eina_main_loop, pthread_self()));
    memset(cond, 0, sizeof (Eina_Condition));
 #endif
 
@@ -304,7 +307,8 @@ static inline void
 eina_condition_free(Eina_Condition *cond)
 {
 #ifdef EINA_HAVE_DEBUG_THREADS
-   assert(pthread_equal(_eina_main_loop, pthread_self()));
+   if (!_eina_threads_activated)
+     assert(pthread_equal(_eina_main_loop, pthread_self()));
 #endif
 
    pthread_cond_destroy(&(cond->condition));
@@ -316,32 +320,63 @@ eina_condition_free(Eina_Condition *cond)
 static inline Eina_Bool
 eina_condition_wait(Eina_Condition *cond)
 {
+   Eina_Bool r;
+
 #ifdef EINA_HAVE_DEBUG_THREADS
    assert(_eina_threads_activated);
    assert(cond->lock != NULL);
+
+   pthread_mutex_lock(&_eina_tracking_lock);
+   _eina_tracking = eina_inlist_remove(_eina_tracking,
+				       EINA_INLIST_GET(cond->lock));
+   pthread_mutex_unlock(&_eina_tracking_lock);
 #endif
 
-   return pthread_cond_wait(&(cond->condition),
-                            &(cond->lock->mutex)) == 0 ? EINA_TRUE : EINA_FALSE;
+   r = pthread_cond_wait(&(cond->condition),
+			 &(cond->lock->mutex)) == 0 ? EINA_TRUE : EINA_FALSE;
+
+#ifdef EINA_HAVE_DEBUG_THREADS
+   pthread_mutex_lock(&_eina_tracking_lock);
+   _eina_tracking = eina_inlist_append(_eina_tracking,
+				       EINA_INLIST_GET(cond->lock));
+   pthread_mutex_unlock(&_eina_tracking_lock);
+#endif
+
+   return r;
 }
 
 static inline Eina_Bool
 eina_condition_timedwait(Eina_Condition *cond, double t)
 {
    struct timespec tv;
+   Eina_Bool r;
 
 #ifdef EINA_HAVE_DEBUG_THREADS
    assert(_eina_threads_activated);
    assert(cond->lock != NULL);
+
+   pthread_mutex_lock(&_eina_tracking_lock);
+   _eina_tracking = eina_inlist_remove(_eina_tracking,
+				       EINA_INLIST_GET(cond->lock));
+   pthread_mutex_unlock(&_eina_tracking_lock);
 #endif
 
    tv.tv_sec = t;
    tv.tv_nsec = (t - (double) tv.tv_sec) * 1000000000;
 
-   return pthread_cond_timedwait(&(cond->condition),
-                                 &(cond->lock->mutex),
-                                 &tv) == 0 ?
+   r = pthread_cond_timedwait(&(cond->condition),
+			      &(cond->lock->mutex),
+			      &tv) == 0 ?
      EINA_TRUE : EINA_FALSE;
+
+#ifdef EINA_HAVE_DEBUG_THREADS
+   pthread_mutex_lock(&_eina_tracking_lock);
+   _eina_tracking = eina_inlist_append(_eina_tracking,
+				       EINA_INLIST_GET(cond->lock));
+   pthread_mutex_unlock(&_eina_tracking_lock);
+#endif
+
+   return r;
 }
 
 static inline Eina_Bool
@@ -368,7 +403,8 @@ static inline Eina_Bool
 eina_rwlock_new(Eina_RWLock *mutex)
 {
 #ifdef EINA_HAVE_DEBUG_THREADS
-   assert(pthread_equal(_eina_main_loop, pthread_self()));
+   if (!_eina_threads_activated)
+     assert(pthread_equal(_eina_main_loop, pthread_self()));
 #endif
 
    if (pthread_rwlock_init(&(mutex->mutex), NULL) != 0)
@@ -380,7 +416,8 @@ static inline void
 eina_rwlock_free(Eina_RWLock *mutex)
 {
 #ifdef EINA_HAVE_DEBUG_THREADS
-   assert(pthread_equal(_eina_main_loop, pthread_self()));
+   if (!_eina_threads_activated)
+     assert(pthread_equal(_eina_main_loop, pthread_self()));
 #endif
 
    pthread_rwlock_destroy(&(mutex->mutex));

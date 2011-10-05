@@ -1,6 +1,6 @@
 /* EINA - EFL data type library
  * Copyright (C) 2007-2008 Jorge Luis Zapata Muga, Vincent Torri
- * Copyright (C) 2010 Cedric Bail
+ * Copyright (C) 2010-2011 Cedric Bail
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -48,12 +48,6 @@ void *alloca (size_t);
 #include <fcntl.h>
 
 #define PATH_DELIM '/'
-
-#ifdef __sun
-# ifndef NAME_MAX
-#  define NAME_MAX 255
-# endif
-#endif
 
 #include "eina_config.h"
 #include "eina_private.h"
@@ -123,6 +117,9 @@ struct _Eina_File
    unsigned long long length;
    time_t mtime;
    ino_t inode;
+#ifdef _STAT_VER_LINUX
+   unsigned long int mtime_nsec;
+#endif
 
    int refcount;
    int global_refcount;
@@ -153,11 +150,10 @@ static int _eina_file_log_dom = -1;
  * The code and description of the issue can be found at :
  * http://womble.decadent.org.uk/readdir_r-advisory.html
  */
-static size_t
-_eina_dirent_buffer_size(DIR *dirp)
+static long
+_eina_name_max(DIR *dirp)
 {
    long name_max;
-   size_t name_end;
 
 #if defined(HAVE_FPATHCONF) && defined(HAVE_DIRFD) && defined(_PC_NAME_MAX)
    name_max = fpathconf(dirfd(dirp), _PC_NAME_MAX);
@@ -182,6 +178,16 @@ _eina_dirent_buffer_size(DIR *dirp)
 #  endif
 # endif
 #endif
+
+   return name_max;
+}
+
+static size_t
+_eina_dirent_buffer_size(DIR *dirp)
+{
+   long name_max = _eina_name_max(dirp);
+   size_t name_end;
+
    name_end = (size_t) offsetof(struct dirent, d_name) + name_max + 1;
 
    return (name_end > sizeof (struct dirent) ? name_end : sizeof (struct dirent));
@@ -470,6 +476,107 @@ _eina_file_map_rule_apply(Eina_File_Populate rule, void *addr, unsigned long int
    return tmp;
 }
 
+static Eina_Bool
+_eina_file_timestamp_compare(Eina_File *f, struct stat *st)
+{
+   if (f->mtime != st->st_mtime) return EINA_FALSE;
+   if (f->length != (unsigned long long) st->st_size) return EINA_FALSE;
+   if (f->inode != st->st_ino) return EINA_FALSE;
+#ifdef _STAT_VER_LINUX
+# if (defined __USE_MISC && defined st_mtime)
+   if (f->mtime_nsec != (unsigned long int)st->st_mtim.tv_nsec)
+     return EINA_FALSE;
+# else
+   if (f->mtime_nsec != (unsigned long int)st->st_mtimensec)
+     return EINA_FALSE;
+# endif
+#endif
+   return EINA_TRUE;
+}
+
+static void
+slprintf(char *str, size_t size, const char *format, ...)
+{
+   va_list ap;
+
+   va_start(ap, format);
+
+   vsnprintf(str, size, format, ap);
+   str[size - 1] = 0;
+
+   va_end(ap);
+}
+
+static char*
+_eina_file_escape(const char* path, int* length)
+{
+   char *result = strdup(path ? path : "");
+   char *p = result;
+   char *q = result;
+   int len;
+
+   if (!result)
+     return NULL;
+
+   if (length) len = *length;
+   else len = strlen(result);
+
+   while ((p = strchr(p, '/')))
+     {
+	// remove double `/'
+	if (p[1] == '/')
+	  {
+	     memmove(p, p + 1, --len - (p - result));
+	     result[len] = '\0';
+	  }
+	else
+	  if (p[1] == '.'
+	      && p[2] == '.')
+	    {
+	       // remove `/../'
+	       if (p[3] == '/')
+		 {
+		    char tmp;
+
+		    len -= p + 3 - q;
+		    memmove(q, p + 3, len - (q - result));
+		    result[len] = '\0';
+		    p = q;
+
+		    /* Update q correctly. */
+		    tmp = *p;
+		    *p = '\0';
+		    q = strrchr(result, '/');
+		    if (!q) q = result;
+		    *p = tmp;
+		 }
+	       else
+		 // remove '/..$'
+		 if (p[3] == '\0')
+		   {
+		      len -= p + 2 - q;
+		      result[len] = '\0';
+		      q = p;
+		      ++p;
+		   }
+		 else
+		   {
+		      q = p;
+		      ++p;
+		   }
+	    }
+	  else
+	    {
+	       q = p;
+	       ++p;
+	    }
+     }
+
+   if (length)
+     *length = len;
+   return result;
+}
+
 Eina_Bool
 eina_file_init(void)
 {
@@ -529,6 +636,35 @@ eina_file_shutdown(void)
 /*============================================================================*
  *                                   API                                      *
  *============================================================================*/
+
+EAPI char *
+eina_file_path_sanitize(const char *path)
+{
+   char *result = NULL;
+   int len;
+
+   if (!path) return NULL;
+
+   len = strlen(path);
+
+   if (*path != '/')
+     {
+        char cwd[PATH_MAX];
+        char *tmp = NULL;
+
+        tmp = getcwd(cwd, PATH_MAX);
+        if (!tmp) return NULL;
+
+        len += strlen(cwd) + 2;
+        tmp = alloca(sizeof (char) * len);
+
+        slprintf(tmp, len, "%s/%s", cwd, path);
+
+        result = tmp;
+     }
+
+   return _eina_file_escape(result ? result : path, &len);
+}
 
 EAPI Eina_Bool
 eina_file_dir_list(const char *dir,
@@ -601,8 +737,7 @@ eina_file_ls(const char *dir)
    Eina_File_Iterator *it;
    size_t length;
 
-   if (!dir)
-      return NULL;
+   EINA_SAFETY_ON_NULL_RETURN_VAL(dir, NULL);
 
    length = strlen(dir);
    if (length < 1)
@@ -642,14 +777,10 @@ eina_file_direct_ls(const char *dir)
    Eina_File_Direct_Iterator *it;
    size_t length;
 
-   if (!dir)
-      return NULL;
+   EINA_SAFETY_ON_NULL_RETURN_VAL(dir, NULL);
 
    length = strlen(dir);
    if (length < 1)
-      return NULL;
-
-   if (length + NAME_MAX + 2 >= EINA_PATH_MAX)
       return NULL;
 
    it = calloc(1, sizeof(Eina_File_Direct_Iterator) + length);
@@ -662,6 +793,12 @@ eina_file_direct_ls(const char *dir)
    if (!it->dirp)
      {
         free(it);
+        return NULL;
+     }
+
+   if (length + _eina_name_max(it->dirp) + 2 >= EINA_PATH_MAX)
+     {
+        _eina_file_direct_ls_iterator_free(it);
         return NULL;
      }
 
@@ -692,14 +829,10 @@ eina_file_stat_ls(const char *dir)
    Eina_File_Direct_Iterator *it;
    size_t length;
 
-   if (!dir)
-      return NULL;
+   EINA_SAFETY_ON_NULL_RETURN_VAL(dir, NULL);
 
    length = strlen(dir);
    if (length < 1)
-      return NULL;
-
-   if (length + NAME_MAX + 2 >= EINA_PATH_MAX)
       return NULL;
 
    it = calloc(1, sizeof(Eina_File_Direct_Iterator) + length);
@@ -712,6 +845,12 @@ eina_file_stat_ls(const char *dir)
    if (!it->dirp)
      {
         free(it);
+        return NULL;
+     }
+
+   if (length + _eina_name_max(it->dirp) + 2 >= EINA_PATH_MAX)
+     {
+        _eina_file_direct_ls_iterator_free(it);
         return NULL;
      }
 
@@ -737,30 +876,32 @@ eina_file_stat_ls(const char *dir)
 }
 
 EAPI Eina_File *
-eina_file_open(const char *filename, Eina_Bool shared)
+eina_file_open(const char *path, Eina_Bool shared)
 {
    Eina_File *file;
    Eina_File *n;
+   char *filename;
    struct stat file_stat;
-   int fd;
+   int fd = -1;
    int flags;
 
-   /*
-     FIXME: always open absolute path
-     (need to fix filename according to current directory)
-   */
+   EINA_SAFETY_ON_NULL_RETURN_VAL(path, NULL);
+
+   filename = eina_file_path_sanitize(path);
+   if (!filename) return NULL;
 
    if (shared)
 #ifdef HAVE_SHMOPEN
      fd = shm_open(filename, O_RDONLY, S_IRWXU | S_IRWXG | S_IRWXO);
 #else
-     return NULL;
+     goto on_error;
 #endif
    else
      fd = open(filename, O_RDONLY, S_IRWXU | S_IRWXG | S_IRWXO);
 
-   if (fd < 0) return NULL;
+   if (fd < 0) goto on_error;
 
+#ifdef HAVE_EXECVP
    flags = fcntl(fd, F_GETFD);
    if (flags == -1)
      goto on_error;
@@ -768,6 +909,7 @@ eina_file_open(const char *filename, Eina_Bool shared)
    flags |= FD_CLOEXEC;
    if (fcntl(fd, F_SETFD, flags) == -1)
      goto on_error;
+#endif
 
    if (fstat(fd, &file_stat))
      goto on_error;
@@ -775,11 +917,7 @@ eina_file_open(const char *filename, Eina_Bool shared)
    eina_lock_take(&_eina_file_lock_cache);
 
    file = eina_hash_find(_eina_file_cache, filename);
-   if ((file) && 
-       ((file->mtime != file_stat.st_mtime) ||
-        (file->length != (unsigned long long) file_stat.st_size) ||
-        (file->inode != file_stat.st_ino)))
-      // FIXME: handle sub-second resolution correctness
+   if ((file) && _eina_file_timestamp_compare(file, &file_stat))
      {
         file->delete_me = EINA_TRUE;
         eina_hash_del(_eina_file_cache, file->filename, file);
@@ -789,7 +927,11 @@ eina_file_open(const char *filename, Eina_Bool shared)
    if (!file)
      {
         n = malloc(sizeof (Eina_File) + strlen(filename) + 1);
-        if (!n) goto on_error;
+        if (!n)
+	  {
+             eina_lock_release(&_eina_file_lock_cache);
+             goto on_error;
+	  }
 
         n->filename = (char*) (n + 1);
         strcpy((char*) n->filename, filename);
@@ -822,39 +964,51 @@ eina_file_open(const char *filename, Eina_Bool shared)
 
    eina_lock_release(&_eina_file_lock_cache);
 
+   free(filename);
+
    return n;
 
  on_error:
-   close(fd);
+   free(filename);
+   if (fd >= 0) close(fd);
    return NULL;
 }
 
 EAPI void
 eina_file_close(Eina_File *file)
 {
+   EINA_SAFETY_ON_NULL_RETURN(file);
+
    eina_lock_take(&file->lock);
    file->refcount--;
    eina_lock_release(&file->lock);
 
    if (file->refcount != 0) return;
+   eina_lock_take(&_eina_file_lock_cache);
+
    eina_hash_del(_eina_file_cache, file->filename, file);
+
+   eina_lock_release(&_eina_file_lock_cache);
 }
 
 EAPI size_t
 eina_file_size_get(Eina_File *file)
 {
+   EINA_SAFETY_ON_NULL_RETURN_VAL(file, 0);
    return file->length;
 }
 
 EAPI time_t
 eina_file_mtime_get(Eina_File *file)
 {
+   EINA_SAFETY_ON_NULL_RETURN_VAL(file, 0);
    return file->mtime;
 }
 
 EAPI const char *
 eina_file_filename_get(Eina_File *file)
 {
+   EINA_SAFETY_ON_NULL_RETURN_VAL(file, NULL);
    return file->filename;
 }
 
@@ -863,6 +1017,8 @@ eina_file_map_all(Eina_File *file, Eina_File_Populate rule)
 {
    int flags = MAP_SHARED;
    void *ret = NULL;
+
+   EINA_SAFETY_ON_NULL_RETURN_VAL(file, NULL);
 
 // bsd people will lack this feature
 #ifdef MAP_POPULATE
@@ -956,6 +1112,8 @@ eina_file_map_new(Eina_File *file, Eina_File_Populate rule,
 EAPI void
 eina_file_map_free(Eina_File *file, void *map)
 {
+   EINA_SAFETY_ON_NULL_RETURN(file);
+
    eina_lock_take(&file->lock);
 
    if (file->global_map == map)
