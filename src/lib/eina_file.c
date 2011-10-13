@@ -588,7 +588,7 @@ eina_file_init(void)
         return EINA_FALSE;
      }
 
-   _eina_file_cache = eina_hash_string_djb2_new(EINA_FREE_CB(_eina_file_real_close));
+   _eina_file_cache = eina_hash_string_djb2_new(NULL);
    if (!_eina_file_cache)
      {
         ERR("Could not create cache.");
@@ -921,6 +921,7 @@ eina_file_open(const char *path, Eina_Bool shared)
      {
         file->delete_me = EINA_TRUE;
         eina_hash_del(_eina_file_cache, file->filename, file);
+        _eina_file_real_close(file);
         file = NULL;
      }
 
@@ -945,6 +946,13 @@ eina_file_open(const char *path, Eina_Bool shared)
 	n->global_refcount = 0;
         n->length = file_stat.st_size;
         n->mtime = file_stat.st_mtime;
+#ifdef _STAT_VER_LINUX
+# if (defined __USE_MISC && defined st_mtime)
+        n->mtime_nsec = (unsigned long int)file_stat.st_mtim.tv_nsec;
+# else
+        n->mtime_nsec = (unsigned long int)file_stat.st_mtimensec;
+# endif
+#endif
         n->inode = file_stat.st_ino;
         n->refcount = 0;
         n->fd = fd;
@@ -987,7 +995,8 @@ eina_file_close(Eina_File *file)
    eina_lock_take(&_eina_file_lock_cache);
 
    eina_hash_del(_eina_file_cache, file->filename, file);
-
+   _eina_file_real_close(file);
+   
    eina_lock_release(&_eina_file_lock_cache);
 }
 
