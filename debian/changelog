@@ -1,3 +1,12 @@
+eina (1.0.0.001+svn.64039slp2+build02) unstable; urgency=low
+
+  * Upload package
+  * A resource context per thread using TLS by Sung W. Park from svn(64120)
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.64039slp2+build02
+
+ -- Seungsoo Woo <om101.woo@samsung.com>  Tue, 25 Oct 2011 16:08:37 +0900
+
 eina (1.0.0.001+svn.64039slp2+build01) unstable; urgency=low
 
   * Merge with upstream @64039
