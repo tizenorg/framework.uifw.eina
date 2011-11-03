@@ -56,6 +56,8 @@ struct _Eina_Win32_RWLock
    Eina_Condition cond_write;
 };
 
+typedef DWORD     Eina_TLS;
+
 EAPI extern Eina_Bool _eina_threads_activated;
 
 static inline Eina_Bool
@@ -436,7 +438,7 @@ eina_rwlock_release(Eina_RWLock *mutex)
 static inline Eina_Bool
 eina_tls_new(Eina_TLS *key)
 {
-   if (TlsAlloc() == TLS_OUT_OF_INDEXES)
+   if ((*key = TlsAlloc()) == TLS_OUT_OF_INDEXES)
       return EINA_FALSE;
    return EINA_TRUE;
 }

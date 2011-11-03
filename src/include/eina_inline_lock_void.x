@@ -46,6 +46,7 @@
 typedef void *Eina_Lock;
 typedef void *Eina_RWLock;
 typedef void *Eina_Condition;
+typedef void *Eina_TLS;
 
 /**
  * @brief Create a new #Eina_Lock.
@@ -215,13 +216,13 @@ eina_rwlock_take_write(Eina_RWLock *mutex EINA_UNUSED)
    return EINA_LOCK_FAIL;
 }
 
-static inline Eina_Bool
+static inline Eina_Bool 
 eina_tls_new(Eina_TLS *key)
 {
    return EINA_FALSE;
 }
 
-static inline void
+static inline void 
 eina_tls_free(Eina_TLS key)
 {
 }
@@ -232,7 +233,7 @@ eina_tls_get(Eina_TLS key)
    return NULL;
 }
 
-static inline Eina_Bool
+static inline Eina_Bool 
 eina_tls_set(Eina_TLS key, const void *data)
 {
    return EINA_FALSE;
