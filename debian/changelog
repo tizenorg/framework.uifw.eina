@@ -1,3 +1,9 @@
+eina (1.0.0.001+svn.64973slp2+build01) unstable; urgency=low
+
+  * Merge with upstream @64973
+
+ -- Mike McCormack <mj.mccormack@samsung.com>  Thu, 10 Nov 2011 11:10:49 +0900
+
 eina (1.0.0.001+svn.64590slp2+build01) unstable; urgency=low
 
   * Merge with upstream @64590
