@@ -185,7 +185,7 @@ eina_array_grow(Eina_Array *array)
    EINA_MAGIC_CHECK_ARRAY(array);
 
    total = array->total + array->step;
-        eina_error_set(0);
+   eina_error_set(0);
    tmp = realloc(array->data, sizeof (void *) * total);
    if (EINA_UNLIKELY(!tmp))
      {
@@ -390,7 +390,7 @@ eina_array_remove(Eina_Array *array, Eina_Bool (*keep)(void *data,
         return EINA_TRUE;
      }
 
-        eina_error_set(0);
+   eina_error_set(0);
    tmp = malloc(sizeof (void *) * array->total);
    if (!tmp)
      {
