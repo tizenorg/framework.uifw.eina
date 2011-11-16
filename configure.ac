@@ -1,12 +1,12 @@
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
 m4_define([v_maj], [1])
-m4_define([v_min], [0])
-m4_define([v_mic], [999])
+m4_define([v_min], [1])
+m4_define([v_mic], [0])
 m4_define([v_rev], m4_esyscmd([(svnversion "${SVN_REPO_PATH:-.}" | grep -v export || echo 0) | awk -F : '{printf("%s\n", $1);}' | tr -d ' :MSP\n']))
 m4_if(v_rev, [0], [m4_define([v_rev], m4_esyscmd([git log 2> /dev/null | (grep -m1 git-svn-id || echo 0) | sed -e 's/.*@\([0-9]*\).*/\1/' | tr -d '\n']))])
 ##--   When released, remove the dnl on the below line
-dnl m4_undefine([v_rev])
+m4_undefine([v_rev])
 ##--   When doing snapshots - change soname. remove dnl on below line
 dnl m4_define([relname], [ver-pre-svn-07])
 dnl m4_define([v_rel], [-release relname])
@@ -178,7 +178,7 @@ AC_ARG_WITH(internal-maximum-log-level,
                    [limit eina internal log level to the given number, any call to EINA_LOG() with values greater than this will be compiled out, ignoring runtime settings, but saving function calls.])],
    [
     if test "x${withval}" != "xno"; then
-       if echo "${withval}" | grep '^[[0-9]]\+$' >/dev/null 2>/dev/null; then
+       if echo "${withval}" | grep -E '^[[0-9]]+$' >/dev/null 2>/dev/null; then
           AC_MSG_NOTICE([ignoring any EINA_LOG() with level greater than ${withval}])
           AC_DEFINE_UNQUOTED(EINA_LOG_LEVEL_MAXIMUM, ${withval}, [if set, logging is limited to this amount.])
           with_max_log_level="${withval}"
@@ -314,7 +314,7 @@ fi
 EFL_EINA_BUILD=""
 case "$host_os" in
    mingw*)
-      PKG_CHECK_MODULES([EVIL], [evil])
+      PKG_CHECK_MODULES([EVIL], [evil >= 1.0.0])
       AC_DEFINE([HAVE_EVIL], [1], [Set to 1 if evil package is installed])
       requirement_eina="evil"
       EFL_EINA_BUILD="-DEFL_EINA_BUILD"
