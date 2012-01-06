@@ -1,0 +1,489 @@
+eina (1.1.0+svn.65437slp2+build01) unstable; urgency=low
+
+  * Package Upload
+  * Git: slp-scm.sec.samsung.net:slp/pkgs/e/eina
+  * Tag: eina_1.1.0+svn.65437slp2+build01
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Tue, 29 Nov 2011 13:25:01 +0900
+
+eina (1.1.0+svn.65299slp2+build01) unstable; urgency=low
+
+  * Update version to 1.1.0
+
+ -- Mike McCormack <mj.mccormack@samsung.com>  Thu, 17 Nov 2011 10:31:44 +0900
+
+eina (1.0.0.001+svn.65299slp2+build01) unstable; urgency=low
+
+  * Merge with upstream @65299
+
+ -- Mike McCormack <mj.mccormack@samsung.com>  Thu, 17 Nov 2011 08:12:08 +0900
+
+eina (1.0.0.001+svn.64973slp2+build01) unstable; urgency=low
+
+  * Merge with upstream @64973
+
+ -- Mike McCormack <mj.mccormack@samsung.com>  Thu, 10 Nov 2011 11:10:49 +0900
+
+eina (1.0.0.001+svn.64590slp2+build01) unstable; urgency=low
+
+  * Merge with upstream @64590
+
+ -- Mike McCormack <mj.mccormack@samsung.com>  Thu, 03 Nov 2011 09:16:12 +0900
+
+eina (1.0.0.001+svn.64039slp2+build02) unstable; urgency=low
+
+  * Upload package
+  * A resource context per thread using TLS by Sung W. Park from svn(64120)
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.64039slp2+build02
+
+ -- Seungsoo Woo <om101.woo@samsung.com>  Tue, 25 Oct 2011 16:08:37 +0900
+
+eina (1.0.0.001+svn.64039slp2+build01) unstable; urgency=low
+
+  * Merge with upstream @64039
+
+ -- Mike McCormack <mj.mccormack@samsung.com>  Thu, 13 Oct 2011 18:02:43 +0900
+
+eina (1.0.0.001+svn.64029slp2+build01) unstable; urgency=low
+
+  * Merge with upstream @64029
+
+ -- Mike McCormack <mj.mccormack@samsung.com>  Thu, 13 Oct 2011 12:07:50 +0900
+
+eina (1.0.0.001+svn.63811slp2+build01) unstable; urgency=low
+
+  * Merge with upstream
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.63811slp2+build01
+
+ -- Mike McCormack <mj.mccormack@samsung.com>  Wed, 05 Oct 2011 10:38:27 +0900
+
+eina (1.0.0.001+svn.62530slp2+build01) unstable; urgency=low
+
+  * [SVN EFL Migration] eina in SLP is merged with SVN r62530
+  * Important Changes
+       [Migration upstream r62530] Merge remote branch 'origin/upstream' into svn_merge
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.62530slp2+build01
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Fri, 02 Sep 2011 18:40:25 +0900
+
+eina (1.0.0.001+svn.60288slp2+build04) unstable; urgency=low
+
+  * Upload Package: SIGBUS handler override
+  * Important Changes
+        [eina_file]overrid sigbus handler in eina file mmap
+  * Git: 165.213.180.234:/slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.60288slp2+build04
+
+ -- Jiyoun Park <jy0703.park@samsung.com>  Tue, 16 Aug 2011 19:25:46 +0900
+
+eina (1.0.0.001+svn.60288slp2+build03) unstable; urgency=low
+
+  * [Bug Fix] mutex lock is not released in error cases in eina_share_common functions
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.60288slp2+build03
+
+ -- Myungjae Lee <mjae.lee@samsung.com>  Thu, 04 Aug 2011 12:34:00 +0900
+
+eina (1.0.0.001+svn.60288slp2+build01) unstable; urgency=low
+
+  * [SVN EFL Migration] eina in SLP is merged with SVN r60288
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.60288slp2+build01
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Fri, 24 Jun 2011 18:09:32 +0900
+
+eina (1.0.0.001+svn.58157slp2+build02) unstable; urgency=low
+
+  * [eina_simple_xml_parser added] Partial upstream merge.
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.58157slp2+build02
+
+ -- Daniel Juyung Seo <juyung.seo@samsung.com>  Fri, 08 Apr 2011 19:30:16 +0900
+
+eina (1.0.0.001+svn.58157slp2+build01) unstable; urgency=low
+
+  * [SVN EFL Migration] eina in SLP is merged with SVN r58157
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.58157slp2+build01
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Tue, 05 Apr 2011 15:54:39 +0900
+
+eina (1.0.0.001+svn.57993slp2+build02) unstable; urgency=low
+
+  * Rollback
+  * Git: slp-scm.sec.samsung.net:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.57993slp2+build02
+
+ -- Shinwoo Kim <cinoo.kim@samsung.com>  Tue, 29 Mar 2011 23:12:14 +0900
+
+eina (1.0.0.001+svn.57993slp2+build01) unstable; urgency=low
+
+  * [SVN EFL Migration] eina in SLP is merged with SVN r57993
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.57993slp2+build01
+
+ -- Shinwoo Kim <cinoo.kim@samsung.com>  Tue, 29 Mar 2011 18:55:03 +0900
+
+eina (1.0.0.001+svn.57387slp2+build05) unstable; urgency=low
+
+  * [SVN EFL Migration] eina in SLP is merged with SVN r57387
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.57387slp2+build05
+
+ -- Myungjae Lee <mjae.lee@samsung.com>  Wed, 09 Mar 2011 11:29:14 +0900
+
+eina (1.0.0.001+svn.57387slp2+build04) unstable; urgency=low
+
+  * [SVN EFL Migration] eina in SLP is merged with SVN r57387
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.57387slp2+build04
+
+ -- Myungjae Lee <mjae.lee@samsung.com>  Wed, 09 Mar 2011 11:14:30 +0900
+
+eina (1.0.0.001+svn.57387slp2+build03) unstable; urgency=low
+
+  * Package Upload : Rollback
+  * Git: 165.213.180.234:/slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.57387slp2+build03
+
+ -- WooHyun Jung <wh0705.jung@samsung.com>  Tue, 08 Mar 2011 12:06:45 +0900
+
+eina (1.0.0.001+svn.57387slp2+build02) unstable; urgency=low
+
+  * Package upload : rollback
+  * Git: 165.213.180.234:/slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.57387slp2+build02
+
+ -- WooHyun Jung <wh0705.jung@samsung.com>  Tue, 08 Mar 2011 10:58:03 +0900
+
+eina (1.0.0.001+svn.57387slp2+build01) unstable; urgency=low
+
+  * [SVN EFL Migration] eina in SLP is merged with SVN r57387
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.57387slp2+build01
+
+ -- Myungjae Lee <mjae.lee@samsung.com>  Mon, 07 Mar 2011 17:27:06 +0900
+
+eina (1.0.0.001+svn.56209slp2+build06) unstable; urgency=low
+
+  * [unicode] 56806 is updated for textblock bug
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.56209slp2+build06  
+
+ -- WooHyun Jung <wh0705.jung@samsung.com>  Fri, 11 Feb 2011 17:46:49 +0900
+
+eina (1.0.0.001+svn.56209slp2+build05) unstable; urgency=low
+
+  * [unicode] 56806 is updated for textblock bug
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.56209slp2+build05 
+
+ -- WooHyun Jung <wh0705.jung@samsung.com>  Thu, 10 Feb 2011 11:33:25 +0900
+
+eina (1.0.0.001+svn.56209slp2+build04) unstable; urgency=low
+
+  * [unicode] 56806 is updated for textblock bug
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.56209slp2+build04
+
+ -- Myungjae Lee <mjae.lee@samsung.com>  Thu, 10 Feb 2011 10:24:00 +0900
+
+eina (1.0.0.001+svn.56209slp2+build03) unstable; urgency=low
+
+  * [SVN EFL Migration] eina in SLP is merged with SVN r56209
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.56209slp2+build03
+
+ -- WooHyun Jung <wh0705.jung@samsung.com>  Thu, 27 Jan 2011 12:15:30 +0900
+
+eina (1.0.0.001+svn.56209slp2+build02) unstable; urgency=low
+
+  * [SVN EFL Migration] eina in SLP is merged with SVN r56209
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.56209slp2+build02
+
+ -- WooHyun Jung <wh0705.jung@samsung.com>  Wed, 26 Jan 2011 13:23:09 +0900
+
+eina (1.0.0.001+svn.56209slp2+build01) unstable; urgency=low
+
+  * [SVN EFL Migration] eina in SLP is merged with SVN r56209
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.56209slp2+build01
+
+ -- WooHyun Jung <wh0705.jung@samsung.com>  Wed, 26 Jan 2011 13:20:48 +0900
+
+eina (1.0.0.001+svn.56105slp2+build01) unstable; urgency=low
+
+  * [SVN EFL Migration] eina in SLP is merged with SVN r56105
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.56105slp2+build01
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.56105slp2+build01
+
+ -- WooHyun Jung <wh0705.jung@samsung.com>  Wed, 19 Jan 2011 16:12:20 +0900
+
+eina (1.0.0.001+svn.55767slp2+build02) unstable; urgency=low
+
+  * Package Upload
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.55767slp2+build02
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Mon, 03 Jan 2011 20:06:49 +0900
+
+eina (1.0.0.001+svn.55578slp2+build01) unstable; urgency=low
+
+  * [SVN EFL Migration] eina in SLP is merged with SVN r55578
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.55578slp2+build01
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Wed, 22 Dec 2010 19:49:17 +0900
+
+eina (1.0.0.001+svn.55380slp2+build02) unstable; urgency=low
+
+  * [SVN's EFL Migration] eina in SLP is merged with SVN r55380.
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.55380slp2+build02
+
+ -- Juyung Seo <juyung.seo@samsung.com>  Wed, 15 Dec 2010 09:55:07 +0900
+
+eina (1.0.0.001+svn.55380slp2+build01) unstable; urgency=low
+
+  * [SVN's EFL Migration] eina in SLP is merged with SVN r55380.
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.55380slp2+build01
+
+ -- Juyung Seo <juyung.seo@samsung.com>  Tue, 14 Dec 2010 17:14:58 +0900
+
+eina (1.0.0.001+svn.55075slp2+build04) unstable; urgency=low
+
+  * [SVN's EFL Migration] eina in SLP is merged with SVN r55380.
+  * Git: 165.213.180.234:slp/pkgs/e/eina
+  * Tag: eina_1.0.0.001+svn.55075slp2+build04
+
+ -- Juyung Seo <juyung.seo@samsung.com>  Tue, 14 Dec 2010 14:44:46 +0900
+
+eina (1.0.0.001+svn.55075slp2+build03) unstable; urgency=low
+
+  * [SVN 55075 Merge]
+  * Update to SVN Revision 55075.
+  * Git: 165.213.180.234:/git/slp/pkgs/eina
+  * Tag: eina_1.0.0.001+svn.55075slp2+build03
+
+ -- Myoungwoon Kim <myoungwoon.kim@samsung.com>  Thu, 02 Dec 2010 14:02:31 +0900
+
+eina (1.0.0.001+svn.55075slp2+build02) unstable; urgency=low
+
+  * Rollback to eina_1.0.0.001+svn.51480slp2+build04.
+  * Git: 165.213.180.234:/git/slp/pkgs/eina
+  * Tag: eina_1.0.0.001+svn.55075slp2+build02
+
+ -- Juyung Seo <juyung.seo@samsung.com>  Thu, 02 Dec 2010 09:36:19 +0900
+
+eina (1.0.0.001+svn.55075slp2+build01) unstable; urgency=low
+
+  * [SVN 55075 Merge]
+  * Update to SVN Revision 55075.
+  * Git: 165.213.180.234:/git/slp/pkgs/eina
+  * Tag: eina_1.0.0.001+svn.55075slp2+build01
+
+ -- Myoungwoon Kim <myoungwoon.kim@samsung.com>  Thu, 02 Dec 2010 08:45:42 +0900
+
+eina (1.0.0.001+svn.51480slp2+build04) unstable; urgency=low
+
+  * [SVN 54761 Merge]
+  * Update to SVN Revision 54761.
+  * Git: 165.213.180.234:/git/slp/pkgs/eina
+  * Tag: eina_1.0.0.001+svn.51480slp2+build04
+
+ -- Juyung Seo <juyung.seo@samsung.com>  Fri, 26 Nov 2010 10:41:33 +0900
+
+eina (1.0.0.001+svn.51480slp2+build03) unstable; urgency=low
+
+  * [SVN 53091 Merge] Add pid to eina log
+  * Git: 165.213.180.234:/git/slp/pkgs/eina
+  * Tag: eina_1.0.0.001+svn.51480slp2+build03
+
+ -- Juyung Seo <juyung.seo@samsung.com>  Sat, 09 Oct 2010 01:33:38 +0900
+
+eina (1.0.0.001+svn.51480slp2+build02) unstable; urgency=low
+
+  * add as-needed
+  * Git: 165.213.180.234:/git/slp/pkgs/eina
+  * Tag: eina_1.0.0.001+svn.51480slp2+build02
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Wed, 15 Sep 2010 09:06:16 +0900
+
+eina (1.0.0.001+svn.51480slp2+build01) unstable; urgency=low
+
+  * efl 1.0 alpha upgrade
+  * Git: 165.213.180.234:/git/slp/pkgs/eina
+  * Tag: eina_1.0.0.001+svn.51480slp2+build01
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Tue, 31 Aug 2010 22:33:16 +0900
+
+eina (0.0.2.062+svn.49540slp2+3build04) unstable; urgency=low
+
+  * Packaging.
+  * Git: 165.213.180.234:/git/slp2.0/slp2.0-pkgs/EFL-pkgs/eina
+  * Tag: eina_0.0.2.062+svn.49540slp2+3build04
+
+ -- Daniel Juyung Seo <juyung.seo@samsung.com>  Thu, 10 Jun 2010 21:09:36 +0900
+
+eina (0.0.2.062+svn.49540slp2+3build03) unstable; urgency=low
+
+  * Packaging.
+  * Git: 165.213.180.234:/git/slp2.0/slp2.0-pkgs/EFL-pkgs/eina
+  * Tag: eina_0.0.2.062+svn.49540slp2+3build03
+
+ -- Daniel Juyung Seo <juyung.seo@samsung.com>  Thu, 10 Jun 2010 21:04:20 +0900
+
+eina (0.0.2.062+svn.49540slp2+3build02) unstable; urgency=low
+
+  * Packaging.
+  * Git: 165.213.180.234:/git/slp2.0/slp2.0-pkgs/EFL-pkgs/eina
+  * Tag: eina_0.0.2.062+svn.49540slp2+3build02
+
+ -- Daniel Juyung Seo <juyung.seo@samsung.com>  목, 10  6월 2010 21:00:52 +0900
+
+eina (0.0.2.062+svn.49540slp2+3) unstable; urgency=low
+
+  * Packaging.
+  * Git: 165.213.180.234:/git/slp2.0/slp2.0-pkgs/EFL-pkgs/eina
+  * Tag: eina_0.0.2.062+svn.49540slp2+3
+
+ -- Daniel Juyung Seo <juyung.seo@samsung.com>  Thu, 10 Jun 2010 20:46:54 +0900
+
+eina (0.0.2.062+svn.49540slp2+2) unstable; urgency=low
+
+  * Packaging.
+  * Git: 165.213.180.234:/git/slp2.0/slp2.0-pkgs/EFL-pkgs/eina
+  * Tag: eina_0.0.2.062+svn.49540slp2+2
+
+ -- Daniel Juyung Seo <juyung.seo@samsung.com>  Thu, 10 Jun 2010 20:37:48 +0900
+
+eina (0.0.2.062+svn.49540slp2+1) unstable; urgency=low
+
+  * Packaging.
+  * Git: 165.213.180.234:/git/slp2.0/slp2.0-pkgs/EFL-pkgs/eina
+  * Tag: eina_0.0.2.062+svn.49540slp2+1
+
+ -- Daniel Juyung Seo <juyung.seo@samsung.com>  Thu, 10 Jun 2010 20:28:10 +0900
+
+eina (0.0.2.062+svn.49540slp2+0) unstable; urgency=low
+
+  * Update opensource EFL from SVN
+  * SVN revision: 49540 (Total EFL revision: 49550)
+  * Tag: 0.0.2.062+svn.49540slp2+0
+
+ -- Daniel Juyung Seo <juyung.seo@smasung.com>  Thu, 10 Jun 2010 15:50:40 +0900
+
+eina (0.0.2.062+svn20100304slp2) unstable; urgency=low
+
+  * change package version
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Thu, 25 Mar 2010 16:03:22 +0900
+
+eina (0.0.2.062+svn20100304-1) unstable; urgency=low
+
+  * EFL_update_revision_46864
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Fri, 05 Mar 2010 14:04:15 +0900
+
+eina (0.0.2.062+svn20100203-5) unstable; urgency=low
+
+  * enable debug-magic
+
+ -- Sangjin Lee <lsj119@samsung.com>  Wed, 24 Feb 2010 13:33:41 +0900
+
+eina (0.0.2.062+svn20100203-4) unstable; urgency=low
+
+  * apply upstream revision 46374
+
+ -- Sangjin Lee <lsj119@samsung.com>  Tue, 23 Feb 2010 17:11:11 +0900
+
+eina (0.0.2.062+svn20100203-3) unstable; urgency=low
+
+  * repack
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Thu, 04 Feb 2010 20:16:02 +0900
+
+eina (0.0.2.062+svn20100203-2) unstable; urgency=low
+
+  * repack
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Thu, 04 Feb 2010 19:03:26 +0900
+
+eina (0.0.2.062+svn20100203-1) unstable; urgency=low
+
+  * EFL_update_revision_45828
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Wed, 03 Feb 2010 16:39:17 +0900
+
+eina (0.0.2.062+svn20100119-1) unstable; urgency=low
+
+  * EFL_update_revision_45322
+
+ -- Jihoon Kim <jihoon48.kim@samsung.com>  Tue, 19 Jan 2010 20:44:45 +0900
+
+eina (0.0.2.062+svn20100111-3) unstable; urgency=low
+
+  * reupload EFL i686
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Tue, 12 Jan 2010 17:35:18 +0900
+
+eina (0.0.2.062+svn20100111-2) unstable; urgency=low
+
+  * reupload EFL
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Mon, 11 Jan 2010 22:27:18 +0900
+
+eina (0.0.2.062+svn20100111-1) unstable; urgency=low
+
+  * update EFL revision 45026
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Mon, 11 Jan 2010 13:28:00 +0900
+
+eina (0.0.2.062+svn20091229-1) unstable; urgency=low
+
+  * update EFL
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Tue, 29 Dec 2009 14:27:00 +0900
+
+eina (0.0.2.062+svn20091112-3) unstable; urgency=low
+
+  * change arch to any
+
+ -- Youmin Ha <youmin.ha@samsung.com>  Fri, 27 Nov 2009 16:28:16 +0900
+
+eina (0.0.2.062+svn20091112-2) unstable; urgency=low
+
+  * stable svn version
+
+ -- Sangho Park <sangho.g.park@samsung.com>  Thu, 19 Nov 2009 17:25:30 +0900
+
+eina (0.0.2.062+svn20091112-1) unstable; urgency=low
+
+  * Updated version
+
+ -- Sangho Park <sangho.g.park@samsung.com>  Thu, 12 Nov 2009 18:44:22 +0900
+
+eina (0.0.2.062+svnYYYYMMDD-1) unstable; urgency=low
+
+  * Updated version
+
+ -- Simon Horman <horms@debian.org>  Thu, 10 Sep 2009 12:30:32 +1000
+
+eina (0.0.2.060+svnYYYYMMDD-1) unstable; urgency=low
+
+  * Updated version
+
+ -- quaker <quaker66@gmail.com>  Thu, 22 Apr 2009 18:24:44 +0100
+
+eina (0.0.1+svnYYYYMMDD-1) unstable; urgency=low
+
+  * Clean up changelog
+
+ -- quaker <quaker66@gmail.com>  Tue, 21 Apr 2009 19:12:20 +0100
