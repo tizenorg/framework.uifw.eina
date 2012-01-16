@@ -1,3 +1,11 @@
+eina (1.1.0+svn.66965slp2+build01) unstable; urgency=low
+
+  * Package Upload
+  * Git: slp/pkgs/e/eina
+  * Tag: eina_1.1.0+svn.66965slp2+build01
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Mon, 16 Jan 2012 18:26:17 +0900
+
 eina (1.1.0+svn.65860slp2+build02) unstable; urgency=low
 
   * Upstream partially merge r66028: Add eina_binbuf_manage_new_length
