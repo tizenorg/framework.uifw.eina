@@ -316,7 +316,7 @@ case "$host_os" in
    mingw*)
       PKG_CHECK_MODULES([EVIL], [evil >= 1.0.0])
       AC_DEFINE([HAVE_EVIL], [1], [Set to 1 if evil package is installed])
-      requirement_eina="evil"
+      requirement_eina="${requirement_eina} evil"
       EFL_EINA_BUILD="-DEFL_EINA_BUILD"
    ;;
 esac
@@ -361,17 +361,14 @@ EFL_ATTRIBUTE_UNUSED
 
 have_wince="no"
 have_win32="no"
-EINA_CPPFLAGS=""
 EINA_CFLAGS=""
 case "$host_os" in
    mingw32ce*)
-      EINA_CPPFLAGS="-D_WIN32_WCE=0x0420"
       EINA_CFLAGS="${EVIL_CFLAGS}"
       have_win32="yes"
       have_wince="yes"
       ;;
    mingw*)
-      EINA_CPPFLAGS="-D_WIN32_WINNT=0x0501"
       EINA_CFLAGS="${EVIL_CFLAGS}"
       have_win32="yes"
       ;;
@@ -390,13 +387,12 @@ EFL_COMPILER_FLAG([-Wshadow])
 case "$host_vendor" in
   ps3*)
       PKG_CHECK_MODULES([ESCAPE], [escape])
-      AC_DEFINE(HAVE_ESCAPE, 1, [Set to 1 if evil package is installed])
-      requirement_eina="escape"
+      AC_DEFINE(HAVE_ESCAPE, 1, [Set to 1 if Escape package is installed])
+      requirement_eina="${requirement_eina} escape"
       EINA_CFLAGS="${ESCAPE_CFLAGS} ${EINA_CFLAGS}"
     ;;
 esac
 
-AC_SUBST([EINA_CPPFLAGS])
 AC_SUBST([EINA_CFLAGS])
 
 
@@ -508,6 +504,27 @@ AC_MSG_RESULT([${have_dirfd}])
 
 if test "x${have_dirfd}" = "xyes" ; then
    AC_DEFINE([HAVE_DIRFD], [1], [ Define to 1 if you have the `dirfd' function or macro.])
+fi
+
+# check debug information for malloc
+AC_CHECK_FUNCS([malloc_usable_size], [malloc_true_size="yes"], [malloc_true_size="no"])
+if test "x${malloc_true_size}" = "xyes" ; then
+   AC_DEFINE([HAVE_MALLOC_USABLE_SIZE], [1], [We will be able to know the exact amount of wasted memory])
+fi
+
+want_debug_malloc="no"
+AC_ARG_ENABLE([debug-malloc],
+   [AC_HELP_STRING([--enable-debug-malloc], [enable debugging of malloc usage overhead in our allocator @<:@default=enabled@:>@])],
+   [
+     if test "x${enableval}" = "xyes" ; then
+     	want_debug_malloc="yes"
+     else
+	want_debug_malloc="no"
+     fi
+   ], [want_debug_malloc="no"])
+
+if test "x${malloc_true_size}" = "xyes" -a "x${want_debug_malloc}" = "xyes"; then
+   AC_DEFINE([EINA_DEBUG_MALLOC], [1], [Turn on debugging overhead in mempool])
 fi
 
 # dlopen and dladdr
@@ -764,7 +781,7 @@ if test -n "$CXX" && test "x$enable_benchmark" = "xyes" ; then
 fi
 AM_CONDITIONAL([CITYHASH_BENCH], [test -n "$CXX" && test "x$enable_benchmark" = "xyes"])
 
-AC_SUBST(requirement_eina)
+AC_SUBST([requirement_eina])
 
 ### Build and install examples
 EFL_CHECK_BUILD_EXAMPLES([enable_build_examples="yes"], [enable_build_examples="no"])

@@ -6,7 +6,6 @@ AM_CPPFLAGS = \
 -DPACKAGE_BIN_DIR=\"$(bindir)\" \
 -DPACKAGE_LIB_DIR=\"$(libdir)\" \
 -DPACKAGE_DATA_DIR=\"$(datadir)/$(PACKAGE)\" \
-@EINA_CPPFLAGS@ \
 @EFL_EINA_BUILD@
 
 base_sources = \
@@ -22,6 +21,7 @@ eina_error.c \
 eina_fp.c \
 eina_hamster.c \
 eina_hash.c \
+eina_inarray.c \
 eina_inlist.c \
 eina_iterator.c \
 eina_lalloc.c \
@@ -32,6 +32,7 @@ eina_main.c \
 eina_matrixsparse.c \
 eina_mempool.c \
 eina_mmap.c \
+eina_model.c \
 eina_module.c \
 eina_prefix.c \
 eina_quadtree.c \

@@ -523,8 +523,8 @@ slprintf(char *str, size_t size, const char *format, ...)
    va_end(ap);
 }
 
-static char*
-_eina_file_escape(const char* path, int* length)
+static char *
+_eina_file_escape(const char *path, int *length)
 {
    char *result = strdup(path ? path : "");
    char *p = result;
@@ -593,6 +593,14 @@ _eina_file_escape(const char* path, int* length)
    return result;
 }
 
+/**
+ * @endcond
+ */
+
+/*============================================================================*
+ *                                 Global                                     *
+ *============================================================================*/
+
 Eina_Bool
 eina_file_init(void)
 {
@@ -640,14 +648,6 @@ eina_file_shutdown(void)
    _eina_file_log_dom = -1;
    return EINA_TRUE;
 }
-
-/**
- * @endcond
- */
-
-/*============================================================================*
- *                                 Global                                     *
- *============================================================================*/
 
 /*============================================================================*
  *                                   API                                      *
