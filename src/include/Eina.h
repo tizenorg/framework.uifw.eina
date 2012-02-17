@@ -1,5 +1,5 @@
 /* EINA - EFL data type library
- * Copyright (C) 2008-2011 Enlightenment Developers:
+ * Copyright (C) 2008-2012 Enlightenment Developers:
  *           Albin "Lutin" Tonnerre <albin.tonnerre@gmail.com>
  *           Alexandre "diaxen" Becoulet <diaxen@free.fr>
  *           Andre Dieb <andre.dieb@gmail.com>
@@ -46,8 +46,8 @@
  * @mainpage Eina
  *
  * @version 1.1
- * @date 2008-2011
- * 
+ * @date 2008-2012
+ *
  * @section eina_intro_sec Introduction
  *
  * The Eina library is a library that implements an API for data types
@@ -59,10 +59,11 @@
  * Linux, BSD, Opensolaris and Windows (XP and CE).
  *
  * The data types that are available are (see @ref Eina_Data_Types_Group):
+ * @li @ref Eina_Inline_Array_Group standard array of inlined members.
  * @li @ref Eina_Array_Group standard array of @c void* data.
  * @li @ref Eina_Hash_Group standard hash of @c void* data.
  * @li @ref Eina_Inline_List_Group list with nodes inlined into user type.
- * @li @ref Eina_CList_Group compact inlined list.
+ * @li @ref Eina_CList_Group Compact List.
  * @li @ref Eina_List_Group standard list of @c void* data.
  * @li @ref Eina_Iterator_Group Iterator functions.
  * @li @ref Eina_Matrixsparse_Group sparse matrix of @c void* data.
@@ -89,7 +90,7 @@
  * 
  * Please see the @ref authors page for contact details.
  *
- * @defgroup Eina_Data_Types_Group Data types
+ * @defgroup Eina_Data_Types_Group Data Types
  *
  * Eina provide easy to use and optimized data types and structures.
  *
@@ -119,15 +120,22 @@
  * @author Carsten Haitzler <raster@@rasterman.com>
  * @author Cedric Bail <cedric.bail@@free.fr>
  * @author Corey "atmos" Donohoe <atmos@@atmos.org>
+ * @author Vincent "caro" Torri  <vtorri at univ-evry dot fr>
  * @author Fabiano Fidêncio <fidencio@@profusion.mobi>
  * @author Gustavo Chaves <glima@@profusion.mobi>
  * @author Gustavo Sverzut Barbieri <barbieri@@profusion.mobi>
  * @author Jorge Luis "turran" Zapata <jorgeluis.zapata@@gmail.com>
+ * @author Tilman Sauerbeck <tilman@@code-monkey.de>
  * @author Peter "pfritz" Wehrfritz <peter.wehrfritz@@web.de>
  * @author Raphael Kubo da Costa <kubo@@profusion.mobi>
- * @author Tilman Sauerbeck <tilman@@code-monkey.de>
- * @author Vincent "caro" Torri  <vtorri at univ-evry dot fr>
  * @author Tom Hacohen <tom@@stosb.com>
+ * @author Brett Nash <nash@@nash.id.au>
+ * @author Sebastian Dransfeld <sd@@tango.flipp.net>
+ * @author Myungjae Lee <mjae.lee@@samsung.com>
+ * @author Youness Alaoui <kakaroto@@kakaroto.homelinux.net>
+ * @author Boris "billiob" Faure <billiob@@gmail.com>
+ * @author Sung W. Park <sungwoo@@gmail.com>
+ * @author Guillaume Friloux <guillaume.friloux@@asp64.com>
  *
  * Please contact <enlightenment-devel@lists.sourceforge.net> to get in
  * contact with the developers and maintainers.
@@ -158,6 +166,7 @@ extern "C" {
 #include "eina_mempool.h"
 #include "eina_error.h"
 #include "eina_log.h"
+#include "eina_inarray.h"
 #include "eina_array.h"
 #include "eina_binshare.h"
 #include "eina_stringshare.h"
@@ -186,6 +195,8 @@ extern "C" {
 #include "eina_refcount.h"
 #include "eina_mmap.h"
 #include "eina_xattr.h"
+#include "eina_value.h"
+#include "eina_model.h"
 
 #ifdef __cplusplus
 }

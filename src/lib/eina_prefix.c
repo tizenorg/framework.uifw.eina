@@ -30,15 +30,15 @@
 #endif
 #ifdef HAVE_ALLOCA_H
 # include <alloca.h>
-#elif defined __GNUC__
-# define alloca __builtin_alloca
-#elif defined _AIX
-# define alloca __alloca
-#elif defined _MSC_VER
-# include <malloc.h>
-# define alloca _alloca
-#else
-# ifndef HAVE_ALLOCA
+#elif !defined alloca
+# ifdef __GNUC__
+#  define alloca __builtin_alloca
+# elif defined _AIX
+#  define alloca __alloca
+# elif defined _MSC_VER
+#  include <malloc.h>
+#  define alloca _alloca
+# elif !defined HAVE_ALLOCA
 #  ifdef  __cplusplus
 extern "C"
 #  endif
@@ -150,25 +150,24 @@ _fallback(Eina_Prefix *pfx, const char *pkg_bin, const char *pkg_lib,
    STRDUP_REP(pfx->prefix_path_lib, pkg_lib);
    STRDUP_REP(pfx->prefix_path_data, pkg_data);
    STRDUP_REP(pfx->prefix_path_locale, pkg_locale);
-   fprintf(stderr,
-           "WARNING: Could not determine its installed prefix for '%s'\n"
-           "      so am falling back on the compiled in default:\n"
-           "        %s\n"
-           "      implied by the following:\n"
-           "        bindir    = %s\n"
-           "        libdir    = %s\n"
-           "        datadir   = %s\n"
-           "        localedir = %s\n"
-           "      Try setting the following environment variables:\n"
-           "        %s_PREFIX     - points to the base prefix of install\n"
-           "      or the next 4 variables\n"
-           "        %s_BIN_DIR    - provide a specific binary directory\n"
-           "        %s_LIB_DIR    - provide a specific library directory\n"
-           "        %s_DATA_DIR   - provide a specific data directory\n"
-           "        %s_LOCALE_DIR - provide a specific locale directory\n"
-           , envprefix,
-           pfx->prefix_path, pkg_bin, pkg_lib, pkg_data, pkg_locale,
-           envprefix, envprefix, envprefix, envprefix, envprefix);
+   WRN("Could not determine its installed prefix for '%s'\n"
+       "      so am falling back on the compiled in default:\n"
+       "        %s\n"
+       "      implied by the following:\n"
+       "        bindir    = %s\n"
+       "        libdir    = %s\n"
+       "        datadir   = %s\n"
+       "        localedir = %s\n"
+       "      Try setting the following environment variables:\n"
+       "        %s_PREFIX     - points to the base prefix of install\n"
+       "      or the next 4 variables\n"
+       "        %s_BIN_DIR    - provide a specific binary directory\n"
+       "        %s_LIB_DIR    - provide a specific library directory\n"
+       "        %s_DATA_DIR   - provide a specific data directory\n"
+       "        %s_LOCALE_DIR - provide a specific locale directory",
+       envprefix,
+       pfx->prefix_path, pkg_bin, pkg_lib, pkg_data, pkg_locale,
+       envprefix, envprefix, envprefix, envprefix, envprefix);
    pfx->fallback = 1;
    return 1;
 }
@@ -238,7 +237,7 @@ _try_argv(Eina_Prefix *pfx, const char *argv0)
    DBG("Try argv0 = %s", argv0);
    /* 1. is argv0 abs path? */
 #ifdef _WIN32
-   if (argv0[0] && (argv0[1] == ':'))
+   if (evil_path_is_absolute(argv0))
 #else
    if (argv0[0] == DSEP_C)
 #endif
@@ -534,7 +533,7 @@ eina_prefix_new(const char *argv0, void *symbol, const char *envprefix,
                {
                   DBG("Dlinfo dli_fname = %s", info_dl.dli_fname);
 # ifdef _WIN32
-                  if (info_dl.dli_fname[0] && (info_dl.dli_fname[1] == ':'))
+                  if (evil_path_is_absolute(info_dl.dli_fname))
 # else
                   if (info_dl.dli_fname[0] == DSEP_C)
 # endif

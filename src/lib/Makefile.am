@@ -6,7 +6,6 @@ AM_CPPFLAGS = \
 -DPACKAGE_BIN_DIR=\"$(bindir)\" \
 -DPACKAGE_LIB_DIR=\"$(libdir)\" \
 -DPACKAGE_DATA_DIR=\"$(datadir)/$(PACKAGE)\" \
-@EINA_CPPFLAGS@ \
 @EFL_EINA_BUILD@
 
 base_sources = \
@@ -22,6 +21,7 @@ eina_error.c \
 eina_fp.c \
 eina_hamster.c \
 eina_hash.c \
+eina_inarray.c \
 eina_inlist.c \
 eina_iterator.c \
 eina_lalloc.c \
@@ -32,6 +32,7 @@ eina_main.c \
 eina_matrixsparse.c \
 eina_mempool.c \
 eina_mmap.c \
+eina_model.c \
 eina_module.c \
 eina_prefix.c \
 eina_quadtree.c \
@@ -130,12 +131,17 @@ eina_amalgamation.c: $(base_sources) Makefile
 	@echo "#include <stdio.h>" >> eina_amalgamation.c
 	@echo "#include <stdlib.h>" >> eina_amalgamation.c
 	@echo "#include <string.h>" >> eina_amalgamation.c
-	@echo "#include <dlfcn.h>" >> eina_amalgamation.c
+	@echo "#ifdef HAVE_DLOPEN" >> eina_amalgamation.c
+	@echo "# include <dlfcn.h>" >> eina_amalgamation.c
+	@echo "#endif" >> eina_amalgamation.c
 	@echo "#include <sys/types.h>" >> eina_amalgamation.c
-	@echo "#include <dirent.h>" >> eina_amalgamation.c
+	@echo "#ifdef HAVE_DIRENT_H" >> eina_amalgamation.c
+	@echo "# include <dirent.h>" >> eina_amalgamation.c
+	@echo "#endif" >> eina_amalgamation.c
 	@echo "#include <assert.h>" >> eina_amalgamation.c
 	@echo "#include <errno.h>" >> eina_amalgamation.c
 	@echo "#include <fnmatch.h>" >> eina_amalgamation.c
+	@echo "#include <fcntl.h>" >> eina_amalgamation.c
 
 	@echo "#ifdef HAVE_EVIL" >> eina_amalgamation.c
 	@echo "# include <Evil.h>" >> eina_amalgamation.c

@@ -1,3 +1,35 @@
+eina (1.1.0+svn.67705slp2+build01) unstable; urgency=low
+
+  * EFL migration revision 67705
+  * Git: slp/pkgs/e/eina
+  * Tag: eina_1.1.0+svn.67705slp2+build01
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Wed, 15 Feb 2012 18:58:06 +0900
+
+eina (1.1.0+svn.66965slp2+build01) unstable; urgency=low
+
+  * Package Upload
+  * Git: slp/pkgs/e/eina
+  * Tag: eina_1.1.0+svn.66965slp2+build01
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Mon, 16 Jan 2012 18:26:17 +0900
+
+eina (1.1.0+svn.65860slp2+build02) unstable; urgency=low
+
+  * Upstream partially merge r66028: Add eina_binbuf_manage_new_length
+  * Git: slp-scm.sec.samsung.net:slp/pkgs/e/eina
+  * Tag: eina_1.1.0+svn.65860slp2+build02
+
+ -- Tae-Hwan Kim <the81.kim@samsung.com>  Fri, 23 Dec 2011 18:01:45 +0900
+
+eina (1.1.0+svn.65860slp2+build01) unstable; urgency=low
+
+  * Package Upload for migration
+  * Git: slp-scm.sec.samsung.net:slp/pkgs/e/eina
+  * Tag: eina_1.1.0+svn.65860slp2+build01
+
+ -- Jaehwan Kim <jae.hwan.kim@samsung.com>  Thu, 08 Dec 2011 13:44:07 +0900
+
 eina (1.1.0+svn.65437slp2+build01) unstable; urgency=low
 
   * Package Upload

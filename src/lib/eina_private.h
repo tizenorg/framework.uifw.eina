@@ -42,6 +42,20 @@
                max) (((x) > (max)) ? (max) : (((x) < (min)) ? (min) : (x)))
 #endif
 
+#ifdef _WIN32
+# define FMT_CHAR  "%c"
+# define FMT_UCHAR "%c"
+# define FMT_XCHAR "%c"
+# define FMT_OCHAR "%c"
+# define FMT_2XCHAR "%2c"
+#else
+# define FMT_CHAR  "%hhd"
+# define FMT_UCHAR "%hhu"
+# define FMT_XCHAR "%hhx"
+# define FMT_OCHAR "%hho"
+# define FMT_2XCHAR "%02hhx"
+#endif
+
 #define EINA_INLIST_JUMP_SIZE 256
 
 #define READBUFSIZ 65536
@@ -91,6 +105,12 @@
 #define EINA_MAGIC_SIMPLE_XML_DATA 0x98761261
 #define EINA_MAGIC_SIMPLE_XML_ATTRIBUTE 0x98761262
 
+#define EINA_MAGIC_INARRAY 0x98761270
+#define EINA_MAGIC_INARRAY_ITERATOR 0x98761271
+#define EINA_MAGIC_INARRAY_ACCESSOR 0x98761272
+
+#define EINA_MAGIC_MODEL 0x98761280
+
 #define EINA_MAGIC_CLASS 0x9877CB30
 
 /* undef the following, we want out version */
@@ -135,6 +155,8 @@ void eina_share_common_threads_shutdown(void);
 void eina_log_threads_init(void);
 void eina_log_threads_shutdown(void);
 #endif
+
+void eina_file_mmap_faulty(void *addr, long page_size);
 
 #endif /* EINA_PRIVATE_H_ */
 

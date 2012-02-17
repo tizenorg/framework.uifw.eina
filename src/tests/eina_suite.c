@@ -34,6 +34,7 @@ struct _Eina_Test_Case
 
 static const Eina_Test_Case etc[] = {
    { "FixedPoint", eina_test_fp },
+   { "Inarray", eina_test_inarray },
    { "Array", eina_test_array },
    { "Binary Share", eina_test_binshare },
    { "String Share", eina_test_stringshare },
@@ -66,6 +67,8 @@ static const Eina_Test_Case etc[] = {
    { "QuadTree", eina_test_quadtree },
    { "Sched", eina_test_sched },
    { "Simple Xml Parser", eina_test_simple_xml_parser},
+   { "Value", eina_test_value },
+   { "Model", eina_test_model },
    { NULL, NULL }
 };
 
