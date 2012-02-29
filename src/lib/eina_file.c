@@ -362,41 +362,15 @@ _eina_file_direct_ls_iterator_free(Eina_File_Direct_Iterator *it)
 static Eina_Bool
 _eina_file_stat_ls_iterator_next(Eina_File_Direct_Iterator *it, void **data)
 {
-   struct stat st;
+   Eina_Stat st;
 
    if (!_eina_file_direct_ls_iterator_next(it, data))
      return EINA_FALSE;
 
    if (it->info.type == EINA_FILE_UNKNOWN)
      {
-#ifdef HAVE_FSTATAT
-        int fd;
-
-        fd = dirfd(it->dirp);
-        if (fstatat(fd, it->info.path + it->info.name_start, &st, 0))
-#else
-        if (stat(it->info.path, &st))
-#endif
+        if (eina_file_statat(it->dirp, &it->info, &st) != 0)
           it->info.type = EINA_FILE_UNKNOWN;
-        else
-          {
-             if (S_ISREG(st.st_mode))
-               it->info.type = EINA_FILE_REG;
-             else if (S_ISDIR(st.st_mode))
-               it->info.type = EINA_FILE_DIR;
-             else if (S_ISCHR(st.st_mode))
-               it->info.type = EINA_FILE_CHR;
-             else if (S_ISBLK(st.st_mode))
-               it->info.type = EINA_FILE_BLK;
-             else if (S_ISFIFO(st.st_mode))
-               it->info.type = EINA_FILE_FIFO;
-             else if (S_ISLNK(st.st_mode))
-               it->info.type = EINA_FILE_LNK;
-             else if (S_ISSOCK(st.st_mode))
-               it->info.type = EINA_FILE_SOCK;
-             else
-               it->info.type = EINA_FILE_UNKNOWN;
-          }
      }
 
    return EINA_TRUE;
@@ -1301,3 +1275,76 @@ eina_file_mmap_faulty(void *addr, long page_size)
    eina_lock_release(&_eina_file_lock_cache);
 }
 
+EAPI int
+eina_file_statat(void *container, Eina_File_Direct_Info *info, Eina_Stat *st)
+{
+   struct stat buf;
+#ifdef HAVE_FSTATAT
+   int fd;
+#endif
+
+   EINA_SAFETY_ON_NULL_RETURN_VAL(info, -1);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(st, -1);
+
+#ifdef HAVE_FSTATAT
+   fd = dirfd(container);
+   if (fstatat(fd, info->path + info->name_start, &buf, 0))
+#else
+   if (stat(info->path, &buf))
+#endif
+     {
+        if (info->type != EINA_FILE_LNK)
+          info->type = EINA_FILE_UNKNOWN;
+        return -1;
+     }
+
+   if (info->type == EINA_FILE_UNKNOWN)
+     {
+        if (S_ISREG(buf.st_mode))
+          info->type = EINA_FILE_REG;
+        else if (S_ISDIR(buf.st_mode))
+          info->type = EINA_FILE_DIR;
+        else if (S_ISCHR(buf.st_mode))
+          info->type = EINA_FILE_CHR;
+        else if (S_ISBLK(buf.st_mode))
+          info->type = EINA_FILE_BLK;
+        else if (S_ISFIFO(buf.st_mode))
+          info->type = EINA_FILE_FIFO;
+        else if (S_ISLNK(buf.st_mode))
+          info->type = EINA_FILE_LNK;
+        else if (S_ISSOCK(buf.st_mode))
+          info->type = EINA_FILE_SOCK;
+        else
+          info->type = EINA_FILE_UNKNOWN;
+     }
+
+   st->dev = buf.st_dev;
+   st->ino = buf.st_ino;
+   st->mode = buf.st_mode;
+   st->nlink = buf.st_nlink;
+   st->uid = buf.st_uid;
+   st->gid = buf.st_gid;
+   st->rdev = buf.st_rdev;
+   st->size = buf.st_size;
+   st->blksize = buf.st_blksize;
+   st->blocks = buf.st_blocks;
+   st->atime = buf.st_atime;
+   st->mtime = buf.st_mtime;
+   st->ctime = buf.st_ctime;
+#ifdef _STAT_VER_LINUX
+# if (defined __USE_MISC && defined st_mtime)
+   st->atimensec = buf.st_atim.tv_nsec;
+   st->mtimensec = buf.st_mtim.tv_nsec;
+   st->ctimensec = buf.st_ctim.tv_nsec;
+# else
+   st->atimensec = buf.st_atimensec;
+   st->mtimensec = buf.st_mtimensec;
+   st->ctimensec = buf.st_ctimensec;
+# endif
+#else
+   st->atimensec = 0;
+   st->mtimensec = 0;
+   st->ctimensec = 0;
+#endif
+   return 0;
+}

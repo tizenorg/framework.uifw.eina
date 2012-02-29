@@ -15,11 +15,15 @@ Additions:
     * Added eina_inarray data type
     * Added eina_value data type (generic value storage)
     * Added eina_model data type (generic hierarchy data access)
+    * Add eina_file_stat.
 
 Fixes:
 
     * compilation errors in Eina_RWLock code when building code on Windows > XP
 
+Improvements:
+
+    * faster implementation of Eina_Rbtree.
 
 Eina 1.1.0 (2011-12-02)
 
