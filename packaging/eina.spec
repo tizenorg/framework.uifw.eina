@@ -1,7 +1,7 @@
 Name:       eina
 Summary:    Data Type Library
-Version:    1.0.999.svn60288
-Release:    1
+Version:    1.1.0+svn.67705slp2
+Release:    1.4
 Group:      System/Libraries
 License:    LGPLv2
 URL:        http://www.enlightenment.org/
