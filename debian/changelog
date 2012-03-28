@@ -1,3 +1,11 @@
+eina (1.1.0+svn.69625slp2+build01) unstable; urgency=low
+
+  * Package Upload
+  * Git: slp/pkgs/e/eina
+  * Tag: eina_1.1.0+svn.69625slp2+build01
+
+ -- Jeonghyun Yun <jh0506.yun@samsung.com>  Wed, 28 Mar 2012 14:27:06 +0900
+
 eina (1.1.0+svn.69339slp2+build02) unstable; urgency=low
 
   * Package Upload
