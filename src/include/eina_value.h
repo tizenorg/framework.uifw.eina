@@ -210,9 +210,9 @@
  *
  * Next we have setting, this however requires not one but rather two functions,
  * the reason for this is because to be able to receive arguments of any type
- * eina value uses @ref https://wikipedia.org/wiki/Variadic_functions "variadic
- * functions", so we need a function to get the argument from a va_list and
- * another to actually to the setting.
+ * eina value uses <a href="https://wikipedia.org/wiki/Variadic_functions">
+ * variadic functions</a>, so we need a function to get the argument from a 
+ * va_list and another to actually to the setting.
  *
  * Lets first look at the pset function which sets the received value to a
  * pointer:
@@ -1721,7 +1721,7 @@ static inline Eina_Bool eina_value_array_pappend(Eina_Value *value,
 
 /**
  * @brief Retrieves a value from the array as an Eina_Value copy.
- * @param value source value object
+ * @param src source value object
  * @param position index of the member
  * @param dst where to return the array member
  * @return #EINA_TRUE on success, #EINA_FALSE otherwise.
