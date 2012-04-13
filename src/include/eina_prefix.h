@@ -38,9 +38,9 @@ typedef struct _Eina_Prefix Eina_Prefix;
  * @return The prefix handle, or NULL on failure
  *
  * Applications and libraries are most often not just single executables nor
- * single shared library binares, but also come with extra modules they
+ * single shared library binaries, but also come with extra modules they
  * have to load, extra binary utilities they need to run, or have data files
- * they need to load. A very primitve application ASSUMES a fixed install
+ * they need to load. A very primitive application ASSUMES a fixed install
  * location at compile-time, but this disallows the ability to re-locate
  * the application (or library) somewhere else after compilation (if you run
  * out of space on a given disk, partition etc. for example), or necessitate
@@ -161,8 +161,7 @@ eina_prefix_free(Eina_Prefix *pfx);
  * @brief Get the prefix base directory
  *
  * @param pfx The prefix object
- *
- * This returns the base prefix (eg "/usr/local", "/usr", "/opt/appname" or
+ * @return The base prefix (eg "/usr/local", "/usr", "/opt/appname" or
  * "/home/user/myapps/appname" etc.) that the software resides in at runtime.
  *
  * @since 1.1.0
@@ -174,8 +173,7 @@ eina_prefix_get(Eina_Prefix *pfx);
  * @brief Get the binary installation directory
  *
  * @param pfx The prefix object
- *
- * This returns the location of installed binaries (eg "/usr/local/bin",
+ * @return The location of installed binaries (eg "/usr/local/bin",
  * "/usr/bin", "/opt/appname/bin", "/home/user/myapps/appname/bin" etc.).
  *
  * @since 1.1.0
@@ -187,8 +185,7 @@ eina_prefix_bin_get(Eina_Prefix *pfx);
  * @brief Get the library installation directory
  *
  * @param pfx The prefix object
- *
- * This returns the location of installed binaries (eg "/usr/local/lib",
+ * @return The location of installed binaries (eg "/usr/local/lib",
  * "/usr/lib32", "/opt/appname/lib64", "/home/user/myapps/appname/lib" etc.).
  *
  * @since 1.1.0
@@ -200,8 +197,7 @@ eina_prefix_lib_get(Eina_Prefix *pfx);
  * @brief Get the data installation directory
  *
  * @param pfx The prefix object
- *
- * This returns the location of installed binaries (eg "/usr/local/share/appname",
+ * @return The location of installed binaries (eg "/usr/local/share/appname",
  * "/usr/share/appname", "/opt/appname/share/appname", "/home/user/myapps/appname/share/appname" etc.).
  *
  * @since 1.1.0
@@ -213,8 +209,7 @@ eina_prefix_data_get(Eina_Prefix *pfx);
  * @brief Get the locale installation directory
  *
  * @param pfx The prefix object
- *
- * This returns the location of installed binaries (eg "/usr/local/share/locale",
+ * @return The location of installed binaries (eg "/usr/local/share/locale",
  * "/usr/share/locale", "/opt/appname/share/locale", "/home/user/myapps/appname/share/locale" etc.).
  *
  * @since 1.1.0

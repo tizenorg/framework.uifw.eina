@@ -15,9 +15,10 @@
  * @brief Enable or disable safe mmaped IO handling
  *
  * @param enabled The enabled state (to enable, pass EINA_TRUE)
+ * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
  * This enables (if possible on your platform) a signal handler for
- * SIGBUS, that replaces the "bad page" with a pzge of 0's (from /dev/zero)
+ * SIGBUS, that replaces the "bad page" with a page of 0's (from /dev/zero)
  * if a SIGBUS occurs. This allows for safe mmap() of files that may truncate
  * or from files on devices with IO errors. Normally these cases will result
  * in a SIGBUS being delivered (and termination of your process), but
