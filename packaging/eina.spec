@@ -1,11 +1,11 @@
 Name:       eina
 Summary:    Data Type Library
-Version:    1.1.0+svn.67705slp2
-Release:    1.4
+Version:    1.2.0+svn.69920slp2+build01
+Release:    1
 Group:      System/Libraries
 License:    LGPLv2
 URL:        http://www.enlightenment.org/
-Source0:    http://download.enlightenment.org/releases/eina-%{version}.tar.gz
+Source0:    %{name}-%{version}.tar.gz
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 
@@ -22,20 +22,24 @@ Enlightenment Foundation Library providing optimized data types Eina is a multi-
     + Accessor: can access items of a container randomly
     + Iterator: can access items of a container sequentially
 
+
 %package devel
 Summary:    Data Type Library (devel)
 Group:      Development/Libraries
 Requires:   %{name} = %{version}-%{release}
+
 
 %description devel
 Enlightenment Foundation Library providing optimized data types (devel)
 
 
 %prep
-%setup -q -n %{name}-%{version}
+%setup -q
 
 
 %build
+export CFLAGS+=" -fvisibility=hidden"
+export LDFLAGS+=" -fvisibility=hidden"
 
 %autogen --disable-static
 %configure --disable-static \
@@ -43,21 +47,25 @@ Enlightenment Foundation Library providing optimized data types (devel)
 
 make %{?jobs:-j%jobs}
 
+
 %install
 rm -rf %{buildroot}
 %make_install
 
+
 %post -p /sbin/ldconfig
 
+
 %postun -p /sbin/ldconfig
+
 
 %files
 %defattr(-,root,root,-)
 %{_libdir}/libeina.so.*
+
 
 %files devel
 %defattr(-,root,root,-)
 %{_includedir}/eina-1
 %{_libdir}/*.so
 %{_libdir}/pkgconfig/eina.pc
-

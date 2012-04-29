@@ -881,13 +881,13 @@ EAPI Eina_List            *eina_list_clone(const Eina_List *list) EINA_WARN_UNUS
  * @brief Sort a list according to the ordering func will return.
  *
  * @param list The list handle to sort.
- * @param size The length of the list to sort.
+ * @param limit The maximum number of list elements to sort.
  * @param func A function pointer that can handle comparing the list data
  * nodes.
  * @return the new head of list.
  *
  * This function sorts @p list. @p size if the number of the first
- * element to sort. If @p size is 0 or greater than the number of
+ * element to sort. If @p limit is 0 or greater than the number of
  * elements in @p list, all the elements are sorted. @p func is used to
  * compare two elements of @p list. If @p list or @p func are @c NULL,
  * this function returns @c NULL.
@@ -920,7 +920,7 @@ EAPI Eina_List            *eina_list_clone(const Eina_List *list) EINA_WARN_UNUS
  *
  * @warning @p list must be a pointer to the first element of the list.
  */
-EAPI Eina_List            *eina_list_sort(Eina_List *list, unsigned int size, Eina_Compare_Cb func) EINA_ARG_NONNULL(3) EINA_WARN_UNUSED_RESULT;
+EAPI Eina_List            *eina_list_sort(Eina_List *list, unsigned int limit, Eina_Compare_Cb func) EINA_ARG_NONNULL(3) EINA_WARN_UNUSED_RESULT;
 
 
 /**
@@ -930,9 +930,9 @@ EAPI Eina_List            *eina_list_sort(Eina_List *list, unsigned int size, Ei
  * @param right Tail list to merge.
  * @return A new merged list.
  *
- * This function puts right at the end of left and return the head.
+ * This function puts right at the end of left and returns the head.
  *
- * Both left and right does not exist anymore after the merge.
+ * Both left and right do not exist anymore after the merge.
  *
  * @note merge cost is O(n), being @b n the size of the smallest
  * list. This is due the need to fix accounting of that segment,
@@ -956,7 +956,7 @@ EAPI Eina_List            *eina_list_merge(Eina_List *left, Eina_List *right) EI
  * smallest one to be head of the returned list. It will continue this process
  * for all entry of both list.
  *
- * Both left and right does not exist anymore after the merge.
+ * Both left and right do not exist anymore after the merge.
  * If @p func is NULL, it will return NULL.
  *
  * Example:

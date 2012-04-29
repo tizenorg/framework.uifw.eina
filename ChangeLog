@@ -108,7 +108,7 @@
 
 2011-06-15  Cedric Bail
 
-	* Add eina_hash_free_cb_set to change the free callback during the
+ 	* Add eina_hash_free_cb_set to change the free callback during the
 	life of an Eina_Hash.
 
 2011-06-23  Cedric Bail
@@ -185,8 +185,8 @@
 2012-01-03  Cedric Bail
 
 	* Add eina_xattr_fd_ls, eina_xattr_value_fd_ls and eina_xattr_value_ls.
-	* Detect fault during access to Eina_File mmap memory, use eina_file_map_faulted
-	to learn if it happens.
+	* Detect fault during access to Eina_File mmap memory, use
+        eina_file_map_faulted to learn if it happens.
 	* Add eina_file_xattr_get and eina_file_xattr_value_get.
 
 2012-01-09  Gustavo Barbieri
@@ -218,3 +218,35 @@
 	this is a same kind of visual hint for the purpose of the pointer,
 	but again, the two types are interchangeable.
 
+2012-02-17  Cedric Bail
+
+	* Fix forgotten initialization of eina list count during eina_list_split_list.
+
+2012-02-22  Cedric Bail
+
+	* Add eina_file_stat.
+
+2012-02-27  Alexandre Becoulet
+
+	* Add faster implementation of Eina_Rbtree.
+
+2012-03-07  Cedric Bail
+
+	* Fix leak of Eina_File.
+
+2012-03-14  Cedric Bail
+
+	* Fix a dead lock in Eina_File.
+
+2012-03-16  Raphael Kubo da Costa
+
+	* Adjust Valgrind's CFLAGS to fix the build when it is in a non-default location.
+
+2012-03-29 Iván Briano
+
+	* Avoid freeing old data before returning it on eina_hash_set().
+
+2012-03-31  Vincent Torri
+
+	* Add missing API eina_file_map_faulted() on Windows. Does nothing
+	for now.

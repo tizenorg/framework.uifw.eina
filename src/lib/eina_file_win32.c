@@ -37,6 +37,9 @@ extern "C"
 void *alloca (size_t);
 #endif
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #undef WIN32_LEAN_AND_MEAN
@@ -454,8 +457,6 @@ _eina_file_real_close(Eina_File *file)
 
    CloseHandle(file->fm);
    CloseHandle(file->handle);
-
-   eina_stringshare_del(file->filename);
 
    free(file);
 }
@@ -924,7 +925,7 @@ eina_file_open(const char *path, Eina_Bool shared)
 
    file = eina_hash_find(_eina_file_cache, filename);
    if (file &&
-       (file->mtime == mtime.QuadPart && file->length == length.QuadPart))
+       (file->mtime != mtime.QuadPart || file->length != length.QuadPart))
      {
         file->delete_me = EINA_TRUE;
         eina_hash_del(_eina_file_cache, file->filename, file);
@@ -1000,7 +1001,7 @@ eina_file_close(Eina_File *file)
 
    eina_hash_del(_eina_file_cache, file->filename, file);
    _eina_file_real_close(file);
-   
+
    eina_lock_release(&_eina_file_lock_cache);
 }
 
@@ -1023,6 +1024,16 @@ eina_file_filename_get(Eina_File *file)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(file, NULL);
    return file->filename;
+}
+
+EAPI Eina_Iterator *eina_file_xattr_get(Eina_File *file __UNUSED__)
+{
+   return NULL;
+}
+
+EAPI Eina_Iterator *eina_file_xattr_value_get(Eina_File *file __UNUSED__)
+{
+   return NULL;
 }
 
 EAPI void *
@@ -1081,7 +1092,11 @@ eina_file_map_new(Eina_File *file, Eina_File_Populate rule,
         void  *data;
 
         map = malloc(sizeof (Eina_File_Map));
-        if (!map) return NULL;
+        if (!map)
+          {
+             eina_lock_release(&file->lock);
+             return NULL;
+          }
 
         data = MapViewOfFile(file->fm, FILE_MAP_READ,
                              offset & 0xffff0000,
@@ -1099,6 +1114,7 @@ eina_file_map_new(Eina_File *file, Eina_File_Populate rule,
         if (map->map == MAP_FAILED)
           {
              free(map);
+             eina_lock_release(&file->lock);
              return NULL;
           }
 
@@ -1135,7 +1151,7 @@ eina_file_map_free(Eina_File *file, void *map)
         unsigned long int key[2];
 
         em = eina_hash_find(file->rmap, &map);
-        if (!em) return ;
+        if (!em) goto on_exit;
 
         em->refcount--;
 
@@ -1150,4 +1166,85 @@ eina_file_map_free(Eina_File *file, void *map)
 
  on_exit:
    eina_lock_release(&file->lock);
+}
+
+EAPI Eina_Bool
+eina_file_map_faulted(Eina_File *file, void *map)
+{
+  /*
+   * FIXME:
+   * vc++ : http://msdn.microsoft.com/en-us/library/windows/desktop/aa366801%28v=vs.85%29.aspx
+   *
+   * mingw-w64 :
+   * - 32 bits : there is a way to implement __try/__except/__final in C.
+   *   see excpt.h header for 32-bits
+   * - 64 bits : some inline assembly required for it.  See as example our
+   *   startup-code in WinMainCRTStartup() in crtexe.c :
+{
+  int ret = 255;
+#ifdef __SEH__
+  asm ("\t.l_startw:\n"
+    "\t.seh_handler __C_specific_handler, @except\n"
+    "\t.seh_handlerdata\n"
+    "\t.long 1\n"
+    "\t.rva .l_startw, .l_endw, _gnu_exception_handler ,.l_endw\n"
+    "\t.text"
+    );
+#endif
+  mingw_app_type = 1;
+  __security_init_cookie ();
+  ret = __tmainCRTStartup ();
+#ifdef __SEH__
+  asm ("\tnop\n"
+    "\t.l_endw: nop\n");
+#endif
+  return ret;
+}
+   */
+   return EINA_FALSE;
+}
+
+EAPI int
+eina_file_statat(void *container __UNUSED__, Eina_File_Direct_Info *info, Eina_Stat *st)
+{
+   struct __stat64 buf;
+
+   EINA_SAFETY_ON_NULL_RETURN_VAL(info, -1);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(st, -1);
+
+   if (stat64(info->path, &buf))
+     {
+        if (info->type != EINA_FILE_LNK)
+          info->type = EINA_FILE_UNKNOWN;
+        return -1;
+     }
+
+   if (info->type == EINA_FILE_UNKNOWN)
+     {
+        if (S_ISREG(buf.st_mode))
+          info->type = EINA_FILE_REG;
+        else if (S_ISDIR(buf.st_mode))
+          info->type = EINA_FILE_DIR;
+        else
+          info->type = EINA_FILE_UNKNOWN;
+     }
+
+   st->dev = buf.st_dev;
+   st->ino = buf.st_ino;
+   st->mode = buf.st_mode;
+   st->nlink = buf.st_nlink;
+   st->uid = buf.st_uid;
+   st->gid = buf.st_gid;
+   st->rdev = buf.st_rdev;
+   st->size = buf.st_size;
+   st->blksize = 0;
+   st->blocks = 0;
+   st->atime = buf.st_atime;
+   st->mtime = buf.st_mtime;
+   st->ctime = buf.st_ctime;
+   st->atimensec = 0;
+   st->mtimensec = 0;
+   st->ctimensec = 0;
+
+   return 0;
 }

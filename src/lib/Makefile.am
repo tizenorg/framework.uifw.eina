@@ -6,7 +6,8 @@ AM_CPPFLAGS = \
 -DPACKAGE_BIN_DIR=\"$(bindir)\" \
 -DPACKAGE_LIB_DIR=\"$(libdir)\" \
 -DPACKAGE_DATA_DIR=\"$(datadir)/$(PACKAGE)\" \
-@EFL_EINA_BUILD@
+@EFL_EINA_BUILD@ \
+@VALGRIND_CFLAGS@
 
 base_sources = \
 eina_accessor.c \
@@ -169,7 +170,7 @@ else
 libeina_la_SOURCES = $(base_sources)
 endif
 
-libeina_la_LIBADD = @iconv_libs@ @rt_libs@ @EINA_LIBS@ @dlopen_libs@
+libeina_la_LIBADD = @iconv_libs@ @EFL_SHM_OPEN_LIBS@ @EINA_LIBS@ @EFL_DLOPEN_LIBS@ @EFL_DLADDR_LIBS@ -lm
 libeina_la_LDFLAGS = -no-undefined @lt_enable_auto_import@ -version-info @version_info@ @release_info@ @EFL_PTHREAD_LIBS@
 libeina_la_CFLAGS = @EINA_CFLAGS@ @EFL_PTHREAD_CFLAGS@
 

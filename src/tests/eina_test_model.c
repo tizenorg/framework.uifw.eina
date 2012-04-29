@@ -855,6 +855,421 @@ START_TEST(eina_model_test_struct)
 }
 END_TEST
 
+static Eina_Bool
+_struct_complex_members_constructor(Eina_Model *m)
+{
+   struct myst {
+      Eina_Value_Array a;
+      Eina_Value_List l;
+      Eina_Value_Hash h;
+      Eina_Value_Struct s;
+   } st;
+   struct subst {
+      int i, j;
+   };
+   static Eina_Value_Struct_Member myst_members[] = {
+        EINA_VALUE_STRUCT_MEMBER(NULL, struct myst, a),
+        EINA_VALUE_STRUCT_MEMBER(NULL, struct myst, l),
+        EINA_VALUE_STRUCT_MEMBER(NULL, struct myst, h),
+        EINA_VALUE_STRUCT_MEMBER(NULL, struct myst, s)
+   };
+   static Eina_Value_Struct_Desc myst_desc = {
+     EINA_VALUE_STRUCT_DESC_VERSION,
+     NULL, myst_members, EINA_C_ARRAY_LENGTH(myst_members), sizeof(struct myst)
+   };
+   static Eina_Value_Struct_Member subst_members[] = {
+        EINA_VALUE_STRUCT_MEMBER(NULL, struct subst, i),
+        EINA_VALUE_STRUCT_MEMBER(NULL, struct subst, j)
+   };
+   static Eina_Value_Struct_Desc subst_desc = {
+     EINA_VALUE_STRUCT_DESC_VERSION,
+     NULL, subst_members, EINA_C_ARRAY_LENGTH(subst_members),
+     sizeof(struct subst)
+   };
+
+   if (!myst_members[0].type)
+     {
+        myst_members[0].type = EINA_VALUE_TYPE_ARRAY;
+        myst_members[1].type = EINA_VALUE_TYPE_LIST;
+        myst_members[2].type = EINA_VALUE_TYPE_HASH;
+        myst_members[3].type = EINA_VALUE_TYPE_STRUCT;
+     }
+
+   if (!subst_members[0].type)
+     {
+        subst_members[0].type = EINA_VALUE_TYPE_INT;
+        subst_members[1].type = EINA_VALUE_TYPE_INT;
+     }
+
+   if (!eina_model_type_constructor(EINA_MODEL_TYPE_STRUCT, m))
+     return EINA_FALSE;
+
+   memset(&st, 0, sizeof(st));
+
+   st.a.subtype = EINA_VALUE_TYPE_STRING;
+   st.l.subtype = EINA_VALUE_TYPE_STRING;
+   st.h.subtype = EINA_VALUE_TYPE_STRING;
+   st.s.desc = &subst_desc;
+   if (!eina_model_struct_set(m, &myst_desc, &st))
+     return EINA_FALSE;
+
+   return EINA_TRUE;
+}
+
+START_TEST(eina_model_test_struct_complex_members)
+{
+   Eina_Model *m;
+   Eina_Value outv;
+   char *s;
+   Eina_Model_Type type = EINA_MODEL_TYPE_INIT_NOPRIVATE
+     ("struct_complex_members", Eina_Model_Type, NULL, NULL, NULL);
+
+   eina_init();
+
+   type.constructor = _struct_complex_members_constructor;
+   type.parent = EINA_MODEL_TYPE_STRUCT;
+
+   m = eina_model_new(&type);
+   fail_unless(m != NULL);
+
+   fail_unless(eina_model_property_get(m, "a", &outv));
+   fail_unless(eina_value_array_append(&outv, "Hello"));
+   fail_unless(eina_value_array_append(&outv, "World"));
+   fail_unless(eina_model_property_set(m, "a", &outv));
+   eina_value_flush(&outv);
+
+   fail_unless(eina_model_property_get(m, "l", &outv));
+   fail_unless(eina_value_list_append(&outv, "Some"));
+   fail_unless(eina_value_list_append(&outv, "Thing"));
+   fail_unless(eina_model_property_set(m, "l", &outv));
+   eina_value_flush(&outv);
+
+   fail_unless(eina_model_property_get(m, "h", &outv));
+   fail_unless(eina_value_hash_set(&outv, "key", "value"));
+   fail_unless(eina_model_property_set(m, "h", &outv));
+   eina_value_flush(&outv);
+
+   fail_unless(eina_model_property_get(m, "s", &outv));
+   fail_unless(eina_value_struct_set(&outv, "i", 1234));
+   fail_unless(eina_value_struct_set(&outv, "j", 44));
+   fail_unless(eina_model_property_set(m, "s", &outv));
+   eina_value_flush(&outv);
+
+   s = eina_model_to_string(m);
+   fail_unless(s != NULL);
+   ck_assert_str_eq(s, "struct_complex_members({a: [Hello, World], h: {key: value}, l: [Some, Thing], s: {i: 1234, j: 44}}, [])");
+   free(s);
+
+   ck_assert_int_eq(eina_model_refcount(m), 1);
+
+   eina_model_unref(m);
+   eina_shutdown();
+}
+END_TEST
+
+typedef struct _Animal_Type
+{
+   Eina_Model_Type parent_class;
+   void (*eat)(Eina_Model *mdl);
+} Animal_Type;
+
+typedef struct _Human_Type
+{
+   Animal_Type parent_class;
+   void (*talk)(Eina_Model *mdl);
+} Human_Type;
+
+typedef struct _Pooper_Interface
+{
+   Eina_Model_Interface base_interface;
+   void (*poop)(Eina_Model *mdl);
+} Pooper_Interface;
+
+#define ANIMAL_TYPE(x) ((Animal_Type *) x)
+#define HUMAN_TYPE(x) ((Human_Type *) x)
+#define POOPER_IFACE(x) ((Pooper_Interface *) x)
+#define POOPER_IFACE_NAME "Pooper_Interace"
+
+#define INHER_CB_COUNT(prefix) \
+static int prefix ## _count = 0; \
+static void \
+prefix (Eina_Model *mdl) \
+{ \
+   (void) mdl; \
+   (prefix ## _count)++; \
+}
+
+static void
+animal_eat(Eina_Model *mdl)
+{
+   void (*pf)(Eina_Model *mdl);
+   pf = eina_model_method_resolve(mdl, Animal_Type, eat);
+   EINA_SAFETY_ON_NULL_RETURN(pf);
+   pf(mdl);
+}
+
+static void
+pooper_poop(Eina_Model *mdl)
+{
+   const Eina_Model_Interface *iface = NULL;
+   iface = eina_model_interface_get(mdl, POOPER_IFACE_NAME);
+
+   EINA_SAFETY_ON_NULL_RETURN(iface);
+
+   void (*pf)(Eina_Model *);
+
+   pf = eina_model_interface_method_resolve(iface, mdl, Pooper_Interface, poop);
+   EINA_SAFETY_ON_NULL_RETURN(pf);
+   pf(mdl);
+}
+
+INHER_CB_COUNT(_animal_poop);
+INHER_CB_COUNT(_human_poop);
+INHER_CB_COUNT(_animal_eat);
+INHER_CB_COUNT(_human_eat);
+
+START_TEST(eina_model_test_inheritance)
+{
+   eina_init();
+
+   Pooper_Interface _ANIMAL_POOPER_IFACE;
+   Eina_Model_Interface *ANIMAL_POOPER_IFACE = (Eina_Model_Interface *) &_ANIMAL_POOPER_IFACE;
+   memset(&_ANIMAL_POOPER_IFACE, 0, sizeof(_ANIMAL_POOPER_IFACE));
+   ANIMAL_POOPER_IFACE->version = EINA_MODEL_INTERFACE_VERSION;
+   ANIMAL_POOPER_IFACE->interface_size = sizeof(Pooper_Interface);
+   ANIMAL_POOPER_IFACE->name = POOPER_IFACE_NAME;
+   POOPER_IFACE(ANIMAL_POOPER_IFACE)->poop = _animal_poop;
+
+   Pooper_Interface _HUMAN_POOPER_IFACE;
+   Eina_Model_Interface *HUMAN_POOPER_IFACE = (Eina_Model_Interface *) &_HUMAN_POOPER_IFACE;
+   const Eina_Model_Interface *HUMAN_POOPER_IFACES[] = {
+     ANIMAL_POOPER_IFACE, NULL
+   };
+   memset(&_HUMAN_POOPER_IFACE, 0, sizeof(_HUMAN_POOPER_IFACE));
+   HUMAN_POOPER_IFACE->version = EINA_MODEL_INTERFACE_VERSION;
+   HUMAN_POOPER_IFACE->interface_size = sizeof(Pooper_Interface);
+   HUMAN_POOPER_IFACE->name = POOPER_IFACE_NAME;
+   HUMAN_POOPER_IFACE->interfaces = HUMAN_POOPER_IFACES;
+   POOPER_IFACE(HUMAN_POOPER_IFACE)->poop = _human_poop;
+
+   const Eina_Model_Interface *ANIMAL_IFACES[] = {ANIMAL_POOPER_IFACE, NULL};
+   const Eina_Model_Interface *HUMAN_IFACES[] = {HUMAN_POOPER_IFACE, NULL};
+
+   /* Init Animal Type */
+   Animal_Type _ANIMAL_TYPE;
+   Eina_Model_Type *ANIMAL_TYPE = (Eina_Model_Type *) &_ANIMAL_TYPE;
+
+   memset(&_ANIMAL_TYPE, 0, sizeof(_ANIMAL_TYPE));
+   Eina_Model_Type *type = (Eina_Model_Type *) &_ANIMAL_TYPE;
+   type->version = EINA_MODEL_TYPE_VERSION;
+   type->parent = EINA_MODEL_TYPE_BASE;
+   type->type_size = sizeof(Animal_Type);
+   type->name = "Animal_Type";
+   type->parent = EINA_MODEL_TYPE_GENERIC;
+   type->interfaces = ANIMAL_IFACES;
+
+   ANIMAL_TYPE(type)->eat = _animal_eat;
+
+   /* Init Human Type */
+   Animal_Type _HUMAN_TYPE;
+   Eina_Model_Type *HUMAN_TYPE = (Eina_Model_Type *) &_HUMAN_TYPE;
+   memset(&_HUMAN_TYPE, 0, sizeof(_HUMAN_TYPE));
+   type = (Eina_Model_Type *) &_HUMAN_TYPE;
+   type->version = EINA_MODEL_TYPE_VERSION;
+   type->parent = ANIMAL_TYPE;
+   type->type_size = sizeof(Human_Type);
+   type->name = "Human_Type";
+   type->interfaces = HUMAN_IFACES;
+
+   ANIMAL_TYPE(type)->eat = _human_eat;
+
+   Eina_Model *hm, *am;
+   am = eina_model_new(ANIMAL_TYPE);
+   hm = eina_model_new(HUMAN_TYPE);
+
+   animal_eat(am);
+   ck_assert_int_eq(_animal_eat_count, 1);
+   animal_eat(hm);
+   ck_assert_int_eq(_human_eat_count, 1);
+
+   pooper_poop(am);
+   ck_assert_int_eq(_animal_poop_count, 1);
+   pooper_poop(hm);
+   ck_assert_int_eq(_human_poop_count, 1);
+
+   ck_assert_int_eq(_animal_eat_count, 1);
+   ck_assert_int_eq(_human_eat_count, 1);
+   ck_assert_int_eq(_animal_poop_count, 1);
+   ck_assert_int_eq(_human_poop_count, 1);
+
+   ck_assert_int_eq(eina_model_refcount(am), 1);
+   ck_assert_int_eq(eina_model_refcount(hm), 1);
+
+   eina_model_unref(am);
+   eina_model_unref(hm);
+
+   eina_shutdown();
+}
+END_TEST
+
+static Eina_Bool
+_myproperties_load(Eina_Model *m)
+{
+   Eina_Value v;
+   Eina_Bool ret;
+   int count;
+
+   if (!eina_model_property_get(m, "load_count", &v))
+     return EINA_FALSE;
+
+   eina_value_get(&v, &count);
+   count++;
+   eina_value_set(&v, count);
+
+   ret = eina_model_property_set(m, "load_count", &v);
+   eina_value_flush(&v);
+
+   return ret;
+}
+
+static Eina_Bool
+_myproperties_unload(Eina_Model *m)
+{
+   Eina_Value v;
+   Eina_Bool ret;
+   int count;
+
+   if (!eina_model_property_get(m, "load_count", &v))
+     return EINA_FALSE;
+
+   eina_value_get(&v, &count);
+   count--;
+   eina_value_set(&v, count);
+
+   ret = eina_model_property_set(m, "load_count", &v);
+   eina_value_flush(&v);
+
+   return ret;
+}
+
+static Eina_Bool
+_mychildren_load(Eina_Model *m)
+{
+   Eina_Model *c = eina_model_new(EINA_MODEL_TYPE_GENERIC);
+   int ret = eina_model_child_append(m, c);
+   eina_model_unref(c);
+   return ret >= 0;
+}
+
+static Eina_Bool
+_mychildren_unload(Eina_Model *m)
+{
+   int count = eina_model_child_count(m);
+   EINA_SAFETY_ON_FALSE_RETURN_VAL(count > 0, EINA_FALSE);
+   return eina_model_child_del(m, count - 1);
+}
+
+START_TEST(eina_model_test_ifaces_load_unload)
+{
+   unsigned int count_loaded = 0, count_unloaded = 0;
+   unsigned int count_ploaded = 0, count_punloaded = 0;
+   unsigned int count_cloaded = 0, count_cunloaded = 0;
+   static Eina_Model_Interface_Properties piface;
+   static Eina_Model_Interface_Children ciface;
+   static const Eina_Model_Interface *piface_parents[2] = {NULL, NULL};
+   static const Eina_Model_Interface *ciface_parents[2] = {NULL, NULL};
+   static const Eina_Model_Interface *type_ifaces[3] = {
+     &piface.base, &ciface.base, NULL
+   };
+   static Eina_Model_Type type;
+   Eina_Model *m;
+   Eina_Value v;
+   int count;
+
+   eina_init();
+
+   /* do after eina_init() otherwise interfaces are not set */
+   piface_parents[0] = EINA_MODEL_INTERFACE_PROPERTIES_HASH;
+   ciface_parents[0] = EINA_MODEL_INTERFACE_CHILDREN_INARRAY;
+
+   memset(&piface, 0, sizeof(piface));
+   piface.base.version = EINA_MODEL_INTERFACE_VERSION;
+   piface.base.interface_size = sizeof(piface);
+   piface.base.name = EINA_MODEL_INTERFACE_NAME_PROPERTIES;
+   piface.base.interfaces = piface_parents;
+   piface.load = _myproperties_load;
+   piface.unload = _myproperties_unload;
+
+   memset(&ciface, 0, sizeof(ciface));
+   ciface.base.version = EINA_MODEL_INTERFACE_VERSION;
+   ciface.base.interface_size = sizeof(ciface);
+   ciface.base.name = EINA_MODEL_INTERFACE_NAME_CHILDREN;
+   ciface.base.interfaces = ciface_parents;
+   ciface.load = _mychildren_load;
+   ciface.unload = _mychildren_unload;
+
+   type.version = EINA_MODEL_TYPE_VERSION;
+   type.private_size = 0;
+   type.name = "MyType";
+   eina_model_type_subclass_setup(&type,  EINA_MODEL_TYPE_GENERIC);
+   type.interfaces = type_ifaces;
+
+   m = eina_model_new(&type);
+   fail_unless(m != NULL);
+
+   eina_model_event_callback_add
+     (m, "loaded", _eina_test_model_cb_count, &count_loaded);
+   eina_model_event_callback_add
+     (m, "unloaded", _eina_test_model_cb_count, &count_unloaded);
+
+   eina_model_event_callback_add
+     (m, "properties,loaded", _eina_test_model_cb_count, &count_ploaded);
+   eina_model_event_callback_add
+     (m, "properties,unloaded", _eina_test_model_cb_count, &count_punloaded);
+
+   eina_model_event_callback_add
+     (m, "children,loaded", _eina_test_model_cb_count, &count_cloaded);
+   eina_model_event_callback_add
+     (m, "children,unloaded", _eina_test_model_cb_count, &count_cunloaded);
+
+   fail_unless(eina_value_setup(&v, EINA_VALUE_TYPE_INT));
+   fail_unless(eina_value_set(&v, 0));
+   fail_unless(eina_model_property_set(m, "load_count", &v));
+   eina_value_flush(&v);
+
+   fail_unless(eina_model_load(m));
+   fail_unless(eina_model_load(m));
+   fail_unless(eina_model_load(m));
+
+   /* each load increments one for load_count property */
+   fail_unless(eina_model_property_get(m, "load_count", &v));
+   fail_unless(eina_value_pget(&v, &count));
+   ck_assert_int_eq(count, 3);
+   eina_value_flush(&v);
+
+   /* each load adds one child */
+   ck_assert_int_eq(eina_model_child_count(m), 3);
+
+   fail_unless(eina_model_unload(m));
+   fail_unless(eina_model_unload(m));
+   fail_unless(eina_model_unload(m));
+
+   ck_assert_int_eq(count_loaded, 3);
+   ck_assert_int_eq(count_unloaded, 3);
+
+   ck_assert_int_eq(count_ploaded, 3);
+   ck_assert_int_eq(count_punloaded, 3);
+
+   ck_assert_int_eq(count_cloaded, 3);
+   ck_assert_int_eq(count_cunloaded, 3);
+
+   ck_assert_int_eq(eina_model_refcount(m), 1);
+   eina_model_unref(m);
+
+   eina_shutdown();
+}
+END_TEST
+
 void
 eina_test_model(TCase *tc)
 {
@@ -867,4 +1282,7 @@ eina_test_model(TCase *tc)
    tcase_add_test(tc, eina_model_test_child_sorted_iterator);
    tcase_add_test(tc, eina_model_test_child_filtered_iterator);
    tcase_add_test(tc, eina_model_test_struct);
+   tcase_add_test(tc, eina_model_test_struct_complex_members);
+   tcase_add_test(tc, eina_model_test_inheritance);
+   tcase_add_test(tc, eina_model_test_ifaces_load_unload);
 }

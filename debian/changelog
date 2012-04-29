@@ -1,3 +1,59 @@
+eina (1.1.0+svn.69625slp2+build01) unstable; urgency=low
+
+  * Package Upload
+  * Git: slp/pkgs/e/eina
+  * Tag: eina_1.1.0+svn.69625slp2+build01
+
+ -- Jeonghyun Yun <jh0506.yun@samsung.com>  Wed, 28 Mar 2012 14:27:06 +0900
+
+eina (1.1.0+svn.69339slp2+build02) unstable; urgency=low
+
+  * Package Upload
+  * Git: slp/pkgs/e/eina
+  * Tag: eina_1.1.0+svn.69339slp2+build02
+
+ -- Jeonghyun Yun <jh0506.yun@samsung.com>  Sun, 18 Mar 2012 14:01:23 +0900
+
+eina (1.1.0+svn.69339slp2+build01) unstable; urgency=low
+
+  * EFL migration
+  * Git: slp/pkgs/e/eina
+  * Tag: eina_1.1.0+svn.69339slp2+build01
+
+ -- Jeonghyun Yun <jh0506.yun@samsung.com>  Fri, 16 Mar 2012 21:48:19 +0900
+
+eina (1.1.0+svn.69069slp2+build01) unstable; urgency=low
+
+  * Package Upload
+  * Git: slp/pkgs/e/eina
+  * Tag: eina_1.1.0+svn.69069slp2+build01
+
+ -- Jeonghyun Yun <jh0506.yun@samsung.com>  Sat, 10 Mar 2012 13:51:19 +0900
+
+eina (1.1.0+svn.68835slp2+build02) unstable; urgency=low
+
+  * 69069
+  * Git: slp/pkgs/e/eina
+  * Tag: eina_1.1.0+svn.68835slp2+build02
+
+ -- Jeonghyun Yun <jh0506.yun@samsung.com>  Sat, 10 Mar 2012 13:20:08 +0900
+
+eina (1.1.0+svn.68835slp2+build01) unstable; urgency=low
+
+  * Package Upload
+  * Git: slp/pkgs/e/eina
+  * Tag: eina_1.1.0+svn.68835slp2+build01
+
+ -- Jeonghyun Yun <jh0506.yun@samsung.com>  Wed, 07 Mar 2012 16:42:16 +0900
+
+eina (1.1.0+svn.68474slp2+build01) unstable; urgency=low
+
+  * Package Upload
+  * Git: slp/pkgs/e/eina
+  * Tag: eina_1.1.0+svn.68474slp2+build01
+
+ -- Jeonghyun Yun <jh0506.yun@samsung.com>  Fri, 02 Mar 2012 06:24:30 -0500
+
 eina (1.1.0+svn.67705slp2+build01) unstable; urgency=low
 
   * EFL migration revision 67705

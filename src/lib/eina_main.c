@@ -37,7 +37,7 @@
 # endif
 #endif
 
-#ifdef HAVE_MCHECK
+#ifdef HAVE_MCHECK_H
 # ifdef HAVE_MTRACE
 #  define MT 1
 # endif
@@ -372,7 +372,10 @@ eina_threads_shutdown(void)
        fprintf(stderr, "* LOCK STILL TAKEN :    *\n");
        fprintf(stderr, "*************************\n");
        EINA_INLIST_FOREACH(_eina_tracking, lk)
-	 eina_lock_debug(lk);
+	 {
+            fprintf(stderr, "=======\n");
+            eina_lock_debug(lk);
+	 }
        fprintf(stderr, "*************************\n");
        abort();
      }
