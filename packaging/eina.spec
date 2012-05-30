@@ -6,6 +6,7 @@ Group:      System/Libraries
 License:    LGPLv2
 URL:        http://www.enlightenment.org/
 Source0:    %{name}-%{version}.tar.gz
+Source1001: packaging/eina.manifest 
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 
@@ -38,6 +39,7 @@ Enlightenment Foundation Library providing optimized data types (devel)
 
 
 %build
+cp %{SOURCE1001} .
 export CFLAGS+=" -fvisibility=hidden"
 export LDFLAGS+=" -fvisibility=hidden"
 
@@ -60,11 +62,13 @@ rm -rf %{buildroot}
 
 
 %files
+%manifest eina.manifest
 %defattr(-,root,root,-)
 %{_libdir}/libeina.so.*
 
 
 %files devel
+%manifest eina.manifest
 %defattr(-,root,root,-)
 %{_includedir}/eina-1
 %{_libdir}/*.so
