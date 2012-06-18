@@ -1,3 +1,21 @@
+Eina 1.3.0
+
+Changes since Eina 1.2.0:
+-------------------------
+
+Additions:
+    * Add backtrace support to Eina_Log, use EINA_LOG_BACKTRACE to enable it.
+    * Add an helper to iterate over line in a mapped file.
+
+Fixes:
+    * Add missing files in the tarball.
+    * Rounding issue with eina_f32p32_cos and eina_f32p32_sin when getting close to 1.0.
+    * Portability issue with Eina_Value when char are not signed by default (case on ARM
+    and PPC).
+    * Portability issue with Eina_Value test suite when unsigned where not promoted to
+    unsigned long (case on Itanium).
+    * Fix issue in the XML parser when a tag was in a comment or a CDATA.
+
 Eina 1.2.0
 
 Changes since Eina 1.1.0:

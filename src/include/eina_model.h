@@ -285,8 +285,8 @@
  * Not as generic as #EINA_MODEL_TYPE_GENERIC, but way more efficient
  * is #EINA_MODEL_TYPE_STRUCT that instead of a hash of properties of
  * any type, it uses a struct to map properties. Its properties are
- * fixed set of names and they have fixed type, as defined by the
- * #Eina_Value_Struct_Desc description used internally.
+ * fixed set of names and they have fixed type, as defined by
+ * the #Eina_Value_Struct_Desc description used internally.
  *
  * Examples:
  * @li @ref eina_model_01_c inheritance example, uses #EINA_MODEL_TYPE_GENERIC
@@ -294,8 +294,8 @@
  *     example that demonstrates several of the important features of
  *     eina_model, uses #EINA_MODEL_TYPE_GENERIC.
  * @li @ref eina_model_03_example_page walk-through example on how to
- *     inherit types, a suggestion of eina_model_load() usage and uses
- *     #EINA_MODEL_TYPE_STRUCT.
+ *     inherit types, a suggestion of eina_model_load() usage and
+ *     uses #EINA_MODEL_TYPE_STRUCT.
  * @li @ref eina_model_04_c Advanced inheritance, interfaces and interface
  *     function overloading example.
  *
@@ -371,7 +371,7 @@ typedef struct _Eina_Model_Event_Description Eina_Model_Event_Description;
 /**
  * @brief Creates a new model of type @a Type.
  * @param type The type of the model to create.
- * @return If successfull pointer to model, NULL otherwise.
+ * @return If successfull pointer to model, @c NULL otherwise.
  *
  * @see _Eina_Model_Type
  * @see eina_model_del()
@@ -402,7 +402,7 @@ EAPI const Eina_Model_Type *eina_model_type_get(const Eina_Model *model) EINA_AR
  * @brief Returns the interface named @a name of @a model.
  * @param model The model instance.
  * @param name Name of interface to get.
- * @return If successfull requested interface, NULL otherwise.
+ * @return If successfull requested interface, @c NULL otherwise.
  *
  * The name of every interface of @a model will be compared to @a name, the
  * first one to match will be returned.
@@ -418,7 +418,7 @@ EAPI const Eina_Model_Interface *eina_model_interface_get(const Eina_Model *mode
  * @brief Increases the refcount of @a model.
  * @param model The model to increase reference.
  * @return The @a model with reference increased.
- * @return If successfull pointer to model, NULL otherwise.
+ * @return If successfull pointer to model, @c NULL otherwise.
  *
  * @see eina_model_new()
  * @see eina_model_unref()
@@ -481,7 +481,7 @@ EAPI Eina_Model *eina_model_xref(Eina_Model *model,
 /**
  * @brief Decreases the refcount of @a model.
  * @param model The model to decrease reference.
- * @return If successfull pointer to model, NULL otherwise.
+ * @return If successfull pointer to model, @c NULL otherwise.
  *
  * After this function returns, consider @a model pointer invalid.
  *
@@ -495,7 +495,7 @@ EAPI void eina_model_unref(Eina_Model *model) EINA_ARG_NONNULL(1);
  * @brief Decreases the refcount of @a model, informs reference identifier.
  * @param model The model to decrease reference.
  * @param id An identifier to mark this reference.
- * @return If successfull pointer to model, NULL otherwise.
+ * @return If successfull pointer to model, @c NULL otherwise.
  *
  * This function will match eina_model_xref() and the @a id must match
  * a previously call, otherwise it will produce an error if @c
@@ -520,9 +520,9 @@ EAPI void eina_model_xunref(Eina_Model *model,
  * @defgroup Eina_Model_Event_Group Data Model Events
  * Events and their usage with models.
  *
- * Events are specified by each type and interface level using
- * #Eina_Model_Event_Description. One can know all events supported by
- * a model with eina_model_event_names_list_get() and then
+ * Events are specified by each type and interface level
+ * using #Eina_Model_Event_Description. One can know all events supported
+ * by a model with eina_model_event_names_list_get() and then
  * eina_model_event_description_get() to retrieve details.
  *
  * By default the following events are supported in every object:
@@ -567,7 +567,7 @@ typedef void (*Eina_Model_Event_Cb)(void *data, Eina_Model *model, const Eina_Mo
  * @param model The model instance.
  * @param event_name The name of event for which @a cb will be called.
  * @param cb The function to be called.
- * @param data Data @a cb will be called with. May be NULL.
+ * @param data Data @a cb will be called with. May be @c NULL.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
  * @see eina_model_event_callback_del()
@@ -582,7 +582,7 @@ EAPI Eina_Bool eina_model_event_callback_add(Eina_Model *model,
  * @param model The model instance.
  * @param event_name The name of event for which to delete callback.
  * @param cb The function given to eina_model_event_callback_add().
- * @param data Data given to eina_model_event_callback_add(). A NULL value means
+ * @param data Data given to eina_model_event_callback_add(). A @c NULL value means
  * every @a data will not be compared.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
@@ -630,7 +630,7 @@ EAPI void eina_model_event_names_list_free(Eina_List *list);
  * event_info.
  * @param model The model instance.
  * @param name The event whose callbacks will be called.
- * @param event_info The data given to the callback as event_info. May be NULL.
+ * @param event_info The data given to the callback as event_info. May be @c NULL.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
  * @see eina_model_event_callback_add()
@@ -728,8 +728,8 @@ EAPI int eina_model_compare(const Eina_Model *a, const Eina_Model *b) EINA_WARN_
  * by user defined types can be given.
  *
  * @note The types provided by Eina_Model don't implement this method.
- * @note Calling this function on a model that doesn't implement it returns @c
- * EINA_TRUE without any effect on @a model.
+ * @note Calling this function on a model that doesn't implement it
+ * returns #EINA_TRUE without any effect on @a model.
  *
  * @see eina_model_unload()
  * @since 1.2
@@ -747,8 +747,8 @@ EAPI Eina_Bool eina_model_load(Eina_Model *model) EINA_ARG_NONNULL(1);
  * by user defined types can be given.
  *
  * @note The types provided by Eina_Model don't implement this method.
- * @note Calling this function on a model that doesn't implement it returns @c
- * EINA_TRUE without any effect on @a model.
+ * @note Calling this function on a model that doesn't implement it
+ * returns #EINA_TRUE without any effect on @a model.
  *
  * @see eina_model_load()
  * @since 1.2
@@ -774,9 +774,7 @@ EAPI Eina_Bool eina_model_unload(Eina_Model *model) EINA_ARG_NONNULL(1);
  * @param[in] model The model from which to get the property.
  * @param[in] name The name of the property whose value is wanted.
  * @param[out] value A pointer to an Eina_Value to receive the property's value.
- * @return #EINA_TRUE on success, #EINA_FALSE on failure.
- *
- * @return EINA_TRUE if @a model has a property named @a name, EINA_FALSE
+ * @return #EINA_TRUE if @a model has a property named @a name, #EINA_FALSE
  * otherwise.
  *
  * @see eina_model_property_set()
@@ -952,7 +950,7 @@ EAPI Eina_Bool eina_model_child_insert_at(Eina_Model *model,
  * @brief Appends @a child in @a model.
  * @param model The model instance.
  * @param child The child to be appended.
- * @return The position of the added child, or -1 on failure.
+ * @return The position of the added child, or @c -1 on failure.
  *
  * @warning This increments the reference count of the child being inserted, if
  * it will no longer be used by the inserting code it should call
@@ -970,7 +968,7 @@ EAPI int eina_model_child_append(Eina_Model *model,
  * @param model The parent model whose children will be searched.
  * @param start_position The first children to be compared with @a other.
  * @param other The model whose position is desired.
- * @return The position of the searched for child, or -1 if not found.
+ * @return The position of the searched for child, or @c -1 if not found.
  *
  * @since 1.2
  */
@@ -984,11 +982,11 @@ EAPI int eina_model_child_find(const Eina_Model *model,
  * @param start_position The position of the first child to be checked.
  * @param match The function used to check if a child matches the criteria.
  * @param data Data given the to the @a match function.
- * @return The position of the first child to match the criteria or -1 if no
+ * @return The position of the first child to match the criteria or @c -1 if no
  * child matches it.
  *
  * Returns the position of the first(from @a start_position) child of @a model
- * to which @a match returns EINA_TRUE.
+ * to which @a match returns #EINA_TRUE.
  *
  * @since 1.2
  */
@@ -1241,7 +1239,7 @@ EAPI Eina_Iterator *eina_model_child_filtered_iterator_get(Eina_Model *model,
  * @param data Data passed to the @a match function.
  * @return Newly created iterator instance on success or @c NULL on failure.
  *
- * @note Only children for whom @a match returns EINA_TRUE will be included in
+ * @note Only children for whom @a match returns #EINA_TRUE will be included in
  * the iterator.
  *
  * @note Each iteration(call to eina_iterator_next()) gives an integer index!
@@ -1357,8 +1355,8 @@ EAPI char *eina_model_to_string(const Eina_Model *model) EINA_ARG_NONNULL(1) EIN
  *       order. Whenever they do not exist, their parent pointer is
  *       called.
  * @note a runtime check will enforce just types with ABI version
- *       #EINA_MODEL_TYPE_VERSION are used by comparing with the @c version
- *       member.
+ *       version #EINA_MODEL_TYPE_VERSION are used by comparing with
+ *       the @c version member.
  *
  * @since 1.2
  */
@@ -1500,7 +1498,7 @@ struct _Eina_Model_Type
    }
 /**
  * @def EINA_MODEL_TYPE_INIT_NULL
- * @brief NULL value eina model type.
+ * @brief @c NULL value eina model type.
  */
 #define EINA_MODEL_TYPE_INIT_NULL                                   \
   {0,                                                               \
@@ -1562,8 +1560,8 @@ struct _Eina_Model_Type
  * @note You should only do your type's initialization after the parent type has
  * done his own(this is as to ensure you can call on your parent's methods).
  *
- * @warning If model doesn't inherit from(or is of) @a type does nothing and
- * returns EINA_FALSE.
+ * @warning If model doesn't inherit from (or is of) @a type does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_new()
  * @see _Eina_Model_Type
@@ -1591,8 +1589,8 @@ EAPI Eina_Bool eina_model_type_constructor(const Eina_Model_Type *type,
  * @note It's considered good practice to free your type's resources before
  * calling the parent's destructor.
  *
- * @warning If model doesn't inherit from(or is of) @a type does nothing and
- * returns EINA_FALSE.
+ * @warning If model doesn't inherit from (or is of) @a type does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_del()
  * @see _Eina_Model_Type
@@ -1607,8 +1605,8 @@ EAPI Eina_Bool eina_model_type_destructor(const Eina_Model_Type *type,
  * @param dst Pointer to where copy will be put.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
- * @warning If model doesn't inherit from(or is of) @a type does nothing and
- * returns EINA_FALSE.
+ * @warning If model doesn't inherit from (or is of) @a type does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_copy()
  * @see _Eina_Model_Type
@@ -1624,8 +1622,8 @@ EAPI Eina_Bool eina_model_type_copy(const Eina_Model_Type *type,
  * @param dst Pointer to where copy will be put.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
- * @warning If model doesn't inherit from(or is of) @a type does nothing and
- * returns EINA_FALSE.
+ * @warning If model doesn't inherit from (or is of) @a type does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_deep_copy()
  * @see _Eina_Model_Type
@@ -1643,8 +1641,8 @@ EAPI Eina_Bool eina_model_type_deep_copy(const Eina_Model_Type *type,
  * -1 if @a b is smaller than @a a, 0 if @a a and @a b are equal.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
- * @warning If model doesn't inherit from(or is of) @a type does nothing and
- * returns EINA_FALSE.
+ * @warning If model doesn't inherit from (or is of) @a type does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_compare()
  * @see _Eina_Model_Type
@@ -1660,8 +1658,8 @@ EAPI Eina_Bool eina_model_type_compare(const Eina_Model_Type *type,
  * @param model The model instance.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
- * @warning If model doesn't inherit from(or is of) @a type does nothing and
- * returns EINA_FALSE.
+ * @warning If model doesn't inherit from (or is of) @a type does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_load()
  * @see _Eina_Model_Type
@@ -1675,8 +1673,8 @@ EAPI Eina_Bool eina_model_type_load(const Eina_Model_Type *type,
  * @param model The model instance.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
- * @warning If model doesn't inherit from(or is of) @a type does nothing and
- * returns EINA_FALSE.
+ * @warning If model doesn't inherit from (or is of) @a type does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_unload()
  * @see _Eina_Model_Type
@@ -1690,10 +1688,10 @@ EAPI Eina_Bool eina_model_type_unload(const Eina_Model_Type *type,
  * @param[in] model The model instance.
  * @param[in] name Name of property to get.
  * @param[out] value Pointer to where value of property will be placed.
- * @return EINA_TRUE if able to get property, EINA_FALSE otherwise.
+ * @return #EINA_TRUE if able to get property, #EINA_FALSE otherwise.
  *
- * @warning If model doesn't inherit from(or is of) @a type does nothing and
- * returns EINA_FALSE.
+ * @warning If model doesn't inherit from (or is of) @a type does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_property_get()
  * @see _Eina_Model_Type
@@ -1711,8 +1709,8 @@ EAPI Eina_Bool eina_model_type_property_get(const Eina_Model_Type *type,
  * @param value The value to be set.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
- * @warning If model doesn't inherit from(or is of) @a type does nothing and
- * returns EINA_FALSE.
+ * @warning If model doesn't inherit from (or is of) @a type does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_property_set()
  * @see _Eina_Model_Type
@@ -1729,8 +1727,8 @@ EAPI Eina_Bool eina_model_type_property_set(const Eina_Model_Type *type,
  * @param name The name of the property to be deleted.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
- * @warning If model doesn't inherit from(or is of) @a type does nothing and
- * returns EINA_FALSE.
+ * @warning If model doesn't inherit from (or is of) @a type does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_property_del()
  * @see _Eina_Model_Type
@@ -1745,8 +1743,8 @@ EAPI Eina_Bool eina_model_type_property_del(const Eina_Model_Type *type,
  * @param model The model instance.
  * @return #Eina_List of properties' names.
  *
- * @warning If model doesn't inherit from(or is of) @a type does nothing and
- * returns EINA_FALSE.
+ * @warning If model doesn't inherit from (or is of) @a type does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_properties_names_list_get()
  * @see _Eina_Model_Type
@@ -1760,8 +1758,8 @@ EAPI Eina_List *eina_model_type_properties_names_list_get(const Eina_Model_Type 
  * @param model The model instance.
  * @return Number of children in @a model.
  *
- * @warning If model doesn't inherit from(or is of) @a type does nothing and
- * returns EINA_FALSE.
+ * @warning If model doesn't inherit from (or is of) @a type does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_child_count()
  * @see _Eina_Model_Type
@@ -1774,10 +1772,10 @@ EAPI int eina_model_type_child_count(const Eina_Model_Type *type,
  * @param type The type whose child get method will be called.
  * @param model The model instance.
  * @param position The position of the child to get.
- * @return The child model, or NULL on failure.
+ * @return The child model, or @c NULL on failure.
  *
- * @warning If model doesn't inherit from(or is of) @a type does nothing and
- * returns EINA_FALSE.
+ * @warning If model doesn't inherit from (or is of) @a type does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_child_get()
  * @see _Eina_Model_Type
@@ -1791,11 +1789,11 @@ EAPI Eina_Model *eina_model_type_child_get(const Eina_Model_Type *type,
  * @param type The type whose child set method will be called.
  * @param model The model instance.
  * @param position The position of the child to be set.
- * @param child Pointer to value(child) to be set.
+ * @param child Pointer to value (child) to be set.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
- * @warning If model doesn't inherit from(or is of) @a type does nothing and
- * returns EINA_FALSE.
+ * @warning If model doesn't inherit from (or is of) @a type does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_child_set()
  * @see _Eina_Model_Type
@@ -1812,8 +1810,8 @@ EAPI Eina_Bool eina_model_type_child_set(const Eina_Model_Type *type,
  * @param position Position of child to be deleted.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
- * @warning If model doesn't inherit from(or is of) @a type does nothing and
- * returns EINA_FALSE.
+ * @warning If model doesn't inherit from (or is of) @a type does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_child_del()
  * @see _Eina_Model_Type
@@ -1830,8 +1828,8 @@ EAPI Eina_Bool eina_model_type_child_del(const Eina_Model_Type *type,
  * @param child The child to be inserted.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
- * @warning If model doesn't inherit from(or is of) @a type does nothing and
- * returns EINA_FALSE.
+ * @warning If model doesn't inherit from (or is of) @a type does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_child_insert_at()
  * @see _Eina_Model_Type
@@ -1849,8 +1847,8 @@ EAPI Eina_Bool eina_model_type_child_insert_at(const Eina_Model_Type *type,
  * @param other The child being searched for.
  * @return The index of the searched child, or -1 if not found.
  *
- * @warning If model doesn't inherit from(or is of) @a type does nothing and
- * returns EINA_FALSE.
+ * @warning If model doesn't inherit from (or is of) @a type does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_child_find()
  * @see _Eina_Model_Type
@@ -1866,12 +1864,12 @@ EAPI int eina_model_type_child_find(const Eina_Model_Type *type,
  * @param model The model instance.
  * @param start_position The first position to be checked.
  * @param match The function used to determine if a child matches the criteria.
- * @param data Data given to the @a match function. May be NULL.
+ * @param data Data given to the @a match function. May be @c NULL.
  * @return The position of the first child to match the criteria or -1 if no
  * child matches it.
  *
- * @warning If model doesn't inherit from(or is of) @a type does nothing and
- * returns EINA_FALSE.
+ * @warning If model doesn't inherit from (or is of) @a type does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_child_criteria_match()
  * @see _Eina_Model_Type
@@ -1888,8 +1886,8 @@ EAPI int eina_model_type_child_criteria_match(const Eina_Model_Type *type,
  * @param model The model instance.
  * @param compare Function used to compare children.
  *
- * @warning If model doesn't inherit from(or is of) @a type does nothing and
- * returns EINA_FALSE.
+ * @warning If model doesn't inherit from (or is of) @a type does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_child_sort()
  * @see _Eina_Model_Type
@@ -1906,8 +1904,8 @@ EAPI void eina_model_type_child_sort(const Eina_Model_Type *type,
  * @param count The number of children included in the iterator.
  * @return Newly created iterator instance on success or @c NULL on failure.
  *
- * @warning If model doesn't inherit from(or is of) @a type does nothing and
- * returns EINA_FALSE.
+ * @warning If model doesn't inherit from (or is of) @a type does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_child_iterator_get()
  * @see _Eina_Model_Type
@@ -1925,8 +1923,8 @@ EAPI Eina_Iterator *eina_model_type_child_iterator_get(const Eina_Model_Type *ty
  * @param count The number of children included in the iterator.
  * @return Newly created iterator instance on success or @c NULL on failure.
  *
- * @warning If model doesn't inherit from(or is of) @a type does nothing and
- * returns EINA_FALSE.
+ * @warning If model doesn't inherit from (or is of) @a type does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_child_reversed_iterator_get()
  * @see _Eina_Model_Type
@@ -1945,8 +1943,8 @@ EAPI Eina_Iterator *eina_model_type_child_reversed_iterator_get(const Eina_Model
  * @param compare Function used to compare children.
  * @return Newly created iterator instance on success or @c NULL on failure.
  *
- * @warning If model doesn't inherit from(or is of) @a type does nothing and
- * returns EINA_FALSE.
+ * @warning If model doesn't inherit from (or is of) @a type does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_child_sorted_iterator_get()
  * @see _Eina_Model_Type
@@ -1964,11 +1962,11 @@ EAPI Eina_Iterator *eina_model_type_child_sorted_iterator_get(const Eina_Model_T
  * @param start The first child to be a part of the iterator.
  * @param count Number of children to be checked for inclusion in the iterator.
  * @param match Function used to check if child will be included in the iterator.
- * @param data Data given to the @a match function. May be NULL.
+ * @param data Data given to the @a match function. May be @c NULL.
  * @return Newly created iterator instance on success or @c NULL on failure.
  *
- * @warning If model doesn't inherit from(or is of) @a type does nothing and
- * returns EINA_FALSE.
+ * @warning If model doesn't inherit from (or is of) @a type does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_child_filtered_iterator_get()
  * @see _Eina_Model_Type
@@ -1986,8 +1984,8 @@ EAPI Eina_Iterator *eina_model_type_child_filtered_iterator_get(const Eina_Model
  * @param model The model instance.
  * @return String representationof @a model.
  *
- * @warning If model doesn't inherit from(or is of) @a type does nothing and
- * returns EINA_FALSE.
+ * @warning If model doesn't inherit from (or is of) @a type does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_to_string()
  * @see _Eina_Model_Type
@@ -2109,9 +2107,9 @@ EAPI const void *eina_model_type_method_offset_resolve(const Eina_Model_Type *ty
  *       type counterparts. Unlike setup and flush, they are not
  *       guaranteed to be called.
  * @note use the same name pointer on queries to speed up the lookups!
- * @note a runtime check will enforce just types with ABI version
- *       #EINA_MODEL_INTERFACE_VERSION are used by comparing with the
- *       @c version member.
+ * @note a runtime check will enforce just types with ABI
+ *       version #EINA_MODEL_INTERFACE_VERSION are used by comparing
+ *       with the @c version member.
  *
  * @since 1.2
  */
@@ -2214,8 +2212,8 @@ struct _Eina_Model_Interface
  * @param model The model instance.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
- * @warning If @a model doesn't implement @a iface does nothing and returns
- * EINA_FALSE.
+ * @warning If @a model doesn't implement @a iface does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_new()
  * @see _Eina_Model_Interface
@@ -2229,8 +2227,8 @@ EAPI Eina_Bool eina_model_interface_constructor(const Eina_Model_Interface *ifac
  * @param model The model instance.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
- * @warning If @a model doesn't implement @a iface does nothing and returns
- * EINA_FALSE.
+ * @warning If @a model doesn't implement @a iface does nothing and 
+ * returns #EINA_FALSE.
  *
  * @see eina_model_del()
  * @see _Eina_Model_Interface
@@ -2245,8 +2243,8 @@ EAPI Eina_Bool eina_model_interface_destructor(const Eina_Model_Interface *iface
  * @param dst Pointer to where copy will be put.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
- * @warning If @a model doesn't implement @a iface does nothing and returns
- * EINA_FALSE.
+ * @warning If @a model doesn't implement @a iface does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_copy()
  * @see _Eina_Model_Interface
@@ -2262,8 +2260,8 @@ EAPI Eina_Bool eina_model_interface_copy(const Eina_Model_Interface *iface,
  * @param dst Pointer to where copy will be put.
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
- * @warning If @a model doesn't implement @a iface does nothing and returns
- * EINA_FALSE.
+ * @warning If @a model doesn't implement @a iface does nothing and
+ * returns #EINA_FALSE.
  *
  * @see eina_model_deep_copy()
  * @see _Eina_Model_Interface
@@ -2472,8 +2470,8 @@ EAPI void *eina_model_interface_private_data_get(const Eina_Model *model,
  * @typedef Eina_Model_Interface_Properties
  * Interface to manage model's properties.
  *
- * This extends #Eina_Model_Interface as expected by interface name
- * #EINA_MODEL_INTERFACE_NAME_PROPERTIES.
+ * This extends #Eina_Model_Interface as expected by interface
+ * name #EINA_MODEL_INTERFACE_NAME_PROPERTIES.
  *
  * This interface is meant to help managing properties of a model, it
  * is used by #EINA_MODEL_TYPE_MIXIN in order to configure methods for
@@ -2488,8 +2486,8 @@ typedef struct _Eina_Model_Interface_Properties Eina_Model_Interface_Properties;
  * @struct _Eina_Model_Interface_Properties
  * Interface to manage model's properties.
  *
- * This extends #Eina_Model_Interface as expected by interface name
- * #EINA_MODEL_INTERFACE_NAME_PROPERTIES.
+ * This extends #Eina_Model_Interface as expected by interface
+ * name #EINA_MODEL_INTERFACE_NAME_PROPERTIES.
  *
  * This interface is meant to help managing properties of a model, it
  * is used by #EINA_MODEL_TYPE_MIXIN in order to configure methods for
@@ -2521,7 +2519,7 @@ struct _Eina_Model_Interface_Properties
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
  * @warning If either model doesn't implement @a iface will do nothing and
- * return EINA_FALSE.
+ * return #EINA_FALSE.
  *
  * @see eina_model_compare()
  * @since 1.2
@@ -2538,7 +2536,7 @@ EAPI Eina_Bool eina_model_interface_properties_compare(const Eina_Model_Interfac
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
  * @warning If either model doesn't implement @a iface will do nothing and
- * return EINA_FALSE.
+ * return #EINA_FALSE.
  *
  * @see eina_model_load()
  * @since 1.2
@@ -2552,7 +2550,7 @@ EAPI Eina_Bool eina_model_interface_properties_load(const Eina_Model_Interface *
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
  * @warning If either model doesn't implement @a iface will do nothing and
- * return EINA_FALSE.
+ * return #EINA_FALSE.
  *
  * @see eina_model_unload()
  * @since 1.2
@@ -2568,7 +2566,7 @@ EAPI Eina_Bool eina_model_interface_properties_unload(const Eina_Model_Interface
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
  * @warning If either model doesn't implement @a iface will do nothing and
- * return EINA_FALSE.
+ * return #EINA_FALSE.
  *
  * @see eina_model_property_get()
  * @since 1.2
@@ -2586,7 +2584,7 @@ EAPI Eina_Bool eina_model_interface_properties_get(const Eina_Model_Interface *i
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
  * @warning If either model doesn't implement @a iface will do nothing and
- * return EINA_FALSE.
+ * return #EINA_FALSE.
  *
  * @see eina_model_property_set()
  * @since 1.2
@@ -2603,7 +2601,7 @@ EAPI Eina_Bool eina_model_interface_properties_set(const Eina_Model_Interface *i
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
  * @warning If either model doesn't implement @a iface will do nothing and
- * return EINA_FALSE.
+ * return #EINA_FALSE.
  *
  * @see eina_model_property_del()
  * @since 1.2
@@ -2620,7 +2618,7 @@ EAPI Eina_Bool eina_model_interface_properties_del(const Eina_Model_Interface *i
  * @return #Eina_List of properties' names.
  *
  * @warning If either model doesn't implement @a iface will do nothing and
- * return EINA_FALSE.
+ * return #EINA_FALSE.
  *
  * @see eina_model_properties_names_list_get()
  * @since 1.2
@@ -2632,8 +2630,8 @@ EAPI Eina_List *eina_model_interface_properties_names_list_get(const Eina_Model_
  * @typedef Eina_Model_Interface_Children
  * Interface to manage model's children.
  *
- * This extends #Eina_Model_Interface as expected by interface name
- * #EINA_MODEL_INTERFACE_NAME_CHILDREN.
+ * This extends #Eina_Model_Interface as expected by interface
+ * name #EINA_MODEL_INTERFACE_NAME_CHILDREN.
  *
  * This interface is meant to help managing properties of a model, it
  * is used by #EINA_MODEL_TYPE_MIXIN in order to configure methods for
@@ -2654,8 +2652,8 @@ typedef struct _Eina_Model_Interface_Children Eina_Model_Interface_Children;
  * @struct _Eina_Model_Interface_Children
  * Interface to manage model's children.
  *
- * This extends #Eina_Model_Interface as expected by interface name
- * #EINA_MODEL_INTERFACE_NAME_CHILDREN.
+ * This extends #Eina_Model_Interface as expected by interface
+ * name #EINA_MODEL_INTERFACE_NAME_CHILDREN.
  *
  * This interface is meant to help managing properties of a model, it
  * is used by #EINA_MODEL_TYPE_MIXIN in order to configure methods for
@@ -2689,7 +2687,7 @@ struct _Eina_Model_Interface_Children
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
  * @warning If either model doesn't implement @a iface will do nothing and
- * return EINA_FALSE.
+ * return #EINA_FALSE.
  *
  * @see eina_model_compare()
  * @since 1.2
@@ -2705,7 +2703,7 @@ EAPI Eina_Bool eina_model_interface_children_compare(const Eina_Model_Interface 
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
  * @warning If either model doesn't implement @a iface will do nothing and
- * return EINA_FALSE.
+ * return #EINA_FALSE.
  *
  * @see eina_model_load()
  * @since 1.2
@@ -2719,7 +2717,7 @@ EAPI Eina_Bool eina_model_interface_children_load(const Eina_Model_Interface *if
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
  * @warning If either model doesn't implement @a iface will do nothing and
- * return EINA_FALSE.
+ * return #EINA_FALSE.
  *
  * @see eina_model_unload()
  * @since 1.2
@@ -2733,7 +2731,7 @@ EAPI Eina_Bool eina_model_interface_children_unload(const Eina_Model_Interface *
  * @return Number of children in @a model.
  *
  * @warning If either model doesn't implement @a iface will do nothing and
- * return -1.
+ * return @c -1.
  *
  * @see eina_model_child_count()
  * @since 1.2
@@ -2748,7 +2746,7 @@ EAPI int eina_model_interface_children_count(const Eina_Model_Interface *iface,
  * @return The requested child.
  *
  * @warning If either model doesn't implement @a iface will do nothing and
- * return -1.
+ * return @c -1.
  *
  * @see eina_model_child_get()
  * @since 1.2
@@ -2765,7 +2763,7 @@ EAPI Eina_Model *eina_model_interface_children_get(const Eina_Model_Interface *i
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
  * @warning If either model doesn't implement @a iface will do nothing and
- * return -1.
+ * return @c -1.
  *
  * @see eina_model_child_set()
  * @since 1.2
@@ -2782,7 +2780,7 @@ EAPI Eina_Bool eina_model_interface_children_set(const Eina_Model_Interface *ifa
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
  * @warning If either model doesn't implement @a iface will do nothing and
- * return -1.
+ * return @c -1.
  *
  * @see eina_model_child_del()
  * @since 1.2
@@ -2799,7 +2797,7 @@ EAPI Eina_Bool eina_model_interface_children_del(const Eina_Model_Interface *ifa
  * @return #EINA_TRUE on success, #EINA_FALSE on failure.
  *
  * @warning If either model doesn't implement @a iface will do nothing and
- * return -1.
+ * return @c -1.
  *
  * @see eina_model_child_insert_at()
  * @since 1.2
@@ -2815,7 +2813,7 @@ EAPI Eina_Bool eina_model_interface_children_insert_at(const Eina_Model_Interfac
  * @param compare Function used to compare children.
  *
  * @warning If either model doesn't implement @a iface will do nothing and
- * return -1.
+ * return @c -1.
  *
  * @see eina_model_child_sort().
  * @since 1.2
@@ -2986,8 +2984,8 @@ EAPI extern const Eina_Model_Type *EINA_MODEL_TYPE_BASE;
 /**
  * @var EINA_MODEL_TYPE_MIXIN
  *
- * Type that uses #EINA_MODEL_INTERFACE_NAME_PROPERTIES and
- * #EINA_MODEL_INTERFACE_NAME_CHILDREN to manage the model.
+ * Type that uses #EINA_MODEL_INTERFACE_NAME_PROPERTIES
+ * and #EINA_MODEL_INTERFACE_NAME_CHILDREN to manage the model.
  *
  * This is an abstract type, it does not work out of the box as one
  * needs to subclass it and define the interface implementations for
@@ -3002,9 +3000,9 @@ EAPI extern const Eina_Model_Type *EINA_MODEL_TYPE_MIXIN;
 /**
  * @var EINA_MODEL_TYPE_GENERIC
  *
- * Subclass of #EINA_MODEL_TYPE_MIXIN that uses
- * #EINA_MODEL_INTERFACE_PROPERTIES_HASH and
- * #EINA_MODEL_INTERFACE_CHILDREN_INARRAY.
+ * Subclass of #EINA_MODEL_TYPE_MIXIN that
+ * uses #EINA_MODEL_INTERFACE_PROPERTIES_HASH
+ * and #EINA_MODEL_INTERFACE_CHILDREN_INARRAY.
  *
  * Should be generic enough to hold lots of items with runtime
  * configurable properties of any type.
@@ -3018,9 +3016,9 @@ EAPI extern const Eina_Model_Type *EINA_MODEL_TYPE_GENERIC;
 /**
  * @var EINA_MODEL_TYPE_STRUCT
  *
- * Subclass of #EINA_MODEL_TYPE_MIXIN that uses
- * #EINA_MODEL_INTERFACE_PROPERTIES_STRUCT and
- * #EINA_MODEL_INTERFACE_CHILDREN_INARRAY.
+ * Subclass of #EINA_MODEL_TYPE_MIXIN that
+ * uses #EINA_MODEL_INTERFACE_PROPERTIES_STRUCT
+ * and #EINA_MODEL_INTERFACE_CHILDREN_INARRAY.
  *
  * Should be struct enough to hold lots of items with compile time
  * configurable properties of any type.
@@ -3093,8 +3091,8 @@ EAPI Eina_Bool eina_model_struct_get(const Eina_Model *model,
 /**
  * @var EINA_MODEL_INTERFACE_NAME_PROPERTIES
  *
- * Interface that uses #Eina_Model_Interface_Properties as
- * #Eina_Model_Interface and can manage the model properties.
+ * Interface that uses #Eina_Model_Interface_Properties
+ * as #Eina_Model_Interface and can manage the model properties.
  *
  * @since 1.2
  */
@@ -3122,8 +3120,8 @@ EAPI extern const Eina_Model_Interface *EINA_MODEL_INTERFACE_PROPERTIES_HASH;
  * Implements #Eina_Model_Interface_Properties
  * (#EINA_MODEL_INTERFACE_NAME_PROPERTIES) using #Eina_Value_Struct.
  *
- * The interface private data is #Eina_Value of type
- * #EINA_VALUE_TYPE_STRUCT. Properties will be accessed using
+ * The interface private data is #Eina_Value of
+ * type #EINA_VALUE_TYPE_STRUCT. Properties will be accessed using
  * Eina_Value_Struct::desc information that can be set by types such
  * as #EINA_MODEL_TYPE_STRUCT
  *
@@ -3136,8 +3134,8 @@ EAPI extern const Eina_Model_Interface *EINA_MODEL_INTERFACE_PROPERTIES_STRUCT;
 /**
  * @var EINA_MODEL_INTERFACE_NAME_CHILDREN
  *
- * Interface that uses #Eina_Model_Interface_Children as
- * #Eina_Model_Interface and can manage the model children.
+ * Interface that uses #Eina_Model_Interface_Children
+ * as #Eina_Model_Interface and can manage the model children.
  *
  * @since 1.2
  */

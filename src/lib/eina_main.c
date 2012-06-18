@@ -307,6 +307,11 @@ eina_init(void)
 EAPI int
 eina_shutdown(void)
 {
+   if (_eina_main_count <= 0)
+     {
+        ERR("Init count not greater than 0 in shutdown.");
+        return 0;
+     }
    _eina_main_count--;
    if (EINA_UNLIKELY(_eina_main_count == 0))
      {
@@ -405,8 +410,17 @@ EAPI Eina_Bool
 eina_main_loop_is(void)
 {
 #ifdef EFL_HAVE_THREADS
-   pid_t pid = getpid();
+  pid_t pid;
 
+# ifdef _WIN32
+   if (_eina_main_loop == GetCurrentThreadId())
+     return EINA_TRUE;
+# else
+   if (pthread_equal(_eina_main_loop, pthread_self()))
+     return EINA_TRUE;
+# endif
+
+   pid = getpid();
 # ifdef _WIN32
    if (pid != _eina_pid)
      {
@@ -414,9 +428,7 @@ eina_main_loop_is(void)
         _eina_main_loop = GetCurrentThreadId();
         return EINA_TRUE;
      }
-   if (_eina_main_loop == GetCurrentThreadId())
-     return EINA_TRUE;
-# else
+#else
    if (pid != _eina_pid)
      {
         /* This is in case of a fork, but don't like the solution */
@@ -424,11 +436,9 @@ eina_main_loop_is(void)
         _eina_main_loop = pthread_self();
         return EINA_TRUE;
      }
-
-   if (pthread_equal(_eina_main_loop, pthread_self()))
-     return EINA_TRUE;
-# endif
 #endif
+#endif
+
    return EINA_FALSE;
 }
 

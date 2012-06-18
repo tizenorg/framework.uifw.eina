@@ -69,7 +69,7 @@
  * And now we call a function on every member of our array to print it:
  * @until foreach
  *
- * One of the strenghts of @ref Eina_Array over @ref Eina_List is that it has
+ * One of the strengths of @ref Eina_Array over @ref Eina_List is that it has
  * very fast random access to elements, so this is very efficient:
  * @until printf
  *
@@ -253,8 +253,8 @@ struct _Eina_Array
  * another element will increase the buffer by @p step elements again.
  *
  * This function return a valid array on success, or @c NULL if memory
- * allocation fails. In that case, the error is set to
- * #EINA_ERROR_OUT_OF_MEMORY.
+ * allocation fails. In that case, the error is set
+ * to #EINA_ERROR_OUT_OF_MEMORY.
  */
 EAPI Eina_Array *eina_array_new(unsigned int step) EINA_WARN_UNUSED_RESULT EINA_MALLOC EINA_WARN_UNUSED_RESULT;
 
@@ -265,8 +265,8 @@ EAPI Eina_Array *eina_array_new(unsigned int step) EINA_WARN_UNUSED_RESULT EINA_
  *
  * This function frees @p array. It calls first eina_array_flush() then
  * free the memory of the pointer. It does not free the memory
- * allocated for the elements of @p array. To free them, use
- * #EINA_ARRAY_ITER_NEXT. For performance reasons, there is no check
+ * allocated for the elements of @p array. To free them,
+ * use #EINA_ARRAY_ITER_NEXT. For performance reasons, there is no check
  * of @p array.
  */
 EAPI void        eina_array_free(Eina_Array *array) EINA_ARG_NONNULL(1);
@@ -317,7 +317,7 @@ EAPI void eina_array_flush(Eina_Array *array) EINA_ARG_NONNULL(1);
  * @param array The array.
  * @param keep The functions which selects the data to keep.
  * @param gdata The data to pass to the function keep.
- * @return #EINA_TRUE on success, #EINA_FALSE oterwise.
+ * @return #EINA_TRUE on success, #EINA_FALSE otherwise.
  *
  * This function rebuilds @p array be specifying the elements to keep with the
  * function @p keep. No empty/invalid fields are left in the array. @p gdata is
@@ -339,7 +339,7 @@ static inline void     *eina_array_data_get(const Eina_Array *array,
  * @brief Set the data at a given position in an array.
  *
  * @param array The array.
- * @param idx The potition of the data to set.
+ * @param idx The position of the data to set.
  * @param data The data to set.
  *
  * This function sets the data at the position @p idx in @p
@@ -362,7 +362,7 @@ static inline unsigned int eina_array_count(const Eina_Array *array) EINA_ARG_NO
  *
  * This function returns a newly allocated iterator associated to
  * @p array. If @p array is @c NULL or the count member of @p array is
- * less or equal than 0, this function returns NULL. If the memory can
+ * less or equal than 0, this function returns @c NULL. If the memory can
  * not be allocated, NULL is returned and #EINA_ERROR_OUT_OF_MEMORY is
  * set. Otherwise, a valid iterator is returned.
  */
@@ -376,8 +376,8 @@ EAPI Eina_Iterator        *eina_array_iterator_new(const Eina_Array *array) EINA
  *
  * This function returns a newly allocated accessor associated to
  * @p array. If @p array is @c NULL or the count member of @p array is
- * less or equal than 0, this function returns NULL. If the memory can
- * not be allocated, NULL is returned and #EINA_ERROR_OUT_OF_MEMORY is
+ * less or equal than 0, this function returns @c NULL. If the memory can
+ * not be allocated, @c NULL is returned and #EINA_ERROR_OUT_OF_MEMORY is
  * set. Otherwise, a valid accessor is returned.
  */
 EAPI Eina_Accessor        *eina_array_accessor_new(const Eina_Array *array) EINA_MALLOC EINA_ARG_NONNULL(1) EINA_WARN_UNUSED_RESULT;
@@ -387,11 +387,11 @@ EAPI Eina_Accessor        *eina_array_accessor_new(const Eina_Array *array) EINA
  * @param array The array to iterate over.
  * @param cb The callback to call for each item.
  * @param fdata The user data to pass to the callback.
- * @return EINA_TRUE if it successfully iterate all items of the array.
+ * @return #EINA_TRUE if it successfully iterate all items of the array.
  *
  * This function provide a safe way to iterate over an array. @p cb should
- * return EINA_TRUE as long as you want the function to continue iterating,
- * by returning EINA_FALSE it will stop and return EINA_FALSE as a result.
+ * return #EINA_TRUE as long as you want the function to continue iterating,
+ * by returning #EINA_FALSE it will stop and return #EINA_FALSE as a result.
  */
 static inline Eina_Bool    eina_array_foreach(Eina_Array  *array,
                                               Eina_Each_Cb cb,
@@ -401,7 +401,7 @@ static inline Eina_Bool    eina_array_foreach(Eina_Array  *array,
  * @brief Macro to iterate over an array easily.
  *
  * @param array The array to iterate over.
- * @param index The integer number that is increased while itareting.
+ * @param index The integer number that is increased while iterating.
  * @param item The data
  * @param iterator The iterator
  *

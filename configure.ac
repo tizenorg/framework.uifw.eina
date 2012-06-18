@@ -2,11 +2,11 @@
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
 m4_define([v_maj], [1])
 m4_define([v_min], [2])
-m4_define([v_mic], [0])
+m4_define([v_mic], [99])
 m4_define([v_rev], m4_esyscmd([(svnversion "${SVN_REPO_PATH:-.}" | grep -v '\(export\|Unversioned directory\)' || echo 0) | awk -F : '{printf("%s\n", $1);}' | tr -d ' :MSP\n']))
 m4_if(v_rev, [0], [m4_define([v_rev], m4_esyscmd([git log 2> /dev/null | (grep -m1 git-svn-id || echo 0) | sed -e 's/.*@\([0-9]*\).*/\1/' | tr -d '\n']))])
 ##--   When released, remove the dnl on the below line
-m4_undefine([v_rev])
+dnl m4_undefine([v_rev])
 ##--   When doing snapshots - change soname. remove dnl on below line
 dnl m4_define([relname], [ver-pre-svn-07])
 dnl m4_define([v_rel], [-release relname])
@@ -18,7 +18,7 @@ m4_define([lt_age], v_min)
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
 
-AC_INIT([eina], [v_ver]-beta, [enlightenment-devel@lists.sourceforge.net])
+AC_INIT([eina], [v_ver], [enlightenment-devel@lists.sourceforge.net])
 AC_PREREQ([2.59])
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_MACRO_DIR([m4])
@@ -95,38 +95,25 @@ EFL_CHECK_CPU_SSE([have_sse="yes"], [have_sse="no"])
 EFL_CHECK_CPU_SSE2([have_sse2="yes"], [have_sse2="no"])
 EFL_CHECK_CPU_ALTIVEC([have_altivec="yes"], [have_altivec="no"])
 
-EFL_CHECK_THREADS(
-   [
-    if test "x${_efl_have_posix_threads}" = "xyes" ; then
-       have_threads="POSIX"
-    else
-       if test "x${_efl_have_win32_threads}" = "xyes" ; then
-          have_threads="Win32"
-       else
-          have_threads="no"
-       fi
-    fi
-   ],
-   [have_threads="no"])
-EFL_CHECK_SPINLOCK([have_posix_threads_spinlock="yes"], [have_posix_threads_spinlock="no"])
+EFL_CHECK_THREADS
 
-if ! test "x${have_threads}" = "xno" ; then
+if ! test "x${efl_have_threads}" = "xno" ; then
    EINA_CONFIGURE_HAVE_THREADS="#define EINA_HAVE_THREADS"
 fi
 AC_SUBST(EINA_CONFIGURE_HAVE_THREADS)
-AM_CONDITIONAL([EINA_HAVE_THREADS], [! test "x${have_threads}" = "xno"])
+AM_CONDITIONAL([EINA_HAVE_THREADS], [! test "x${efl_have_threads}" = "xno"])
 
-if ! test "x${have_debug_threads}" = "xno"; then
+if test "x${efl_have_debug_threads}" = "xyes"; then
    EINA_CONFIGURE_HAVE_DEBUG_THREADS="#define EINA_HAVE_DEBUG_THREADS"
 fi
 AC_SUBST(EINA_CONFIGURE_HAVE_DEBUG_THREADS)
-AM_CONDITIONAL([EINA_DEBUG_THREADS], [! test "x${have_debug_threads}" = "xno"])
+AM_CONDITIONAL([EINA_DEBUG_THREADS], [test "x${efl_have_debug_threads}" = "xyes"])
 
-if ! test "x${have_on_off_threads}" = "xno"; then
+if ! test "x${efl_have_on_off_threads}" = "xno"; then
    EINA_CONFIGURE_HAVE_ON_OFF_THREADS="#define EINA_HAVE_ON_OFF_THREADS"
 fi
 AC_SUBST(EINA_CONFIGURE_HAVE_ON_OFF_THREADS)
-AM_CONDITIONAL([EINA_ON_OFF_THREADS], [! test "x${have_on_off_threads}" = "xno"])
+AM_CONDITIONAL([EINA_ON_OFF_THREADS], [! test "x${efl_have_on_off_threads}" = "xno"])
 
 ### Additional options to configure
 
@@ -781,11 +768,11 @@ echo "  Report string usage..: ${have_stringshare_usage}"
 echo "  Valgrind support.....: ${have_valgrind}"
 echo "  Default mempool......: ${have_default_mempool}"
 echo "  Log support..........: ${enable_log}"
-echo "  Thread Support.......: ${have_threads}"
-if test "${have_threads}" = "POSIX" ; then
-echo "    spinlock...........: ${have_posix_threads_spinlock}"
-echo "    debug usage........: ${have_debug_threads}"
-echo "    on/off support.....: ${have_on_off_threads}"
+echo "  Thread Support.......: ${efl_have_threads}"
+if test "${efl_have_threads}" = "POSIX" ; then
+echo "    spinlock...........: ${efl_have_posix_threads_spinlock}"
+echo "    debug usage........: ${efl_have_debug_threads}"
+echo "    on/off support.....: ${efl_have_on_off_threads}"
 fi
 echo "  Amalgamation.........: ${do_amalgamation}"
 echo "  Iconv support........: ${have_iconv}"

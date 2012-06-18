@@ -696,7 +696,7 @@ EAPI Eina_List            *eina_list_demote_list(Eina_List *list, Eina_List *mov
  *
  * This function searches in @p list from beginning to end for the
  * first member whose data pointer is @p data. If it is found, @p data
- * will be returned, otherwise NULL will be returned.
+ * will be returned, otherwise @c NULL will be returned.
  *
  * Example:
  * @code
@@ -767,7 +767,7 @@ EAPI Eina_Bool             eina_list_move_list(Eina_List **to, Eina_List **from,
  * @brief Free an entire list and all the nodes, ignoring the data contained.
 
  * @param list The list to free
- * @return A NULL pointer
+ * @return A @c NULL pointer
  *
  * This function frees all the nodes of @p list. It does not free the
  * data of the nodes. To free them, use #EINA_LIST_FREE.
@@ -895,10 +895,8 @@ EAPI Eina_List            *eina_list_clone(const Eina_List *list) EINA_WARN_UNUS
  * @note @b in-place: this will change the given list, so you should
  * now point to the new list head that is returned by this function.
  *
- * @note worst case is O(n * log2(n)) comparisons (calls to func()),
- * O(n) comparisons average case. That means that for 1,000,000 list
- * elements, sort will usually do 1,000,000 comparisons, but may do up
- * to 20,000,000.
+ * @note Worst case is O(n * log2(n)) comparisons (calls to func()).
+ * That means that for 1,000,000 list sort will do 20,000,000 comparisons.
  *
  * Example:
  * @code
@@ -957,7 +955,7 @@ EAPI Eina_List            *eina_list_merge(Eina_List *left, Eina_List *right) EI
  * for all entry of both list.
  *
  * Both left and right do not exist anymore after the merge.
- * If @p func is NULL, it will return NULL.
+ * If @p func is @c NULL, it will return @c NULL.
  *
  * Example:
  * @code
@@ -992,9 +990,9 @@ EAPI Eina_List            *eina_list_sorted_merge(Eina_List *left, Eina_List *ri
  * @return The new left list
  *
  * This function splits @p list into two lists ( left and right ) after the node @p relative. @p Relative
- * will become the last node of the left list. If @p list or @p right are NULL list is returns.
- * If @p relative is NULL right is set to @p list and NULL is returns.
- * If @p relative is the last node of @p list list is returns and @p right is set to NULL.
+ * will become the last node of the left list. If @p list or @p right are @c NULL list is returns.
+ * If @p relative is NULL right is set to @p list and @c NULL is returns.
+ * If @p relative is the last node of @p list list is returns and @p right is set to @c NULL.
  *
  * list does not exist anymore after the split.
  *
@@ -1014,7 +1012,7 @@ EAPI Eina_List            *eina_list_split_list(Eina_List *list, Eina_List *rela
  * was found (exact match), then it is 0. If returned node is smaller
  * than requested data, it is less than 0 and if it's bigger it's
  * greater than 0. It is the last value returned by func().
- * @return the nearest node, NULL if not found.
+ * @return the nearest node, @c NULL if not found.
  *
  * This function searches for a node containing @p data as it's data in @p list,
  * if such a node exists it will be returned and @p result_cmp will be @p 0. If
@@ -1071,7 +1069,7 @@ EAPI Eina_List            *eina_list_search_sorted_near_list(const Eina_List *li
  * @param list The list to search for data, @b must be sorted.
  * @param func A function pointer that can handle comparing the list data nodes.
  * @param data reference value to search.
- * @return the node if func(node->data, data) == 0, NULL if not found.
+ * @return the node if func(node->data, data) == 0, @c NULL if not found.
  *
  * This can be used to check if some value is inside the list and get
  * the container node in this case. It should be used when list is
@@ -1143,7 +1141,7 @@ EAPI void                 *eina_list_search_sorted(const Eina_List *list, Eina_C
  * @param list The list to search for data, may be unsorted.
  * @param func A function pointer that can handle comparing the list data nodes.
  * @param data reference value to search.
- * @return the node if func(node->data, data) == 0, NULL if not found.
+ * @return the node if func(node->data, data) == 0, @c NULL if not found.
  *
  * This can be used to check if some value is inside the list and get
  * the container node in this case.
@@ -1170,7 +1168,7 @@ EAPI Eina_List            *eina_list_search_unsorted_list(const Eina_List *list,
  * @param func A function pointer that can handle comparing the list data nodes.
  * @param data reference value to search.
  * @return the node value (@c node->data) if func(node->data, data) == 0,
- * NULL if not found.
+ * @c NULL if not found.
  *
  * This can be used to check if some value is inside the list and get
  * the existing instance in this case.
@@ -1270,7 +1268,7 @@ static inline void        *eina_list_data_set(Eina_List *list, const void *data)
  * @return The number of members in the list.
  *
  * This function returns how many members @p list contains. If the
- * list is @c NULL, 0 is returned.
+ * list is @c NULL, @c 0 is returned.
  *
  * NB: This is an order-1 operation and takes the same time regardless
  * of the length of the list.
@@ -1292,9 +1290,9 @@ static inline unsigned int eina_list_count(const Eina_List *list) EINA_PURE;
  * will always return false on eina_iterator_next(), thus keeping API
  * sane.
  *
- * If the memory can not be allocated, NULL is returned and
- * #EINA_ERROR_OUT_OF_MEMORY is set. Otherwise, a valid iterator is
- * returned.
+ * If the memory can not be allocated, NULL is returned
+ * and #EINA_ERROR_OUT_OF_MEMORY is set. Otherwise, a valid iterator
+ * is returned.
  *
  * @warning @p list must be a pointer to the first element of the list.
  *
@@ -1319,9 +1317,9 @@ EAPI Eina_Iterator        *eina_list_iterator_new(const Eina_List *list) EINA_MA
  *
  * Unlike eina_list_iterator_new(), this will walk the list backwards.
  *
- * If the memory can not be allocated, NULL is returned and
- * #EINA_ERROR_OUT_OF_MEMORY is set. Otherwise, a valid iterator is
- * returned.
+ * If the memory can not be allocated, NULL is returned
+ * and #EINA_ERROR_OUT_OF_MEMORY is set. Otherwise, a valid iterator
+ * is returned.
  *
  * @warning @p list must be a pointer to the first element of the list.
  *
@@ -1340,8 +1338,8 @@ EAPI Eina_Iterator        *eina_list_iterator_reversed_new(const Eina_List *list
  *
  * This function returns a newly allocated accessor associated to
  * @p list. If @p list is @c NULL or the count member of @p list is
- * less or equal than 0, this function returns NULL. If the memory can
- * not be allocated, NULL is returned and #EINA_ERROR_OUT_OF_MEMORY is
+ * less or equal than 0, this function returns @c NULL. If the memory can
+ * not be allocated, @c NULL is returned and #EINA_ERROR_OUT_OF_MEMORY is
  * set. Otherwise, a valid accessor is returned.
  *
  * @warning @p list must be a pointer to the first element of the list.

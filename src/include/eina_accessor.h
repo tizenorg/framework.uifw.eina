@@ -203,8 +203,8 @@ EAPI void      eina_accessor_free(Eina_Accessor *accessor) EINA_ARG_NONNULL(1);
  *
  * This function retrieves the data of the element pointed by
  * @p accessor at the porition @p position, and stores it in
- * @p data. If @p accessor is @c NULL or if an error occurred,
- * #EINA_FALSE is returned, otherwise EINA_TRUE is returned.
+ * @p data. If @p accessor is @c NULL or if an error occurred, #EINA_FALSE
+ * is returned, otherwise #EINA_TRUE is returned.
  */
 EAPI Eina_Bool eina_accessor_data_get(Eina_Accessor *accessor,
                                       unsigned int   position,
@@ -253,7 +253,7 @@ EAPI void  eina_accessor_over(Eina_Accessor *accessor,
  * container is locked calling eina_accessor_over() on it will return
  * immediately. If @p accessor is @c NULL or if a problem occurred, #EINA_FALSE
  * is returned, otherwise #EINA_TRUE is returned. If the container isn't
- * lockable, it will return EINA_TRUE.
+ * lockable, it will return #EINA_TRUE.
  *
  * @warning None of the existing eina data structures are lockable.
  */
@@ -268,8 +268,8 @@ EAPI Eina_Bool eina_accessor_lock(Eina_Accessor *accessor) EINA_ARG_NONNULL(1);
  * If the container of the @p accessor permits it and was previously
  * locked, it will be unlocked. If @p accessor is @c NULL or if a
  * problem occurred, #EINA_FALSE is returned, otherwise #EINA_TRUE
- * is returned. If the container is not lockable, it will return
- * EINA_TRUE.
+ * is returned. If the container is not lockable, it will
+ * return #EINA_TRUE.
  *
  * @warning None of the existing eina data structures are lockable.
  */
@@ -320,7 +320,7 @@ EAPI Eina_Bool eina_accessor_unlock(Eina_Accessor *accessor) EINA_ARG_NONNULL(1)
  * @warning unless explicitly stated in functions returning accessors,
  *    do not modify the accessed object while you walk it, in this
  *    example using lists, do not remove list nodes or you might
- *    crash!  This is not a limitiation of accessors themselves,
+ *    crash!  This is not a limitation of accessors themselves,
  *    rather in the accessors implementations to keep them as simple
  *    and fast as possible.
  */

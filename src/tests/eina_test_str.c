@@ -98,6 +98,7 @@ START_TEST(str_split)
         fail_if(result == NULL);
         fail_if(elements != 1);
         fail_if(strcmp(result[0], "nomatch") != 0);
+        fail_if(result[1]);
         free(result[0]);
         free(result);
 
@@ -105,17 +106,16 @@ START_TEST(str_split)
         fail_if(result == NULL);
         fail_if(elements != 1);
         fail_if(strcmp(result[0], "nomatch") != 0);
+        fail_if(result[1]);
         free(result[0]);
         free(result);
 
    result = eina_str_split_full("match:match:match", ":", -1, &elements);
         fail_if(result == NULL);
         fail_if(elements != 3);
-   while (elements >= 1)
-     {
-        elements--;
-        fail_if(strcmp(result[elements], "match") != 0);
-     }
+   for (elements = 0; elements < 3 - 1; elements++)
+     fail_if(strcmp(result[elements], "match") != 0);
+     fail_if(result[3]);
         free(result[0]);
         free(result);
 
@@ -125,6 +125,7 @@ START_TEST(str_split)
         fail_if(strcmp(result[0], "a") != 0);
         fail_if(strcmp(result[1], "b") != 0);
         fail_if(strcmp(result[2], "c") != 0);
+        fail_if(result[3]);
         free(result[0]);
         free(result);
 
@@ -134,6 +135,7 @@ START_TEST(str_split)
         fail_if(strcmp(result[0], "a") != 0);
         fail_if(strcmp(result[1], "b") != 0);
         fail_if(strcmp(result[2], "") != 0);
+        fail_if(result[3]);
         free(result[0]);
         free(result);
 
@@ -143,6 +145,7 @@ START_TEST(str_split)
         fail_if(strcmp(result[0], "") != 0);
         fail_if(strcmp(result[1], "b") != 0);
         fail_if(strcmp(result[2], "c") != 0);
+        fail_if(result[3]);
         free(result[0]);
         free(result);
 
@@ -151,6 +154,7 @@ START_TEST(str_split)
         fail_if(elements != 2);
         fail_if(strcmp(result[0], "") != 0);
         fail_if(strcmp(result[1], "") != 0);
+        fail_if(result[2]);
         free(result[0]);
         free(result);
 
@@ -158,6 +162,7 @@ START_TEST(str_split)
         fail_if(result == NULL);
         fail_if(elements != 1);
         fail_if(strcmp(result[0], "a") != 0);
+        fail_if(result[1]);
         free(result[0]);
         free(result);
 
@@ -166,6 +171,7 @@ START_TEST(str_split)
         fail_if(elements != 2);
         fail_if(strcmp(result[0], "a") != 0);
         fail_if(strcmp(result[1], "a") != 0);
+        fail_if(result[2]);
         free(result[0]);
         free(result);
 
