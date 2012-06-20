@@ -1,6 +1,6 @@
 Name:       eina
 Summary:    Data Type Library
-Version:    1.2.0+svn.70441slp2+build02
+Version:    1.2.0+svn.72252slp2+build01
 Release:    1
 Group:      System/Libraries
 License:    LGPLv2
