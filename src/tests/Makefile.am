@@ -70,10 +70,10 @@ eina_test_simple_xml_parser.c \
 eina_test_value.c
 # eina_test_model.c
 
-eina_suite_LDADD = @CHECK_LIBS@ $(top_builddir)/src/lib/libeina.la -lm
+eina_suite_LDADD = @CHECK_LIBS@ $(top_builddir)/src/lib/libeina.la @EINA_LIBS@ -lm
 
 cxx_compile_test_SOURCES = cxx_compile_test.cxx
-cxx_compile_test_LDADD = $(top_builddir)/src/lib/libeina.la
+cxx_compile_test_LDADD = $(top_builddir)/src/lib/libeina.la @EINA_LIBS@
 
 module_dummydir = $(libdir)/eina/test
 module_dummy_LTLIBRARIES = module_dummy.la
@@ -116,7 +116,12 @@ evas_list.c \
 evas_mempool.c \
 evas_object_list.c \
 evas_stringshare.c \
-eina_bench_quad.c
+eina_bench_quad.c \
+eina_bench.h \
+eina_suite.h \
+Ecore_Data.h \
+Evas_Data.h \
+evas_mempool.h
 
 if CITYHASH_BENCH
 noinst_LTLIBRARIES = libcity.la
@@ -129,16 +134,9 @@ eina_bench_LDADD = @GLIB_LIBS@ $(top_builddir)/src/lib/libeina.la @EINA_LIBS@
 
 endif
 
-
-
 endif
 
-EXTRA_DIST = eina_bench.h \
-	eina_suite.h \
-	Ecore_Data.h \
-	Evas_Data.h \
-	evas_mempool.h \
-	strlog
+EXTRA_DIST = strlog
 
 clean-local:
-	rm -rf *.gcno *.gcda
+	rm -rf *.gcno ..\#..\#src\#*.gcov *.gcda

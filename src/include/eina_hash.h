@@ -298,19 +298,19 @@ struct _Eina_Hash_Tuple
 typedef unsigned int (*Eina_Key_Length)(const void *key);
 /**
  * @def EINA_KEY_LENGTH
- * @param Function The function used to hash calculation.
+ * @param Function The function used to calculate length of hash key.
  */
 #define EINA_KEY_LENGTH(Function) ((Eina_Key_Length)Function)
 typedef int          (*Eina_Key_Cmp)(const void *key1, int key1_length, const void *key2, int key2_length);
 /**
  * @def EINA_KEY_CMP
- * @param Function The function used to hash calculation.
+ * @param Function The function used to compare hash key.
  */
 #define EINA_KEY_CMP(Function)    ((Eina_Key_Cmp)Function)
 typedef int          (*Eina_Key_Hash)(const void *key, int key_length);
 /**
  * @def EINA_KEY_HASH
- * @param Function The function used to hash calculation.
+ * @param Function The function used to hash key.
  */
 #define EINA_KEY_HASH(Function)   ((Eina_Key_Hash)Function)
 typedef Eina_Bool    (*Eina_Hash_Foreach)(const Eina_Hash *hash, const void *key, void *data, void *fdata);
@@ -357,9 +357,13 @@ EAPI Eina_Hash *eina_hash_new(Eina_Key_Length key_length_cb,
  * @param hash The given hash table
  * @param data_free_cb The function called on each value when the hash
  * table is freed, or when an item is deleted from it. @c NULL can be passed as
- * callback.
+ * callback to remove an existing callback.
+ *
+ * The argument received by @p data_free_cb will be that data of the item being
+ * removed.
+ *
  * @since 1.1
- * See @ref eina_hash_new.
+ * @see eina_hash_new.
  */
 EAPI void eina_hash_free_cb_set(Eina_Hash *hash, Eina_Free_Cb data_free_cb) EINA_ARG_NONNULL(1);
 

@@ -1,7 +1,7 @@
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
 m4_define([v_maj], [1])
-m4_define([v_min], [2])
+m4_define([v_min], [6])
 m4_define([v_mic], [99])
 m4_define([v_rev], m4_esyscmd([(svnversion "${SVN_REPO_PATH:-.}" | grep -v '\(export\|Unversioned directory\)' || echo 0) | awk -F : '{printf("%s\n", $1);}' | tr -d ' :MSP\n']))
 m4_if(v_rev, [0], [m4_define([v_rev], m4_esyscmd([git log 2> /dev/null | (grep -m1 git-svn-id || echo 0) | sed -e 's/.*@\([0-9]*\).*/\1/' | tr -d '\n']))])
@@ -38,6 +38,7 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 AC_GNU_SOURCE
 AC_SYS_LARGEFILE
 
+#lt_cv_deplibs_check_method='pass_all'
 AC_LIBTOOL_WIN32_DLL
 define([AC_LIBTOOL_LANG_CXX_CONFIG], [:])dnl
 define([AC_LIBTOOL_LANG_F77_CONFIG], [:])dnl
@@ -68,27 +69,30 @@ AC_CANONICAL_HOST
 
 requirements_pc_eina=""
 
+have_wince="no"
+have_win32="no"
 case "$host_os" in
    mingw32ce*)
+      have_win32="yes"
+      have_wince="yes"
       MODULE_ARCH="$host_os-$host_cpu"
+      MODULE_EXT=".dll"
       ;;
-   *)
-      MODULE_ARCH="$host_os-$host_cpu-v_maj.v_min.v_mic"
-      ;;
-esac
-AC_SUBST(MODULE_ARCH)
-AC_DEFINE_UNQUOTED(MODULE_ARCH, "${MODULE_ARCH}", "Module architecture")
-
-case "$host_os" in
    mingw*)
+      have_win32="yes"
+      MODULE_ARCH="$host_os-$host_cpu-v_maj.v_min.v_mic"
       MODULE_EXT=".dll"
       ;;
    *)
+      MODULE_ARCH="$host_os-$host_cpu-v_maj.v_min.v_mic"
       MODULE_EXT=".so"
       ;;
 esac
-
-AC_DEFINE_UNQUOTED(SHARED_LIB_SUFFIX, "${MODULE_EXT}", [Suffix for shared objects])
+AM_CONDITIONAL([EINA_HAVE_WINCE], [test "x$have_wince" = "xyes"])
+AM_CONDITIONAL([EINA_HAVE_WIN32], [test "x$have_win32" = "xyes"])
+AC_SUBST([MODULE_ARCH])
+AC_DEFINE_UNQUOTED([MODULE_ARCH], ["${MODULE_ARCH}"], ["Module architecture"])
+AC_DEFINE_UNQUOTED([SHARED_LIB_SUFFIX], ["${MODULE_EXT}"], [Suffix for shared objects])
 
 EFL_CHECK_CPU_MMX([have_mmx="yes"], [have_mmx="no"])
 EFL_CHECK_CPU_SSE([have_sse="yes"], [have_sse="no"])
@@ -226,6 +230,19 @@ if test "x${have_stringshare_usage}" = "xyes"; then
    AC_DEFINE(EINA_STRINGSHARE_USAGE, 1, [Report Eina stringshare usage pattern])
 fi
 
+# Assert or fail.
+
+AC_ARG_ENABLE([assert],
+   [AC_HELP_STRING([--enable-assert], [enable assert, @<:@default=no@:>@])],
+   [
+    if test "x${enableval}" = "xyes" ; then
+       prefer_assert="yes"
+    else
+       prefer_assert="no"
+    fi
+   ],
+   [prefer_assert="no"])
+
 # Check if we want to benchmark on real data
 enable_benchmark_e17="no"
 AC_ARG_ENABLE([e17],
@@ -268,25 +285,75 @@ EFL_CHECK_DOXYGEN([build_doc="yes"], [build_doc="no"])
 
 ### Checks for libraries
 
+## Compatibility layers
+
+# Evil library for compilation on Windows
+
+EFL_EINA_BUILD=""
+case "$host_os" in
+   mingw*)
+      PKG_CHECK_EXISTS([evil >= 1.6.99])
+      AC_DEFINE([HAVE_EVIL], [1], [Set to 1 if Evil package is installed])
+      requirements_pc_eina="${requirements_pc_eina} evil"
+      EFL_EINA_BUILD="-DEFL_EINA_BUILD"
+   ;;
+esac
+AC_SUBST([EFL_EINA_BUILD])
+
+# Escape library for compilation on Playstation 3
+
+case "$host_vendor" in
+  ps3*)
+      PKG_CHECK_EXISTS([escape])
+      AC_DEFINE([HAVE_ESCAPE], [1], [Set to 1 if Escape package is installed])
+      requirements_pc_eina="${requirements_pc_eina} escape"
+    ;;
+esac
+
+# Exotic library for copilation on Coyote
+
+PKG_CHECK_EXISTS([exotic],
+   [
+    enable_exotic="yes"
+    AC_DEFINE([HAVE_EXOTIC_H], [1], [Define to 1 if you have Exotic.])
+    EINA_CONFIGURE_HAVE_EXOTIC="#define EINA_HAVE_EXOTIC"
+    requirements_pc_eina="exotic ${requirements_pc_eina}"
+   ],
+   [enable_exotic="no"])
+
+AM_CONDITIONAL([EINA_HAVE_EXOTIC], [test "x${enable_exotic}" = "xyes"])
+AC_SUBST([EINA_CONFIGURE_HAVE_EXOTIC])
+
+if ! test "x${requirements_pc_eina}" = "x" ; then
+   PKG_CHECK_MODULES([EINA], [${requirements_pc_eina}])
+fi
+
+## Options
+
 # Valgrind
-want_valgrind="auto"
-have_valgrind="no"
 
 AC_ARG_ENABLE([valgrind],
-  [AC_HELP_STRING([--enable-valgrind], [improve valgrind support by hinting it of our memory usages, having it to report proper mempool leaks.])],
-  [want_valgrind=$enableval])
+   [AC_HELP_STRING([--enable-valgrind], [improve valgrind support by hinting it of our memory usages, having it to report proper mempool leaks.])],
+   [
+    if test "x${enableval}" = "xyes" ; then
+       want_valgrind="yes"
+    else
+       want_valgrind="no"
+    fi
+   ],
+   [want_valgrind="auto"])
 
 AC_MSG_CHECKING([whether to enable build with valgrind])
 AC_MSG_RESULT([${want_valgrind}])
 
 if test "x${want_valgrind}" = "xyes" || test "x${want_valgrind}" = "xauto"; then
-   PKG_CHECK_MODULES([VALGRIND],
-      [valgrind >= 2.4.0],
+   PKG_CHECK_MODULES([VALGRIND], [valgrind >= 2.4.0],
       [
-       requirements_pc_eina="valgrind ${requirements_pc_eina}"
        have_valgrind="yes"
+       requirements_pc_eina="valgrind ${requirements_pc_eina}"
       ],
       [
+       have_valgrind="no"
        AC_DEFINE([NVALGRIND], [1], [Valgrind support disabled])
        if test "x${want_valgrind}" = "xyes"; then
           AC_MSG_ERROR([Valgrind >= 2.4.0 is required])
@@ -296,48 +363,7 @@ else
     AC_DEFINE([NVALGRIND], [1], [Valgrind support disabled])
 fi
 
-
-# Evil library for compilation on Windows
-
-EFL_EINA_BUILD=""
-case "$host_os" in
-   mingw*)
-      PKG_CHECK_MODULES([EVIL], [evil >= 1.0.0])
-      AC_DEFINE([HAVE_EVIL], [1], [Set to 1 if evil package is installed])
-      requirements_pc_eina="${requirements_pc_eina} evil"
-      EFL_EINA_BUILD="-DEFL_EINA_BUILD"
-   ;;
-esac
-AC_SUBST([EFL_EINA_BUILD])
-
-# Checks for portability layer
-
-PKG_CHECK_MODULES([EXOTIC],
-   [exotic],
-   [enable_exotic="yes"],
-   [enable_exotic="no"])
-
-if test "x${enable_exotic}" = "xyes"; then
-    requirements_pc_eina="exotic ${requirements_pc_eina}"
-    EINA_CFLAGS="${EINA_CFLAGS} ${EXOTIC_CFLAGS}"
-    EINA_LIBS="${EXOTIC_LIBS}"
-
-    EINA_CONFIGURE_HAVE_EXOTIC="#define EINA_HAVE_EXOTIC"
-    AC_DEFINE([HAVE_EXOTIC_H], [1], [Define to 1 if you have Exotic.])
-fi
-AM_CONDITIONAL([EINA_HAVE_EXOTIC], [test "x${enable_exotic}" = "xyes"])
-AC_SUBST([EINA_CONFIGURE_HAVE_EXOTIC])
-
-case "$host_vendor" in
-  ps3*)
-      PKG_CHECK_MODULES([ESCAPE], [escape])
-      AC_DEFINE(HAVE_ESCAPE, 1, [Set to 1 if Escape package is installed])
-      requirements_pc_eina="${requirements_pc_eina} escape"
-      EINA_CFLAGS="${ESCAPE_CFLAGS} ${EINA_CFLAGS}"
-    ;;
-esac
-
-AC_SUBST([EINA_CFLAGS])
+## Modules
 
 # Check ememoa memory pool library
 
@@ -353,7 +379,7 @@ AC_ARG_ENABLE([ememoa],
    [enable_ememoa="yes"])
 
 AC_MSG_CHECKING([whether to use ememoa for memory pool])
-AC_MSG_RESULT([$enable_ememoa])
+AC_MSG_RESULT([${enable_ememoa}])
 
 if test "x${enable_ememoa}" = "xyes" ; then
    PKG_CHECK_MODULES([EMEMOA],
@@ -361,6 +387,8 @@ if test "x${enable_ememoa}" = "xyes" ; then
       [enable_ememoa="yes"],
       [enable_ememoa="no"])
 fi
+
+## Examples
 
 PKG_CHECK_MODULES([ECORE_EVAS],
    [ecore-evas ecore evas],
@@ -374,7 +402,13 @@ AC_HEADER_ASSERT
 AC_HEADER_TIME
 AC_HEADER_DIRENT
 
-AC_CHECK_HEADERS([unistd.h libgen.h inttypes.h stdint.h sys/types.h siginfo.h strings.h sys/mman.h execinfo.h mcheck.h])
+AC_CHECK_HEADERS([unistd.h libgen.h inttypes.h stdint.h sys/types.h siginfo.h strings.h execinfo.h mcheck.h])
+
+# sys/mman.h could be provided by evil/escape/exotic so we need to set CFLAGS accordingly
+CFLAGS_save="${CFLAGS}"
+CFLAGS="${CFLAGS} ${EINA_CFLAGS}"
+AC_CHECK_HEADERS([sys/mman.h])
+CFLAGS="${CFLAGS_save}"
 
 if test "x${ac_cv_header_inttypes_h}" = "xyes" ; then
    EINA_CONFIGURE_HAVE_INTTYPES_H="#define EINA_HAVE_INTTYPES_H"
@@ -424,22 +458,6 @@ AC_C_INLINE
 AC_PROG_CC_STDC
 EFL_ATTRIBUTE_UNUSED
 
-have_wince="no"
-have_win32="no"
-case "$host_os" in
-   mingw32ce*)
-      EINA_CFLAGS="${EVIL_CFLAGS}"
-      have_win32="yes"
-      have_wince="yes"
-      ;;
-   mingw*)
-      EINA_CFLAGS="${EVIL_CFLAGS}"
-      have_win32="yes"
-      ;;
-esac
-AM_CONDITIONAL([EINA_HAVE_WINCE], [test "x$have_wince" = "xyes"])
-AM_CONDITIONAL([EINA_HAVE_WIN32], [test "x$have_win32" = "xyes"])
-
 m4_ifdef([v_mic],
    [
     EFL_COMPILER_FLAG([-Wall])
@@ -451,21 +469,12 @@ EFL_COMPILER_FLAG([-Wshadow])
 EFL_CHECK_PATH_MAX
 
 ### Checks for linker characteristics
-EINA_LIBS=
 lt_enable_auto_import=""
 case "${host_os}" in
    mingw*)
-      EINA_LIBS="${EINA_LIBS} ${EVIL_LIBS}"
       lt_enable_auto_import="-Wl,--enable-auto-import"
    ;;
 esac
-case "$host_vendor" in
-  ps3*)
-      # Escape had already been checked to exist
-      EINA_LIBS="${ESCAPE_LIBS}"
-    ;;
-esac
-AC_SUBST([EINA_LIBS])
 AC_SUBST([lt_enable_auto_import])
 
 EFL_LINKER_FLAG([-fno-strict-aliasing])
@@ -542,14 +551,7 @@ EINA_CHECK_MODULE([one-big],        [${enable_one_big}],      [one big])
 
 ### Unit tests, coverage and benchmarking
 
-EFL_CHECK_TESTS([enable_tests="yes"], [enable_tests="no"])
-
-EFL_CHECK_COVERAGE([${enable_tests}], [enable_coverage="yes"], [enable_coverage="no"])
-EINA_CFLAGS="${EINA_CFLAGS} ${EFL_COVERAGE_CFLAGS}"
-EINA_LIBS="${EINA_LIBS} ${EFL_COVERAGE_LIBS}"
-if test "x$enable_coverage" = "xyes" ; then
-   EINA_CFLAGS="${EINA_CFLAGS} ${EFL_DEBUG_CFLAGS}"
-fi
+EFL_CHECK_TESTS([eina], [enable_tests="yes"], [enable_tests="no"])
 
 EFL_CHECK_BENCHMARK([enable_benchmark="yes"], [enable_benchmark="no"])
 EINA_BENCH_MODULE([glib], [${enable_benchmark}], [glib-2.0], [enable_benchmark_glib="yes"], [enable_benchmark_glib="no"])
@@ -623,8 +625,7 @@ echo "  File xattr...........: ${efl_func_setxattr}"
 echo "  shm_open.............: ${efl_func_shm_open}"
 echo
 echo "  Documentation........: ${build_doc}"
-echo "  Tests................: ${enable_tests}"
-echo "  Coverage.............: ${enable_coverage}"
+echo "  Tests................: ${enable_tests} (Coverage: ${efl_enable_coverage})"
 echo "  Examples.............: ${enable_build_examples}"
 echo "  Tiler Example........: ${build_tiler_example}"
 echo "  Examples installed...: ${enable_install_examples}"
