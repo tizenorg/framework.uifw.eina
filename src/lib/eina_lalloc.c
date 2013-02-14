@@ -22,12 +22,16 @@
 
 #include <stdlib.h>
 
-#include "eina_lalloc.h"
+#include "eina_config.h"
 #include "eina_private.h"
 
+/* undefs EINA_ARG_NONULL() so NULL checks are not compiled out! */
+#include "eina_safety_checks.h"
+#include "eina_lalloc.h"
+
 /*============================================================================*
- *                                  Local                                     *
- *============================================================================*/
+*                                  Local                                     *
+*============================================================================*/
 
 /**
  * @cond LOCAL
@@ -35,12 +39,12 @@
 
 struct _Eina_Lalloc
 {
-	void 	*data;
-	int 	num_allocated;
-	int 	num_elements;
-	int 	acc;
-	Eina_Lalloc_Alloc alloc_cb;
-	Eina_Lalloc_Free free_cb;
+   void *data;
+   int num_allocated;
+   int num_elements;
+   int acc;
+   Eina_Lalloc_Alloc alloc_cb;
+   Eina_Lalloc_Free free_cb;
 };
 
 /**
@@ -48,12 +52,12 @@ struct _Eina_Lalloc
  */
 
 /*============================================================================*
- *                                 Global                                     *
- *============================================================================*/
+*                                 Global                                     *
+*============================================================================*/
 
 /*============================================================================*
- *                                   API                                      *
- *============================================================================*/
+*                                   API                                      *
+*============================================================================*/
 
 /**
  * @addtogroup Eina_Lalloc_Group Lazy allocator
@@ -61,75 +65,92 @@ struct _Eina_Lalloc
  * @{
  */
 
-EAPI Eina_Lalloc * eina_lalloc_new(void *data, Eina_Lalloc_Alloc alloc_cb, Eina_Lalloc_Free free_cb, int num_init)
+EAPI Eina_Lalloc *eina_lalloc_new(void *data,
+                                  Eina_Lalloc_Alloc alloc_cb,
+                                  Eina_Lalloc_Free free_cb,
+                                  int num_init)
 {
-	Eina_Lalloc *a;
+   Eina_Lalloc *a;
 
-	a = calloc(1, sizeof(Eina_Lalloc));
-	a->data = data;
-	a->alloc_cb = alloc_cb;
-	a->free_cb = free_cb;
-	if (num_init > 0)
-	{
-		a->num_allocated = num_init;
-		a->alloc_cb(a->data, a->num_allocated);
-	}
-	return a;
+   EINA_SAFETY_ON_NULL_RETURN_VAL(alloc_cb, NULL);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(free_cb,  NULL);
+
+   a = calloc(1, sizeof(Eina_Lalloc));
+   a->data = data;
+   a->alloc_cb = alloc_cb;
+   a->free_cb = free_cb;
+   if (num_init > 0)
+     {
+        a->num_allocated = num_init;
+        a->alloc_cb(a->data, a->num_allocated);
+     }
+
+   return a;
 }
 
-EAPI void eina_lalloc_delete(Eina_Lalloc *a)
+EAPI void eina_lalloc_free(Eina_Lalloc *a)
 {
-	a->free_cb(a->data);
-	free(a);
+   EINA_SAFETY_ON_NULL_RETURN(a);
+   EINA_SAFETY_ON_NULL_RETURN(a->free_cb);
+   a->free_cb(a->data);
+   free(a);
 }
 
 EAPI Eina_Bool eina_lalloc_element_add(Eina_Lalloc *a)
 {
-	if (a->num_elements == a->num_allocated)
-	{
-		if (a->alloc_cb(a->data, (1 << a->acc)) == EINA_TRUE)
-		{
-			a->num_allocated = (1 << a->acc);
-			a->acc++;
-		} else {
-			return EINA_FALSE;
-		}
-	}
-	a->num_elements++;
+   EINA_SAFETY_ON_NULL_RETURN_VAL(a,           EINA_FALSE);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(a->alloc_cb, EINA_FALSE);
 
-	return EINA_TRUE;
+   if (a->num_elements == a->num_allocated)
+     {
+        if (a->alloc_cb(a->data, (1 << a->acc)) == EINA_TRUE)
+          {
+             a->num_allocated = (1 << a->acc);
+             a->acc++;
+          }
+        else
+           return EINA_FALSE;
+     }
+
+   a->num_elements++;
+
+   return EINA_TRUE;
 }
 
 EAPI Eina_Bool eina_lalloc_elements_add(Eina_Lalloc *a, int num)
 {
-	int tmp;
+   int tmp;
 
-	tmp = a->num_elements + num;
-	if (tmp > a->num_allocated)
-	{
-		int allocated;
-		int acc;
+   EINA_SAFETY_ON_NULL_RETURN_VAL(a,           EINA_FALSE);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(a->alloc_cb, EINA_FALSE);
 
-		allocated = a->num_allocated;
-		acc = a->acc;
+   tmp = a->num_elements + num;
+   if (tmp > a->num_allocated)
+     {
+        int allocated;
+        int acc;
 
-		while (tmp > allocated)
-		{
-			allocated = (1 << acc);
-			acc++;
-		}
+        allocated = a->num_allocated;
+        acc = a->acc;
 
-		if (a->alloc_cb(a->data, allocated) == EINA_TRUE)
-		{
-			a->num_allocated = allocated;
-			a->acc = acc;
-		} else {
-			return EINA_FALSE;
-		}
-	}
-	a->num_elements += num;
+        while (tmp > allocated)
+          {
+             allocated = (1 << acc);
+             acc++;
+          }
 
-	return EINA_TRUE;
+        if (a->alloc_cb(a->data, allocated) == EINA_TRUE)
+          {
+             a->num_allocated = allocated;
+             a->acc = acc;
+          }
+        else
+           return EINA_FALSE;
+     }
+
+   a->num_elements += num;
+
+   return EINA_TRUE;
 }
 
 /**

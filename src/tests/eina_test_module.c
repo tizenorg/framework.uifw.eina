@@ -23,26 +23,9 @@
 #include <stdio.h>
 
 #include "eina_suite.h"
-#include "eina_module.h"
+#include "Eina.h"
 
-START_TEST(eina_module_init_shutdown)
-{
-   eina_module_init();
-   eina_module_shutdown();
-   eina_module_init();
-    eina_module_init();
-     eina_module_init();
-     eina_module_shutdown();
-     eina_module_init();
-      eina_module_init();
-      eina_module_shutdown();
-     eina_module_shutdown();
-    eina_module_shutdown();
-   eina_module_shutdown();
-}
-END_TEST
-
-static Eina_Bool list_cb(Eina_Module *m, void *data)
+static Eina_Bool list_cb(Eina_Module *m, void *data __UNUSED__)
 {
    int *sym;
    const char *file;
@@ -65,20 +48,23 @@ START_TEST(eina_module_load_unload)
 {
    Eina_Array *_modules;
 
-   eina_module_init();
-   _modules = eina_module_list_get(PACKAGE_BUILD_DIR"/src/tests/", 1, &list_cb, NULL);
+   eina_init();
+   _modules = eina_module_list_get(NULL,
+                                   PACKAGE_BUILD_DIR "/src/tests/",
+                                   EINA_TRUE,
+                                   &list_cb,
+                                   NULL);
    fail_if(!_modules);
    eina_module_list_load(_modules);
    eina_module_list_unload(_modules);
-   eina_module_list_delete(_modules);
+   eina_module_list_free(_modules);
    /* TODO delete the list */
-   eina_module_shutdown();
+   eina_shutdown();
 }
 END_TEST
 
 void
 eina_test_module(TCase *tc)
 {
-   tcase_add_test(tc, eina_module_init_shutdown);
    tcase_add_test(tc, eina_module_load_unload);
 }

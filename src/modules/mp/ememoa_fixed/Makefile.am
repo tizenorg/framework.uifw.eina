@@ -1,29 +1,29 @@
-MAINTAINERCLEANFILES = \
-Makefile.in
+MAINTAINERCLEANFILES = Makefile.in
 
 AM_CPPFLAGS = \
 -I. \
 -I$(top_srcdir)/src/include \
-@EINA_CFLAGS@ \
-@EMEMOA_CFLAGS@
+-I$(top_builddir)/src/include \
+-I$(top_srcdir)/src/lib \
+-I$(top_builddir)/src/lib \
+@EMEMOA_CFLAGS@ \
+@EFL_EINA_BUILD@
 
-if EINA_ENABLE_EMEMOA
+controllerdir = $(libdir)/eina/modules/mp/ememoa_fixed/$(MODULE_ARCH)
+controller_LTLIBRARIES = module.la
 
-if !EINA_STATIC_BUILD_EMEMOA_FIXED
-
-controllerdir = $(libdir)/eina/mp/
-controller_LTLIBRARIES = eina_ememoa_fixed.la
-
-eina_ememoa_fixed_la_SOURCES = \
+module_la_SOURCES = \
 eina_ememoa_fixed.c
 
-eina_ememoa_fixed_la_LIBADD       = $(top_builddir)/src/lib/libeina.la @EINA_LIBS@ @EMEMOA_LIBS@
-eina_ememoa_fixed_la_LDFLAGS      = -no-undefined @lt_enable_auto_import@ -module -avoid-version
-eina_ememoa_fixed_la_LIBTOOLFLAGS = --tag=disable-static
+module_la_CFLAGS = @EINA_CFLAGS@
+module_la_LIBADD = $(top_builddir)/src/lib/libeina.la @EMEMOA_LIBS@ @EINA_LIBS@
+module_la_LDFLAGS = -no-undefined @lt_enable_auto_import@ -module -avoid-version
+module_la_LIBTOOLFLAGS = --tag=disable-static
 
-endif
-
-endif
+install-data-hook:
+	rm -f $(DESTDIR)$(controllerdir)/$(controller_LTLIBRARIES)
+uninstall-hook:
+	rm -f $(DESTDIR)$(controllerdir)/module.*
 
 clean-local:
 	rm -rf *.gcno
