@@ -21,15 +21,16 @@
 
 #include <check.h>
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
-
 void eina_test_stringshare(TCase *tc);
+void eina_test_ustringshare(TCase *tc);
+void eina_test_binshare(TCase *tc);
+void eina_test_inarray(TCase *tc);
 void eina_test_array(TCase *tc);
+void eina_test_log(TCase *tc);
 void eina_test_error(TCase *tc);
 void eina_test_magic(TCase *tc);
 void eina_test_inlist(TCase *tc);
+void eina_test_clist(TCase *tc);
 void eina_test_lalloc(TCase *tc);
 void eina_test_main(TCase *tc);
 void eina_test_counter(TCase *tc);
@@ -43,5 +44,18 @@ void eina_test_rbtree(TCase *tc);
 void eina_test_file(TCase *tc);
 void eina_test_benchmark(TCase *tc);
 void eina_test_mempool(TCase *tc);
+void eina_test_rectangle(TCase *tc);
+void eina_test_matrixsparse(TCase *tc);
+void eina_test_tiler(TCase *tc);
+void eina_test_strbuf(TCase *tc);
+void eina_test_binbuf(TCase *tc);
+void eina_test_str(TCase *tc);
+void eina_test_ustr(TCase *tc);
+void eina_test_quadtree(TCase *tc);
+void eina_test_fp(TCase *tc);
+void eina_test_sched(TCase *tc);
+void eina_test_simple_xml_parser(TCase *tc);
+void eina_test_value(TCase *tc);
+void eina_test_model(TCase *tc);
 
 #endif /* EINA_SUITE_H_ */

@@ -28,17 +28,13 @@
 # include <glib.h>
 #endif
 
-#ifdef EINA_BENCH_HAVE_EVAS
-# include <Evas.h>
-#endif
-
-#ifdef EINA_BENCH_HAVE_ECORE
-# include <Ecore_Data.h>
-#endif
+#include "Evas_Data.h"
+#include "Ecore_Data.h"
 
 #include "eina_stringshare.h"
 #include "eina_bench.h"
 #include "eina_convert.h"
+#include "eina_main.h"
 
 static void
 eina_bench_stringshare_job(int request)
@@ -47,28 +43,30 @@ eina_bench_stringshare_job(int request)
    unsigned int j;
    int i;
 
-   eina_stringshare_init();
+   eina_init();
 
    for (i = 0; i < request; ++i)
      {
-	char build[64] = "string_";
+        char build[64] = "string_";
 
-	eina_convert_xtoa(i, build + 7);
-	tmp = eina_stringshare_add(build);
+        eina_convert_xtoa(i, build + 7);
+        tmp = eina_stringshare_add(build);
      }
 
    srand(time(NULL));
 
    for (j = 0; j < 200; ++j)
-     for (i = 0; i < request; ++i)
-       {
-	  char build[64] = "string_";
+      for (i = 0; i < request; ++i)
+        {
+           char build[64] = "string_";
 
-	  eina_convert_xtoa(rand() % request, build + 7);
-	  tmp = eina_stringshare_add(build);
-       }
+           eina_convert_xtoa(rand() % request, build + 7);
+           tmp = eina_stringshare_add(build);
+        }
 
-   eina_stringshare_shutdown();
+   /* Suppress warnings as we really don't want to do anything. */
+   (void) tmp;
+   eina_shutdown();
 }
 
 #ifdef EINA_BENCH_HAVE_GLIB
@@ -83,28 +81,27 @@ eina_bench_stringchunk_job(int request)
 
    for (i = 0; i < request; ++i)
      {
-	char build[64] = "string_";
+        char build[64] = "string_";
 
-	eina_convert_xtoa(i, build + 7);
-	g_string_chunk_insert_const(chunk, build);
+        eina_convert_xtoa(i, build + 7);
+        g_string_chunk_insert_const(chunk, build);
      }
 
    srand(time(NULL));
 
    for (j = 0; j < 200; ++j)
-     for (i = 0; i < request; ++i)
-       {
-	  char build[64] = "string_";
+      for (i = 0; i < request; ++i)
+        {
+           char build[64] = "string_";
 
-	  eina_convert_xtoa(rand() % request, build + 7);
-	  g_string_chunk_insert_const(chunk, build);
-       }
+           eina_convert_xtoa(rand() % request, build + 7);
+           g_string_chunk_insert_const(chunk, build);
+        }
 
    g_string_chunk_free(chunk);
 }
 #endif
 
-#ifdef EINA_BENCH_HAVE_EVAS
 static void
 eina_bench_evas_job(int request)
 {
@@ -112,34 +109,29 @@ eina_bench_evas_job(int request)
    unsigned int j;
    int i;
 
-   evas_init();
-/*    evas_stringshare_init(); */
-
    for (i = 0; i < request; ++i)
      {
-	char build[64] = "string_";
+        char build[64] = "string_";
 
-	eina_convert_xtoa(i, build + 7);
-	tmp = evas_stringshare_add(build);
+        eina_convert_xtoa(i, build + 7);
+        tmp = evas_stringshare_add(build);
      }
 
    srand(time(NULL));
 
    for (j = 0; j < 200; ++j)
-     for (i = 0; i < request; ++i)
-       {
-	  char build[64] = "string_";
+      for (i = 0; i < request; ++i)
+        {
+           char build[64] = "string_";
 
-	  eina_convert_xtoa(rand() % request, build + 7);
-	  tmp = evas_stringshare_add(build);
-       }
+           eina_convert_xtoa(rand() % request, build + 7);
+           tmp = evas_stringshare_add(build);
+        }
 
-/*    evas_stringshare_shutdown(); */
-   evas_shutdown();
+   /* Suppress warnings as we really don't want to do anything. */
+   (void) tmp;
 }
-#endif
 
-#ifdef EINA_BENCH_HAVE_ECORE
 static void
 eina_bench_ecore_job(int request)
 {
@@ -151,37 +143,43 @@ eina_bench_ecore_job(int request)
 
    for (i = 0; i < request; ++i)
      {
-	char build[64] = "string_";
+        char build[64] = "string_";
 
-	eina_convert_xtoa(i, build + 7);
-	tmp = ecore_string_instance(build);
+        eina_convert_xtoa(i, build + 7);
+        tmp = ecore_string_instance(build);
      }
 
    srand(time(NULL));
 
    for (j = 0; j < 200; ++j)
-     for (i = 0; i < request; ++i)
-       {
-	  char build[64] = "string_";
+      for (i = 0; i < request; ++i)
+        {
+           char build[64] = "string_";
 
-	  eina_convert_xtoa(rand() % request, build + 7);
-	  tmp = ecore_string_instance(build);
-       }
+           eina_convert_xtoa(rand() % request, build + 7);
+           tmp = ecore_string_instance(build);
+        }
+
+   /* Suppress warnings as we really don't want to do anything. */
+   (void) tmp;
 
    ecore_string_shutdown();
 }
-#endif
 
 void eina_bench_stringshare(Eina_Benchmark *bench)
 {
-   eina_benchmark_register(bench, "stringshare", EINA_BENCHMARK(eina_bench_stringshare_job), 100, 20100, 500);
+   eina_benchmark_register(bench, "stringshare",
+                           EINA_BENCHMARK(
+                              eina_bench_stringshare_job), 100, 20100, 500);
 #ifdef EINA_BENCH_HAVE_GLIB
-   eina_benchmark_register(bench, "stringchunk (glib)", EINA_BENCHMARK(eina_bench_stringchunk_job), 100, 20100, 500);
+   eina_benchmark_register(bench, "stringchunk (glib)",
+                           EINA_BENCHMARK(
+                              eina_bench_stringchunk_job), 100, 20100, 500);
 #endif
-#ifdef EINA_BENCH_HAVE_EVAS
-   eina_benchmark_register(bench, "stringshare (evas)", EINA_BENCHMARK(eina_bench_evas_job), 100, 20100, 500);
-#endif
-#ifdef EINA_BENCH_HAVE_ECORE
-   eina_benchmark_register(bench, "stringshare (ecore)", EINA_BENCHMARK(eina_bench_ecore_job), 100, 20100, 500);
-#endif
+   eina_benchmark_register(bench, "stringshare (evas)",
+                           EINA_BENCHMARK(
+                              eina_bench_evas_job),        100, 20100, 500);
+   eina_benchmark_register(bench, "stringshare (ecore)",
+                           EINA_BENCHMARK(
+                              eina_bench_ecore_job),       100, 20100, 500);
 }

@@ -22,14 +22,34 @@
 
 #include <stdio.h>
 
-#include "Eina.h"
 #include "eina_suite.h"
+#include "Eina.h"
 
-START_TEST(eina_simple)
+   START_TEST(eina_simple)
 {
-   /* Eina_error as already been initialized by eina_hash
-      that was called by eina_mempool_init that's why we don't have 0 here */
-   fail_if(eina_init() != 2);
+   fail_if(eina_init() != 2); /* one init by test suite */
+   fail_if(eina_shutdown() != 1);
+}
+END_TEST
+
+START_TEST(eina_cpu)
+{
+   fail_if(eina_init() != 2); /* one init by test suite */
+
+   fail_if(eina_cpu_count() <= 0);
+
+   eina_cpu_features_get();
+
+   fail_if(eina_shutdown() != 1);
+}
+END_TEST
+
+START_TEST(eina_hamster)
+{
+   fail_if(eina_init() != 2); /* one init by test suite */
+
+   fail_if(eina_hamster_count() <= 0);
+
    fail_if(eina_shutdown() != 1);
 }
 END_TEST
@@ -37,4 +57,6 @@ END_TEST
 void eina_test_main(TCase *tc)
 {
    tcase_add_test(tc, eina_simple);
+   tcase_add_test(tc, eina_cpu);
+   tcase_add_test(tc, eina_hamster);
 }

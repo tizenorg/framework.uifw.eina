@@ -25,8 +25,7 @@
 #endif
 
 #include "eina_bench.h"
-#include "eina_array.h"
-#include "eina_mempool.h"
+#include "Eina.h"
 
 static void
 _eina_mempool_bench(Eina_Mempool *mp, int request)
@@ -35,75 +34,91 @@ _eina_mempool_bench(Eina_Mempool *mp, int request)
    int i;
    int j;
 
-   eina_array_init();
+   eina_init();
    array = eina_array_new(32);
 
    for (i = 0; i < 100; ++i)
      {
-	for (j = 0; j < request; ++j)
-	  {
-	     eina_array_push(array, eina_mempool_alloc(mp, sizeof (int)));
-	  }
+        for (j = 0; j < request; ++j)
+          {
+             eina_array_push(array, eina_mempool_malloc(mp, sizeof (int)));
+          }
 
-	for (j = 0; j < request; ++j)
-	  {
-	     eina_mempool_free(mp, eina_array_pop(array));
-	  }
+        for (j = 0; j < request; ++j)
+          {
+             eina_mempool_free(mp, eina_array_pop(array));
+          }
      }
 
    eina_array_free(array);
-   eina_array_shutdown();
+   eina_shutdown();
 }
 
+#ifdef EINA_BUILD_CHAINED_POOL
 static void
 eina_mempool_chained_mempool(int request)
 {
    Eina_Mempool *mp;
 
-   mp = eina_mempool_new("chained_mempool", "test", NULL, sizeof (int), 256);
+   mp = eina_mempool_add("chained_mempool", "test", NULL, sizeof (int), 256);
    _eina_mempool_bench(mp, request);
-   eina_mempool_delete(mp);
+   eina_mempool_del(mp);
 }
+#endif
 
+#ifdef EINA_BUILD_PASS_THROUGH
 static void
 eina_mempool_pass_through(int request)
 {
    Eina_Mempool *mp;
 
-   mp = eina_mempool_new("pass_through", "test", NULL, sizeof (int), 8, 0);
+   mp = eina_mempool_add("pass_through", "test", NULL, sizeof (int), 8, 0);
    _eina_mempool_bench(mp, request);
-   eina_mempool_delete(mp);
+   eina_mempool_del(mp);
 }
+#endif
 
+#ifdef EINA_BUILD_FIXED_BITMAP
 static void
 eina_mempool_fixed_bitmap(int request)
 {
    Eina_Mempool *mp;
 
-   mp = eina_mempool_new("fixed_bitmap", "test", NULL, sizeof (int));
+   mp = eina_mempool_add("fixed_bitmap", "test", NULL, sizeof (int));
    _eina_mempool_bench(mp, request);
-   eina_mempool_delete(mp);
+   eina_mempool_del(mp);
 }
+#endif
 
-#ifdef EINA_EMEMOA_SUPPORT
+#ifdef EINA_BUILD_EMEMOA_FIXED
 static void
 eina_mempool_ememoa_fixed(int request)
 {
    Eina_Mempool *mp;
 
-   mp = eina_mempool_new("ememoa_fixed", "test", NULL, sizeof (int), 8, 0);
+   mp = eina_mempool_add("ememoa_fixed", "test", NULL, sizeof (int), 8, 0);
    _eina_mempool_bench(mp, request);
-   eina_mempool_delete(mp);
+   eina_mempool_del(mp);
 }
+#endif
 
+#ifdef EINA_BUILD_EMEMOA_UNKNOWN
 static void
 eina_mempool_ememoa_unknown(int request)
 {
    Eina_Mempool *mp;
 
-   mp = eina_mempool_new("ememoa_unknown", "test", NULL, 0, 2, sizeof (int), 8, sizeof (int) * 2, 8);
+   mp = eina_mempool_add("ememoa_unknown",
+                         "test",
+                         NULL,
+                         0,
+                         2,
+                         sizeof (int),
+                         8,
+                         sizeof (int) * 2,
+                         8);
    _eina_mempool_bench(mp, request);
-   eina_mempool_delete(mp);
+   eina_mempool_del(mp);
 }
 #endif
 
@@ -115,24 +130,24 @@ eina_mempool_glib(int request)
    int i;
    int j;
 
-   eina_array_init();
+   eina_init();
    array = eina_array_new(32);
 
    for (i = 0; i < 100; ++i)
      {
-	for (j = 0; j < request; ++j)
-	  {
-	     eina_array_push(array, g_slice_alloc(sizeof (int)));
-	  }
+        for (j = 0; j < request; ++j)
+          {
+             eina_array_push(array, g_slice_alloc(sizeof (int)));
+          }
 
-	for (j = 0; j < request; ++j)
-	  {
-	     g_slice_free1(sizeof (int), eina_array_pop(array));
-	  }
+        for (j = 0; j < request; ++j)
+          {
+             g_slice_free1(sizeof (int), eina_array_pop(array));
+          }
      }
 
    eina_array_free(array);
-   eina_array_shutdown();
+   eina_shutdown();
 
 }
 #endif
@@ -140,14 +155,34 @@ eina_mempool_glib(int request)
 void
 eina_bench_mempool(Eina_Benchmark *bench)
 {
-   eina_benchmark_register(bench, "chained mempool", EINA_BENCHMARK(eina_mempool_chained_mempool), 10, 1000, 10);
-   eina_benchmark_register(bench, "pass through", EINA_BENCHMARK(eina_mempool_pass_through), 10, 1000, 10);
-   eina_benchmark_register(bench, "fixed bitmap", EINA_BENCHMARK(eina_mempool_fixed_bitmap), 10, 1000, 10);
-#ifdef EINA_EMEMOA_SUPPORT
-   eina_benchmark_register(bench, "ememoa fixed", EINA_BENCHMARK(eina_mempool_ememoa_fixed), 10, 1000, 10);
-   eina_benchmark_register(bench, "ememoa unknown", EINA_BENCHMARK(eina_mempool_ememoa_unknown), 10, 1000, 10);
+#ifdef EINA_BUILD_CHAINED_POOL
+   eina_benchmark_register(bench, "chained mempool",
+                           EINA_BENCHMARK(
+                              eina_mempool_chained_mempool), 10, 10000, 10);
+#endif
+#ifdef EINA_BUILD_PASS_THROUGH
+   eina_benchmark_register(bench, "pass through",
+                           EINA_BENCHMARK(
+                              eina_mempool_pass_through),    10, 10000, 10);
+#endif
+#ifdef EINA_BUILD_FIXED_BITMAP
+   eina_benchmark_register(bench, "fixed bitmap",
+                           EINA_BENCHMARK(
+                              eina_mempool_fixed_bitmap),    10, 10000, 10);
+#endif
+#ifdef EINA_BUILD_EMEMOA_FIXED
+   eina_benchmark_register(bench, "ememoa fixed",
+                           EINA_BENCHMARK(
+                              eina_mempool_ememoa_fixed),    10, 10000, 10);
+#endif
+#ifdef EINA_BUILD_EMEMOA_UNKNOWN
+   eina_benchmark_register(bench, "ememoa unknown",
+                           EINA_BENCHMARK(
+                              eina_mempool_ememoa_unknown),  10, 10000, 10);
 #endif
 #ifdef EINA_BENCH_HAVE_GLIB
-   eina_benchmark_register(bench, "gslice", EINA_BENCHMARK(eina_mempool_glib), 10, 1000, 10);
+   eina_benchmark_register(bench, "gslice",
+                           EINA_BENCHMARK(
+                              eina_mempool_glib),            10, 10000, 10);
 #endif
 }

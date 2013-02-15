@@ -1,6 +1,3 @@
-/*
- * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
- */
 /* EINA - EFL data type library
  * Copyright (C) 2008 Cedric BAIL
  *
@@ -23,9 +20,15 @@
 # include "config.h"
 #endif
 
-#include <stdint.h>
+#ifndef _MSC_VER
+# include <stdint.h>
+#endif
 #include <string.h>
 #include <assert.h>
+
+#ifdef HAVE_EVIL
+# include <Evil.h>
+#endif
 
 #include "eina_inlist.h"
 #include "eina_rbtree.h"
@@ -54,44 +57,53 @@ struct _Eina_Fixed_Bitmap_Pool
    uint32_t bitmask;
 };
 
-static inline int
+static inline size_t
 _eina_rbtree_inlist_delta(void)
 {
    Eina_Fixed_Bitmap_Pool tmp;
    void *a = &tmp.__rbtree;
    void *b = &tmp.__in_list;
 
-   return a - b;
+   return (char *)a - (char *)b;
 }
 
 static Eina_Rbtree_Direction
-_eina_fixed_cmp(const Eina_Rbtree *left, const Eina_Rbtree *right, __UNUSED__ void *data)
+_eina_fixed_cmp(const Eina_Rbtree *left,
+                const Eina_Rbtree *right,
+                __UNUSED__ void *data)
 {
    if (left - right < 0)
-     return EINA_RBTREE_LEFT;
+      return EINA_RBTREE_LEFT;
+
    return EINA_RBTREE_RIGHT;
 }
 
 static int
-_eina_fixed_cmp_key(const Eina_Rbtree *node, const void *key, __UNUSED__ int length, Eina_Fixed_Bitmap *mp)
+_eina_fixed_cmp_key(const Eina_Rbtree *node,
+                    const void *key,
+                    __UNUSED__ int length,
+                    Eina_Fixed_Bitmap *mp)
 {
    const void *a = node;
    const void *b = key;
-   int delta;
-   int limit;
+   ssize_t delta;
+   ssize_t limit;
 
    limit = sizeof (Eina_Fixed_Bitmap_Pool) + mp->item_size * 32;
-   delta = a - b;
+   delta = (char *)a - (char *)b;
 
    if (delta > 0)
-     return 1;
+      return 1;
+
    if (delta + limit < 0)
-     return -1;
+      return -1;
+
    return 0;
 }
 
 static void
-_eina_fixed_bitmap_pool_free(Eina_Fixed_Bitmap_Pool *pool, __UNUSED__ void *data)
+_eina_fixed_bitmap_pool_free(Eina_Fixed_Bitmap_Pool *pool,
+                             __UNUSED__ void *data)
 {
    free(pool);
 }
@@ -102,37 +114,43 @@ eina_fixed_bitmap_malloc(void *data, __UNUSED__ unsigned int size)
    Eina_Fixed_Bitmap *mp = data;
    Eina_Fixed_Bitmap_Pool *pool = NULL;
    void *ptr;
-   int index;
+   int idx;
 
    if (mp->head)
      {
-	pool = (Eina_Fixed_Bitmap_Pool*) ((unsigned char*) mp->head + _eina_rbtree_inlist_delta());
+        pool =
+           (Eina_Fixed_Bitmap_Pool *)((unsigned char *)mp->head +
+                                      _eina_rbtree_inlist_delta());
 
-	if (pool->bitmask == 0) pool = NULL;
+        if (pool->bitmask == 0)
+           pool = NULL;
      }
 
    if (!pool)
      {
-	eina_error_set(0);
-	pool = malloc(sizeof (Eina_Fixed_Bitmap_Pool) + mp->item_size * 32);
-	if (!pool)
-	  {
-	     eina_error_set(EINA_ERROR_OUT_OF_MEMORY);
-	     return NULL;
-	  }
+             eina_error_set(0);
+        pool = malloc(sizeof (Eina_Fixed_Bitmap_Pool) + mp->item_size * 32);
+        if (!pool)
+          {
+             eina_error_set(EINA_ERROR_OUT_OF_MEMORY);
+             return NULL;
+          }
 
-	pool->bitmask = 0xFFFFFFFF;
+        pool->bitmask = 0xFFFFFFFF;
 
-	mp->head = eina_inlist_prepend(mp->head, EINA_INLIST_GET(pool));
-	mp->lookup = eina_rbtree_inline_insert(mp->lookup, EINA_RBTREE_GET(pool), EINA_RBTREE_CMP_NODE_CB(_eina_fixed_cmp), NULL);
+        mp->head = eina_inlist_prepend(mp->head, EINA_INLIST_GET(pool));
+        mp->lookup = eina_rbtree_inline_insert(mp->lookup, EINA_RBTREE_GET(
+                                                  pool),
+                                               EINA_RBTREE_CMP_NODE_CB(
+                                                  _eina_fixed_cmp), NULL);
      }
 
-   index = ffs(pool->bitmask) - 1;
-   pool->bitmask &= ~(1 << index);
-   ptr = (unsigned char*) (pool + 1) + index * mp->item_size;
+   idx = ffs(pool->bitmask) - 1;
+   pool->bitmask &= ~(1 << idx);
+   ptr = (unsigned char *)(pool + 1) + idx * mp->item_size;
 
    if (pool->bitmask == 0)
-     mp->head = eina_inlist_demote(mp->head, EINA_INLIST_GET(pool));
+      mp->head = eina_inlist_demote(mp->head, EINA_INLIST_GET(pool));
 
    return ptr;
 }
@@ -144,16 +162,25 @@ eina_fixed_bitmap_free(void *data, void *ptr)
    Eina_Fixed_Bitmap_Pool *pool;
    void *a;
    Eina_Bool push_front = EINA_FALSE;
-   int delta;
+   ssize_t delta;
 
-   pool = (Eina_Fixed_Bitmap_Pool*) eina_rbtree_inline_lookup(mp->lookup,
-							      ptr, 0,
-							      EINA_RBTREE_CMP_KEY_CB(_eina_fixed_cmp_key), mp);
-   if (!pool) return ;
-   if (pool->bitmask != 0xFFFFFFFF) push_front = EINA_TRUE;
+   pool = (Eina_Fixed_Bitmap_Pool *)eina_rbtree_inline_lookup(
+         mp->lookup,
+         ptr,
+         0,
+         EINA_RBTREE_CMP_KEY_CB(
+            _eina_fixed_cmp_key),
+         mp);
+   if (!pool)
+      return;
+
+   if (pool->bitmask != 0xFFFFFFFF)
+      push_front = EINA_TRUE;
 
    a = pool;
-   delta = (ptr - a - sizeof (Eina_Fixed_Bitmap_Pool)) / mp->item_size;
+   delta =
+      ((char *)ptr - (char *)a -
+       sizeof (Eina_Fixed_Bitmap_Pool)) / mp->item_size;
 
    assert(delta >= 0 && delta < 32);
 
@@ -161,29 +188,41 @@ eina_fixed_bitmap_free(void *data, void *ptr)
 
    if (pool->bitmask == 0xFFFFFFFF)
      {
-	mp->head = eina_inlist_remove(mp->head, EINA_INLIST_GET(pool));
-	mp->lookup = eina_rbtree_inline_remove(mp->lookup, EINA_RBTREE_GET(pool), EINA_RBTREE_CMP_NODE_CB(_eina_fixed_cmp), NULL);
-	free(pool);
+        mp->head = eina_inlist_remove(mp->head, EINA_INLIST_GET(pool));
+        mp->lookup = eina_rbtree_inline_remove(mp->lookup, EINA_RBTREE_GET(
+                                                  pool),
+                                               EINA_RBTREE_CMP_NODE_CB(
+                                                  _eina_fixed_cmp), NULL);
+        free(pool);
      }
    else if (push_front)
-     mp->head = eina_inlist_promote(mp->head, EINA_INLIST_GET(pool));
+      mp->head = eina_inlist_promote(mp->head, EINA_INLIST_GET(pool));
 }
 
 static void *
-eina_fixed_bitmap_realloc(__UNUSED__ void *data, __UNUSED__ void *element, __UNUSED__ unsigned int size)
+eina_fixed_bitmap_realloc(__UNUSED__ void *data,
+                          __UNUSED__ void *element,
+                          __UNUSED__ unsigned int size)
 {
    return NULL;
 }
 
-static void*
-eina_fixed_bitmap_init(__UNUSED__ const char *context, __UNUSED__ const char *option, va_list args)
+static void *
+eina_fixed_bitmap_init(__UNUSED__ const char *context,
+                       __UNUSED__ const char *option,
+                       va_list args)
 {
    Eina_Fixed_Bitmap *mp;
+   int item_size;
 
    mp = malloc(sizeof (Eina_Fixed_Bitmap));
-   if (!mp) return NULL;
+   if (!mp)
+      return NULL;
 
-   mp->item_size = va_arg(args, int);
+   item_size = va_arg(args, int);
+
+   mp->item_size = eina_mempool_alignof(item_size);
+
    mp->lookup = NULL;
    mp->head = NULL;
 
@@ -195,27 +234,31 @@ eina_fixed_bitmap_shutdown(void *data)
 {
    Eina_Fixed_Bitmap *mp = data;
 
-   eina_rbtree_delete(mp->lookup, EINA_RBTREE_FREE_CB(_eina_fixed_bitmap_pool_free), NULL);
+   eina_rbtree_delete(mp->lookup,
+                      EINA_RBTREE_FREE_CB(_eina_fixed_bitmap_pool_free), NULL);
    free(mp);
 }
 
-static Eina_Mempool_Backend mp_backend = {
-  .name ="fixed_bitmap",
-  .init = &eina_fixed_bitmap_init,
-  .shutdown = &eina_fixed_bitmap_shutdown,
-  .realloc = &eina_fixed_bitmap_realloc,
-  .alloc = &eina_fixed_bitmap_malloc,
-  .free = &eina_fixed_bitmap_free
+static Eina_Mempool_Backend _eina_fixed_bitmap_mp_backend = {
+   "fixed_bitmap",
+   &eina_fixed_bitmap_init,
+   &eina_fixed_bitmap_free,
+   &eina_fixed_bitmap_malloc,
+   &eina_fixed_bitmap_realloc,
+   NULL,
+   NULL,
+   &eina_fixed_bitmap_shutdown,
+   NULL
 };
 
 Eina_Bool fixed_bitmap_init(void)
 {
-   return eina_mempool_register(&mp_backend);
+   return eina_mempool_register(&_eina_fixed_bitmap_mp_backend);
 }
 
 void fixed_bitmap_shutdown(void)
 {
-   eina_mempool_unregister(&mp_backend);
+   eina_mempool_unregister(&_eina_fixed_bitmap_mp_backend);
 }
 
 #ifndef EINA_STATIC_BUILD_FIXED_BITMAP

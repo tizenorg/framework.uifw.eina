@@ -24,30 +24,20 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "eina_hash.h"
-#include "eina_convert.h"
 #include "eina_suite.h"
-
-START_TEST(eina_hash_init_shutdown)
-{
-   eina_hash_init();
-    eina_hash_init();
-    eina_hash_shutdown();
-    eina_hash_init();
-     eina_hash_init();
-     eina_hash_shutdown();
-    eina_hash_shutdown();
-   eina_hash_shutdown();
-}
-END_TEST
+#include "Eina.h"
 
 static Eina_Bool
-eina_foreach_check(__UNUSED__ const Eina_Hash *hash, const void *key, void *data, __UNUSED__ void *fdata)
+eina_foreach_check(__UNUSED__ const Eina_Hash *hash,
+                   const void *key,
+                   void *data,
+                   __UNUSED__ void *fdata)
 {
    int *j = data;
    int i;
 
-   if (strlen(key) <= 0) return EINA_TRUE;
+   if (strlen(key) <= 0)
+      return EINA_TRUE;
 
    i = atoi(key);
    fail_if(i != *j);
@@ -62,7 +52,7 @@ START_TEST(eina_hash_simple)
    int array[] = { 1, 42, 4, 5, 6 };
 
    /* As mempool is already initialized and it use hash, we should have 2 init. */
-   fail_if(eina_hash_init() != 2);
+   fail_if(eina_init() != 2);
 
    hash = eina_hash_string_superfast_new(NULL);
    fail_if(hash == NULL);
@@ -108,8 +98,8 @@ START_TEST(eina_hash_simple)
 
    eina_hash_free(hash);
 
-   /* Same comment as eina_hash_init */
-   fail_if(eina_hash_shutdown() != 1);
+   /* Same comment as eina_init */
+        fail_if(eina_shutdown() != 1);
 }
 END_TEST
 
@@ -118,26 +108,26 @@ START_TEST(eina_hash_extended)
    Eina_Hash *hash = NULL;
    int i;
 
-   fail_if(eina_hash_init() != 2);
+        fail_if(eina_init() != 2);
 
    hash = eina_hash_string_djb2_new(NULL);
-   fail_if(hash == NULL);
+        fail_if(hash == NULL);
 
-   fail_if(eina_hash_direct_add(hash, "42", "42") != EINA_TRUE);
+        fail_if(eina_hash_direct_add(hash, "42", "42") != EINA_TRUE);
 
    for (i = 43; i < 3043; ++i)
      {
-	char *tmp = malloc(10);
-	fail_if(!tmp);
-	eina_convert_itoa(i, tmp);
-	fail_if(eina_hash_direct_add(hash, tmp, tmp) != EINA_TRUE);
+        char *tmp = malloc(10);
+        fail_if(!tmp);
+        eina_convert_itoa(i, tmp);
+        fail_if(eina_hash_direct_add(hash, tmp, tmp) != EINA_TRUE);
      }
 
-   fail_if(eina_hash_find(hash, "42") == NULL);
+        fail_if(eina_hash_find(hash, "42") == NULL);
 
-   eina_hash_free(hash);
+        eina_hash_free(hash);
 
-   fail_if(eina_hash_shutdown() != 1);
+   fail_if(eina_shutdown() != 1);
 }
 END_TEST
 
@@ -147,7 +137,7 @@ START_TEST(eina_hash_double_item)
    int i[] = { 7, 7 };
    int *test;
 
-   fail_if(eina_hash_init() != 2);
+   fail_if(eina_init() != 2);
 
    hash = eina_hash_string_superfast_new(NULL);
    fail_if(hash == NULL);
@@ -161,14 +151,56 @@ START_TEST(eina_hash_double_item)
 
    eina_hash_free(hash);
 
-   fail_if(eina_hash_shutdown() != 1);
+      fail_if(eina_shutdown() != 1);
+}
+END_TEST
+
+START_TEST(eina_hash_all_int)
+{
+   Eina_Hash *hash;
+   int64_t j[] = { 4321312301243122, 6, 7, 128 };
+   int i[] = { 42, 6, 7, 0 };
+   int64_t *test2;
+   int *test;
+   int it;
+
+      fail_if(eina_init() != 2);
+
+   hash = eina_hash_int32_new(NULL);
+      fail_if(hash == NULL);
+
+   for (it = 0; it < 4; ++it)
+      fail_if(eina_hash_add(hash, &i[it], &i[it]) != EINA_TRUE);
+
+      fail_if(eina_hash_del(hash, &i[1], &i[1]) != EINA_TRUE);
+   test = eina_hash_find(hash, &i[2]);
+      fail_if(test != &i[2]);
+
+   test = eina_hash_find(hash, &i[3]);
+      fail_if(test != &i[3]);
+
+      eina_hash_free(hash);
+
+   hash = eina_hash_int64_new(NULL);
+      fail_if(hash == NULL);
+
+   for (it = 0; it < 4; ++it)
+      fail_if(eina_hash_add(hash, &j[it], &j[it]) != EINA_TRUE);
+
+      fail_if(eina_hash_del(hash, &j[1], &j[1]) != EINA_TRUE);
+   test2 = eina_hash_find(hash, &j[0]);
+      fail_if(test2 != &j[0]);
+
+      eina_hash_free(hash);
+
+   fail_if(eina_shutdown() != 1);
 }
 END_TEST
 
 void eina_test_hash(TCase *tc)
 {
-   tcase_add_test(tc, eina_hash_init_shutdown);
    tcase_add_test(tc, eina_hash_simple);
    tcase_add_test(tc, eina_hash_extended);
    tcase_add_test(tc, eina_hash_double_item);
+   tcase_add_test(tc, eina_hash_all_int);
 }
