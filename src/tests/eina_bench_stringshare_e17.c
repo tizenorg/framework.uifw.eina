@@ -28,16 +28,10 @@
 # include <glib.h>
 #endif
 
-#ifdef EINA_BENCH_HAVE_EVAS
-# include <Evas.h>
-#endif
+#include "Evas_Data.h"
+#include "Ecore_Data.h"
 
-#ifdef EINA_BENCH_HAVE_ECORE
-# include <Ecore_Data.h>
-#endif
-
-#include "eina_stringshare.h"
-#include "eina_counter.h"
+#include "Eina.h"
 
 #if EINA_ENABLE_BENCH_E17
 
@@ -47,49 +41,41 @@ struct _Eina_Stringshare_Test
    const char *name;
 
    int (*init)(void);
-   const char *(*add)(const char* str);
-   void (*del)(const char* str);
+   const char *(*add)(const char *str);
+   void (*del)(const char *str);
    int (*shutdown)(void);
 };
 
 static const char *strings[30000];
 static Eina_Stringshare_Test eina_str = {
-  "eina",
-  eina_stringshare_init,
-  eina_stringshare_add,
-  eina_stringshare_del,
-  eina_stringshare_shutdown
+   "eina",
+   eina_init,
+   eina_stringshare_add,
+   eina_stringshare_del,
+   eina_shutdown
 };
 
-#ifdef EINA_BENCH_HAVE_EVAS
 static Eina_Stringshare_Test evas_str = {
-  "evas",
-  evas_init,
-  evas_stringshare_add,
-  evas_stringshare_del,
-  evas_shutdown
+   "evas",
+/*  evas_stringshare_init, */
+   evas_stringshare_add,
+   evas_stringshare_del
+/*  evas_stringshare_shutdown */
 };
-#endif
 
-#ifdef EINA_BENCH_HAVE_ECORE
 static Eina_Stringshare_Test ecore_str = {
-  "ecore",
-  ecore_string_init,
-  ecore_string_instance,
-  ecore_string_release,
-  ecore_string_shutdown
+   "ecore",
+   ecore_string_init,
+   ecore_string_instance,
+   ecore_string_release,
+   ecore_string_shutdown
 };
-#endif
 
-static Eina_Stringshare_Test* str[] = {
-  &eina_str,
-#ifdef EINA_BENCH_HAVE_EVAS
-  &evas_str,
-#endif
-#ifdef EINA_BENCH_HAVE_ECORE
-  &ecore_str,
-#endif
-  NULL
+static Eina_Stringshare_Test *str[] = {
+   &eina_str,
+   &evas_str,
+   &ecore_str,
+   NULL
 };
 
 static void
@@ -97,7 +83,7 @@ eina_bench_e17_stringshare(Eina_Stringshare_Test *str)
 {
    Eina_Counter *cnt;
 
-   cnt = eina_counter_add(str->name);
+   cnt = eina_counter_new(str->name);
 
    eina_counter_start(cnt);
 
@@ -110,9 +96,9 @@ eina_bench_e17_stringshare(Eina_Stringshare_Test *str)
    eina_counter_stop(cnt, 1);
 
    fprintf(stderr, "For `%s`:\n", str->name);
-   eina_counter_dump(cnt, stderr);
+   eina_counter_dump(cnt);
 
-   eina_counter_delete(cnt);
+   eina_counter_free(cnt);
 }
 #endif
 
@@ -122,11 +108,11 @@ eina_bench_e17(void)
 #if EINA_ENABLE_BENCH_E17
    int i;
 
-   eina_counter_init();
+   eina_init();
 
    for (i = 0; str[i]; ++i)
-     eina_bench_e17_stringshare(str[i]);
+      eina_bench_e17_stringshare(str[i]);
 
-   eina_counter_shutdown();
+   eina_shutdown();
 #endif
 }

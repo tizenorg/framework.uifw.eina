@@ -1,6 +1,3 @@
-/*
- * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
- */
 /* EINA - EFL data type library
  * Copyright (C) 2002-2008 Cedric Bail
  *
@@ -25,131 +22,158 @@
 
 #include <stdlib.h>
 
-#include "eina_accessor.h"
+#include "eina_config.h"
 #include "eina_private.h"
 
-/*============================================================================*
- *                                 Global                                     *
- *============================================================================*/
+/* undefs EINA_ARG_NONULL() so NULL checks are not compiled out! */
+#include "eina_safety_checks.h"
+#include "eina_accessor.h"
 
 /*============================================================================*
- *                                   API                                      *
- *============================================================================*/
+*                                  Local                                     *
+*============================================================================*/
 
 /**
- * @addtogroup Eina_Content_Access_Group Content Access
- *
- * @{
+ * @cond LOCAL
  */
 
-/**
- * @addtogroup Eina_Accessor_Group Accessor Functions
- *
- * @brief These functions manage accessor on containers.
- *
- * These functions allow to access elements of a container in a
- * generic way, without knowing which container is used (a bit like
- * iterators in the C++ STL). Accessors allows random access (that is, any
- * element in the container). For sequential access, see
- * @ref Eina_Iterator_Group.
- *
- * An accessor is created from container data types, so no creation
- * function is available here. An accessor is deleted with
- * eina_accessor_free(). To get the data of an element at a given
- * position, use eina_accessor_data_get(). To call a function on
- * chosen elements of a container, use eina_accessor_over().
- *
- * @{
- */
+static const char EINA_MAGIC_ACCESSOR_STR[] = "Eina Accessor";
+
+#define EINA_MAGIC_CHECK_ACCESSOR(d)                            \
+   do {                                                          \
+        if (!EINA_MAGIC_CHECK(d, EINA_MAGIC_ACCESSOR)) {              \
+             EINA_MAGIC_FAIL(d, EINA_MAGIC_ACCESSOR); }                  \
+     } while(0)
 
 /**
- * @brief Free an accessor.
- *
- * @param accessor The accessor to free.
- *
- * This function frees @p accessor if it is not @c NULL;
+ * @endcond
  */
+
+/*============================================================================*
+*                                 Global                                     *
+*============================================================================*/
+
+/**
+ * @internal
+ * @brief Initialize the accessor module.
+ *
+ * @return #EINA_TRUE on success, #EINA_FALSE on failure.
+ *
+ * This function sets up the accessor module of Eina. It is called by
+ * eina_init().
+ *
+ * @see eina_init()
+ */
+Eina_Bool
+eina_accessor_init(void)
+{
+   return eina_magic_string_set(EINA_MAGIC_ACCESSOR, EINA_MAGIC_ACCESSOR_STR);
+}
+
+/**
+ * @internal
+ * @brief Shut down the accessor module.
+ *
+ * @return #EINA_TRUE on success, #EINA_FALSE on failure.
+ *
+ * This function shuts down the accessor module set up by
+ * eina_accessor_init(). It is called by eina_shutdown().
+ *
+ * @see eina_shutdown()
+ */
+Eina_Bool
+eina_accessor_shutdown(void)
+{
+   return EINA_TRUE;
+}
+
+/*============================================================================*
+*                                   API                                      *
+*============================================================================*/
+
+
 EAPI void
 eina_accessor_free(Eina_Accessor *accessor)
 {
-   if (accessor) accessor->free(accessor);
+   if (!accessor)
+     return;
+
+   EINA_MAGIC_CHECK_ACCESSOR(accessor);
+   EINA_SAFETY_ON_NULL_RETURN(accessor->free);
+   accessor->free(accessor);
 }
 
-/**
- * @brief Return the container of an accessor.
- *
- * @param accessor The accessor.
- * @return The container which created the accessor.
- *
- * This function returns the container which created @p accessor. If
- * @p accessor is @c NULL, this function returns @c NULL.
- */
 EAPI void *
 eina_accessor_container_get(Eina_Accessor *accessor)
 {
-   if (!accessor) return NULL;
+   EINA_MAGIC_CHECK_ACCESSOR(accessor);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(accessor,                NULL);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(accessor->get_container, NULL);
    return accessor->get_container(accessor);
 }
 
-/**
- * @brief Retrieve the data of an accessor at a given position.
- *
- * @param accessor The accessor.
- * @param position The position of the element.
- * @param data The pointer that stores the data to retrieve.
- * @return #EINA_TRUE on success, #EINA_FALSE otherwise.
- *
- * This function retrieves the data of the element pointed by
- * @p accessor at the porition @p position, and stores it in
- * @p data. If @p accessor is @c NULL or if an error occurred,
- * #EINA_FALSE is returned, otherwise EINA_TRUE is returned.
- */
 EAPI Eina_Bool
-eina_accessor_data_get(Eina_Accessor *accessor, unsigned int position, void **data)
+eina_accessor_data_get(Eina_Accessor *accessor,
+                       unsigned int position,
+                       void **data)
 {
-   if (!accessor) return EINA_FALSE;
+   EINA_MAGIC_CHECK_ACCESSOR(accessor);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(accessor,         EINA_FALSE);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(accessor->get_at, EINA_FALSE);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(data,             EINA_FALSE);
    return accessor->get_at(accessor, position, data);
 }
 
-/**
- * @brief Iterate over the container and execute a callback on chosen elements.
- *
- * @param accessor The accessor.
- * @param cb The callback called on the chosen elements.
- * @param start The position of the first element.
- * @param end The position of the last element.
- * @param fdata The data passed to the callback.
- *
- * This function iterates over the elements pointed by @p accessor,
- * starting from the element at position @p start and ending to the
- * element at position @p end. For Each element, the callback
- * @p cb is called with the data @p fdata. If @p accessor is @c NULL
- * or if @p start is greter or equal than @p end, the function returns
- * immediatly.
- */
 EAPI void
 eina_accessor_over(Eina_Accessor *accessor,
-		   Eina_Each cb,
-		   unsigned int start,
-		   unsigned int end,
-		   const void *fdata)
+                   Eina_Each_Cb cb,
+                   unsigned int start,
+                   unsigned int end,
+                   const void *fdata)
 {
-   void *container;
+   const void *container;
    void *data;
-   unsigned int i = start;
+   unsigned int i;
 
    if (!accessor) return ;
-   if (!(start < end)) return ;
 
-   container = eina_accessor_container_get(accessor);
-   for (i = start; i < end && accessor->get_at(accessor, i, &data) == EINA_TRUE; ++i)
-      if (cb(container, data, (void*) fdata) != EINA_TRUE) return ;
+   EINA_MAGIC_CHECK_ACCESSOR(accessor);
+   EINA_SAFETY_ON_NULL_RETURN(accessor->get_container);
+   EINA_SAFETY_ON_NULL_RETURN(accessor->get_at);
+   EINA_SAFETY_ON_NULL_RETURN(cb);
+   EINA_SAFETY_ON_FALSE_RETURN(start < end);
+
+   if (!eina_accessor_lock(accessor))
+      return ;
+
+   container = accessor->get_container(accessor);
+   for (i = start; i < end && accessor->get_at(accessor, i, &data) == EINA_TRUE;
+        ++i)
+      if (cb(container, data, (void *)fdata) != EINA_TRUE)
+	 goto on_exit;
+
+ on_exit:
+   (void) eina_accessor_unlock(accessor);
 }
 
-/**
- * @}
- */
+EAPI Eina_Bool
+eina_accessor_lock(Eina_Accessor *accessor)
+{
+   EINA_MAGIC_CHECK_ACCESSOR(accessor);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(accessor, EINA_FALSE);
 
-/**
- * @}
- */
+   if (accessor->lock)
+      return accessor->lock(accessor);
+   return EINA_TRUE;
+}
+
+EAPI Eina_Bool
+eina_accessor_unlock(Eina_Accessor *accessor)
+{
+   EINA_MAGIC_CHECK_ACCESSOR(accessor);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(accessor, EINA_FALSE);
+
+   if (accessor->unlock)
+      return accessor->unlock(accessor);
+   return EINA_TRUE;
+}

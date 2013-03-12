@@ -25,7 +25,7 @@
 #include <limits.h>
 
 #include "eina_bench.h"
-#include "eina_mempool.h"
+#include "Eina.h"
 
 typedef struct _Eina_Benchmark_Case Eina_Benchmark_Case;
 struct _Eina_Benchmark_Case
@@ -35,13 +35,15 @@ struct _Eina_Benchmark_Case
 };
 
 static const Eina_Benchmark_Case etc[] = {
-  { "Hash", eina_bench_hash },
-  { "Array vs List vs Inlist", eina_bench_array },
-  { "Stringshare", eina_bench_stringshare },
-  { "Convert", eina_bench_convert },
-  { "Sort", eina_bench_sort },
-  { "Mempool", eina_bench_mempool },
-  { NULL, NULL }
+   { "Hash", eina_bench_hash },
+   /* { "Array vs List vs Inlist", eina_bench_array }, */
+   /* { "Stringshare", eina_bench_stringshare }, */
+   /* { "Convert", eina_bench_convert }, */
+   /* { "Sort", eina_bench_sort }, */
+   /* { "Mempool", eina_bench_mempool }, */
+   /* { "Rectangle_Pool", eina_bench_rectangle_pool }, */
+   // { "Render Loop", eina_bench_quadtree },
+   { NULL, NULL }
 };
 
 /* FIXME this is a copy from eina_test_mempool
@@ -50,58 +52,52 @@ static const Eina_Benchmark_Case etc[] = {
 static Eina_Array *_modules;
 static void _mempool_init(void)
 {
-    eina_mempool_init();
-    /* force modules to be loaded in case they are not installed */
-    _modules = eina_module_list_get(PACKAGE_BUILD_DIR"/src/modules", 1, NULL, NULL);
-    eina_module_list_load(_modules);
+   eina_init();
+   /* force modules to be loaded in case they are not installed */
+   _modules = eina_module_list_get(NULL,
+                                   PACKAGE_BUILD_DIR "/src/modules",
+                                   EINA_TRUE,
+                                   NULL,
+                                   NULL);
+   eina_module_list_load(_modules);
 }
 
 static void _mempool_shutdown(void)
 {
-   eina_module_list_delete(_modules);
+   eina_module_list_free(_modules);
    /* TODO delete the list */
-   eina_mempool_shutdown();
+   eina_shutdown();
 }
 
 int
 main(int argc, char **argv)
 {
    Eina_Benchmark *test;
-   Eina_Array *ea;
    unsigned int i;
 
-   if (argc != 2) return -1;
+   if (argc != 2)
+      return -1;
 
    _mempool_init();
 
-   eina_benchmark_init();
+   eina_init();
 
-   for (i = 0; etc[i].bench_case != NULL; ++i)
+   for (i = 0; etc[i].bench_case; ++i)
      {
-	test = eina_benchmark_new(etc[i].bench_case, argv[1]);
-	if (!test) continue ;
+        test = eina_benchmark_new(etc[i].bench_case, argv[1]);
+        if (!test)
+           continue;
 
-	etc[i].build(test);
+        etc[i].build(test);
 
-	ea = eina_benchmark_run(test);
-	if (ea)
-	  {
-	     Eina_Array_Iterator it;
-	     char *tmp;
-	     unsigned int i;
+        eina_benchmark_run(test);
 
-	     EINA_ARRAY_ITER_NEXT(ea, i, tmp, it)
-	       free(tmp);
-
-	     eina_array_free(ea);
-	  }
-
-	eina_benchmark_free(test);
+        eina_benchmark_free(test);
      }
 
    eina_bench_e17();
 
-   eina_benchmark_shutdown();
+   eina_shutdown();
 
    _mempool_shutdown();
    return 0;

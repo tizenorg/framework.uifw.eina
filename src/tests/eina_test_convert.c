@@ -25,8 +25,8 @@
 #include <math.h>
 #include <float.h>
 
-#include "eina_convert.h"
 #include "eina_suite.h"
+#include "Eina.h"
 
 START_TEST(eina_convert_simple)
 {
@@ -78,25 +78,81 @@ _eina_convert_check(double test, int length)
    fail_if(fabs(r - test) > DBL_MIN);
 }
 
-START_TEST(eina_convert_double)
+   START_TEST(eina_convert_double)
 {
    long long int m = 0;
    long e = 0;
 
-   eina_convert_init();
+   eina_init();
 
-   _eina_convert_check(EET_TEST_DOUBLE0, 20);
+   _eina_convert_check(EET_TEST_DOUBLE0,  20);
    _eina_convert_check(-EET_TEST_DOUBLE0, 21);
-   _eina_convert_check(EET_TEST_DOUBLE1, 6);
-   _eina_convert_check(EET_TEST_DOUBLE2, 6);
-   _eina_convert_check(EET_TEST_DOUBLE3, 21);
-   _eina_convert_check(EET_TEST_DOUBLE4, 21);
+   _eina_convert_check(EET_TEST_DOUBLE1,   6);
+   _eina_convert_check(EET_TEST_DOUBLE2,   6);
+   _eina_convert_check(EET_TEST_DOUBLE3,  21);
+   _eina_convert_check(EET_TEST_DOUBLE4,  21);
 
    fail_if(eina_convert_atod("ah ah ah", 8, &m, &e) != EINA_FALSE);
    fail_if(eina_convert_atod("0xjo", 8, &m, &e) != EINA_FALSE);
    fail_if(eina_convert_atod("0xp", 8, &m, &e) != EINA_FALSE);
 
-   eina_convert_shutdown();
+   eina_shutdown();
+}
+END_TEST
+
+static void
+_eina_convert_fp_check(double d, Eina_F32p32 fp, int length)
+{
+   char tmp1[128];
+   char tmp2[128];
+   Eina_F32p32 fpc;
+   double fpd;
+   int l1;
+   int l2;
+
+   l1 = eina_convert_dtoa(d, tmp1);
+   l2 = eina_convert_fptoa(fp, tmp2);
+/*    fprintf(stderr, "[%s](%i) vs [%s](%i)\n", tmp1, l1, tmp2, l2); */
+   fail_if(l1 != l2);
+   fail_if(length != l1);
+   fail_if(strcmp(tmp1, tmp2) != 0);
+
+   fail_if(!eina_convert_atofp(tmp2, l2, &fpc));
+/*    fprintf(stderr, "%016x vs %016x\n", fpc, fp); */
+   fail_if(fpc != fp);
+
+   fail_if(!eina_convert_atofp(tmp1, l1, &fpc));
+   fpd = eina_f32p32_double_to(fpc);
+/*    fprintf(stderr, "%0.16f vs %0.16f\n", fpd, d); */
+   fail_if(fabs(fpd - d) > DBL_MIN);
+
+   d = -d;
+   fp = -fp;
+
+   l1 = eina_convert_dtoa(d, tmp1);
+   l2 = eina_convert_fptoa(fp, tmp2);
+   fail_if(l1 != l2);
+   fail_if(length + 1 != l1);
+   fail_if(strcmp(tmp1, tmp2) != 0);
+
+   fail_if(!eina_convert_atofp(tmp2, l2, &fpc));
+/*    fprintf(stderr, "%016x vs %016x\n", fpc, fp); */
+   fail_if(fpc != fp);
+
+   fail_if(!eina_convert_atofp(tmp1, l1, &fpc));
+   fpd = eina_f32p32_double_to(fpc);
+/*    fprintf(stderr, "%0.16f vs %0.16f\n", fpd, d); */
+   fail_if(fabs(fpd - d) > DBL_MIN);
+}
+
+   START_TEST(eina_convert_fp)
+{
+   _eina_convert_fp_check(1.0,     0x0000000100000000,  6);
+   _eina_convert_fp_check(0.5,     0x0000000080000000,  8);
+   _eina_convert_fp_check(0.625,   0x00000000a0000000,  8);
+   _eina_convert_fp_check(256.0,   0x0000010000000000,  6);
+   _eina_convert_fp_check(0.5,     0x0000000080000000,  8);
+   _eina_convert_fp_check(128.625, 0x00000080a0000000, 10);
 }
 END_TEST
 
@@ -105,4 +161,5 @@ eina_test_convert(TCase *tc)
 {
    tcase_add_test(tc, eina_convert_simple);
    tcase_add_test(tc, eina_convert_double);
+   tcase_add_test(tc,     eina_convert_fp);
 }
