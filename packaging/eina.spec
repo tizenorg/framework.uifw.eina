@@ -1,11 +1,12 @@
 Name:       eina
 Summary:    Data Type Library
-Version:    1.7.1+svn.77445+build01r01
+Version:    1.7.1+svn.77445+build05r01
 Release:    1
 Group:      System/Libraries
 License:    LGPLv2
 URL:        http://www.enlightenment.org/
 Source0:    %{name}-%{version}.tar.gz
+BuildRequires:  pkgconfig(dlog)
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 

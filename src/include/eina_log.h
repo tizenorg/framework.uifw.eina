@@ -891,6 +891,57 @@ EAPI void eina_log_print_cb_file(const Eina_Log_Domain *d,
                                  void                  *data,
                                  va_list                args);
 
+/*--- TIZEN_ONLY : begin ---*/
+/**
+ * Alternative logging method, this will output to system log
+ *
+ * @param d The domain.
+ * @param level Not used.
+ * @param file The file which is logged.
+ * @param fnc The function which is logged.
+ * @param line The line which is logged.
+ * @param fmt The ouptut format to use.
+ * @param data Not Used
+ * @param args The arguments needed by the format.
+ *
+ * This method will never output color.
+ *
+ */
+EAPI void eina_log_print_cb_syslog(const Eina_Log_Domain *d,
+                                   Eina_Log_Level         level,
+                                   const char            *file,
+                                   const char            *fnc,
+                                   int                    line,
+                                   const char            *fmt,
+                                   void                  *data,
+                                   va_list                args);
+
+#ifdef HAVE_DLOG
+/**
+ * Alternative logging method, this will output to dlog
+ *
+ * @param d The domain.
+ * @param level Not used.
+ * @param file The file which is logged.
+ * @param fnc The function which is logged.
+ * @param line The line which is logged.
+ * @param fmt The ouptut format to use.
+ * @param data Not Used
+ * @param args The arguments needed by the format.
+ *
+ */
+EAPI void eina_log_print_cb_dlog(const Eina_Log_Domain *d,
+                                 Eina_Log_Level         level,
+                                 const char            *file,
+                                 const char            *fnc,
+                                 int                    line,
+                                 const char            *fmt,
+                                 void                  *data,
+                                 va_list                args);
+#endif
+
+/*--- TIZEN_ONLY : end ---*/
+
 /**
  * Configure console color of given file.
  *

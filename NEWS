@@ -1,5 +1,21 @@
 Eina 1.8.0
 
+
+Eina 1.7.4
+
+Changes since Eina 1.7.3:
+-------------------------
+
+    * Fix EINA_INLIST_FOREACH_SAFE macro
+
+Eina 1.7.3
+
+Changes since Eina 1.7.2:
+-------------------------
+
+    * Fix Solaris build.
+    * Don't leak fd after exec.
+
 Changes since Eina 1.7.0:
 -------------------------
 

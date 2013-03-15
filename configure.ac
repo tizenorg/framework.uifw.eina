@@ -324,6 +324,12 @@ PKG_CHECK_EXISTS([exotic],
 AM_CONDITIONAL([EINA_HAVE_EXOTIC], [test "x${enable_exotic}" = "xyes"])
 AC_SUBST([EINA_CONFIGURE_HAVE_EXOTIC])
 
+PKG_CHECK_EXISTS([dlog],
+   [
+    AC_DEFINE([HAVE_DLOG], [1], [Define to 1 if you have dlog.])
+    requirements_pc_eina="${requirements_pc_eina} dlog"
+   ])
+
 if ! test "x${requirements_pc_eina}" = "x" ; then
    PKG_CHECK_MODULES([EINA], [${requirements_pc_eina}])
 fi
