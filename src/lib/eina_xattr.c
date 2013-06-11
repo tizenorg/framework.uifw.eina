@@ -198,6 +198,7 @@ eina_xattr_value_fd_ls(int fd)
    it->length = flistxattr(fd, it->xattr, length);
    if (it->length != length)
      {
+        free(it->attr);
         free(it);
 	return NULL;
      }
