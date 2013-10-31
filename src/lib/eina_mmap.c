@@ -93,9 +93,9 @@ _eina_mmap_safe_sigbus(int sig __UNUSED__,
         abort();
      }
    /* send this to stderr - not eina_log. Specifically want this on stderr */
-   fprintf(stderr,
-           "EINA: Data at address 0x%lx is invalid. Replacing with zero page.\n",
-           (unsigned long)addr);
+//   fprintf(stderr,
+//           "EINA: Data at address 0x%lx is invalid. Replacing with zero page.\n",
+//           (unsigned long)addr);
    /* align address to the lower page boundary */
    addr = (unsigned char *)((long)addr & (~(_eina_mmap_pagesize - 1)));
    /* mmap a pzge of zero's from /dev/zero in there */
