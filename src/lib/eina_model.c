@@ -3602,7 +3602,7 @@ static Eina_Model *
 _eina_model_xref_add(Eina_Model *model, const void *id, const char *label)
 {
    Eina_Model_XRef *ref;
-   void *bt[256];
+   void *bt[256] = {0};
    int btlen, labellen;
 
    labellen = label ? strlen(label): 0;
