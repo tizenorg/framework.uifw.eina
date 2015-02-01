@@ -1,14 +1,14 @@
 Name:       eina
 Summary:    Data Type Library
-Version:    1.7.1+svn.77445+build22
+Version:    1.7.1+svn.77445+build35
 Release:    1
 Group:      System/Libraries
-License:    LGPLv2
+License:    LGPLv2.1
 URL:        http://www.enlightenment.org/
 Source0:    %{name}-%{version}.tar.gz
-BuildRequires:  pkgconfig(dlog)
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
+BuildRequires:  pkgconfig(dlog)
 
 
 %description
@@ -43,32 +43,39 @@ Obsoletes:  %{name}-bin
 %description tools
 Enlightenment Foundation Library providing optimized data types (tools)
 
+
 %prep
 %setup -q
 
+
 %build
-export CFLAGS+=" -fvisibility=hidden"
-export LDFLAGS+=" -fvisibility=hidden"
+export CFLAGS+=" -fvisibility=hidden -fPIC -Wall"
+export LDFLAGS+=" -fvisibility=hidden -Wl,--hash-style=both -Wl,--as-needed"
 
+%autogen --disable-static\
+         --enable-magic-debug
 
-cd %{_repository} && %autogen --disable-static --disable-rpath --enable-static-chained-pool --enable-magic-debug 
 make %{?jobs:-j%jobs}
 
+
 %install
-cd  %{_repository} && %make_install
-mkdir -p %{buildroot}/usr/share/license
-cp %{_builddir}/%{buildsubdir}/COPYING %{buildroot}/usr/share/license/%{name}
+%make_install
+mkdir -p %{buildroot}/%{_datadir}/license
+cp %{_builddir}/%{buildsubdir}/COPYING %{buildroot}/%{_datadir}/license/%{name}
+cp %{_builddir}/%{buildsubdir}/COPYING %{buildroot}/%{_datadir}/license/%{name}-tools
 
 
 %post -p /sbin/ldconfig
+
+
 %postun -p /sbin/ldconfig
 
 
 %files
 %defattr(-,root,root,-)
 %{_libdir}/libeina.so.*
+%{_datadir}/license/%{name}
 %manifest %{name}.manifest
-/usr/share/license/%{name}
 
 
 %files devel
@@ -77,6 +84,9 @@ cp %{_builddir}/%{buildsubdir}/COPYING %{buildroot}/usr/share/license/%{name}
 %{_libdir}/*.so
 %{_libdir}/pkgconfig/eina.pc
 
+
 %files tools
 %defattr(-,root,root,-)
 %{_bindir}/*
+%{_datadir}/license/%{name}-tools
+%manifest %{name}-tools.manifest
