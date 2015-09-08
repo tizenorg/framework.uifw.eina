@@ -420,7 +420,7 @@ eina_prefix_new(const char *argv0, void *symbol, const char *envprefix,
      }
    if (magicsharefile)
      {
-        magic = alloca(strlen(magicsharefile));
+        magic = alloca(strlen(magicsharefile) + 1);
         strcpy(magic, magicsharefile);
 #ifdef _WIN32
         /* on win32 convert / to \ for path here */
@@ -578,6 +578,9 @@ eina_prefix_new(const char *argv0, void *symbol, const char *envprefix,
     * bin_dir    = /blah/whatever/bin
     * data_dir   = /blah/whatever/share/enlightenment
     * lib_dir    = /blah/whatever/lib
+    * 
+    * new case - debian multiarch goop.
+    * exe        = /blah/whatever/lib/arch/libexe.so
     */
    DBG("From exe %s figure out the rest", pfx->exe_path);
    p = strrchr(pfx->exe_path, DSEP_C);
@@ -588,6 +591,7 @@ eina_prefix_new(const char *argv0, void *symbol, const char *envprefix,
 	  {
 	     if (*p == DSEP_C)
 	       {
+                  if (pfx->prefix_path) free(pfx->prefix_path);
 		  pfx->prefix_path = malloc(p - pfx->exe_path + 1);
 		  if (pfx->prefix_path)
 		    {
@@ -633,6 +637,22 @@ eina_prefix_new(const char *argv0, void *symbol, const char *envprefix,
 		       /* magic file not there. time to start hunting! */
 		       else
                          {
+                            if (buf[0])
+                              {
+                                 for (;p > pfx->exe_path; p--)
+                                   {
+                                      if (*p == DSEP_C)
+                                        {
+                                           p--;
+                                           break;
+                                        }
+                                   }
+                                 if (p > pfx->exe_path)
+                                   {
+                                      continue;
+                                      DBG("Go back one directory");
+                                   }
+                              }
                             WRN("Magic failed");
                             _fallback(pfx, pkg_bin, pkg_lib, pkg_data,
                                       pkg_locale, envprefix);

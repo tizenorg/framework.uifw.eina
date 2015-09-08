@@ -252,7 +252,7 @@ eina_strbuf_common_new(size_t csize)
    Eina_Strbuf *buf;
 
    eina_error_set(0);
-   buf = malloc(sizeof(Eina_Strbuf));
+   buf = calloc(sizeof(Eina_Strbuf), 1);
    if (EINA_UNLIKELY(!buf))
      {
         eina_error_set(EINA_ERROR_OUT_OF_MEMORY);

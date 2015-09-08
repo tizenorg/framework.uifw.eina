@@ -24,7 +24,9 @@
 #include "eina_types.h"
 
 /**
- * @addtogroup Eina_Object Object
+ * @internal
+ * @defgroup Eina_Object Object
+ * @ingroup Eina_Group
  *
  * @brief These functions manage object providing pointer checking
  * and memory repacking.
@@ -65,7 +67,7 @@ void eina_class_repack(Eina_Class *c);
 Eina_Object *eina_object_add(Eina_Class *c);
 void *eina_object_pointer_get(Eina_Class *c,
 			      Eina_Object *object);
-void eina_object_del(Eina_Class *c, 
+void eina_object_del(Eina_Class *c,
 		     Eina_Object *object);
 
 Eina_Bool eina_object_parent_set(Eina_Class *parent_class, Eina_Object *parent,
@@ -76,4 +78,4 @@ Eina_Object *eina_object_parent_get(Eina_Class *c, Eina_Object *object);
  * @}
  */
 
-#endif	   
+#endif

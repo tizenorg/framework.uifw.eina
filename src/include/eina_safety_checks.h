@@ -20,13 +20,9 @@
 #define EINA_SAFETY_CHECKS_H_
 
 /**
- * @addtogroup Eina_Tools_Group Tools
- *
- * @{
- */
-
-/**
+ * @internal
  * @defgroup Eina_Safety_Checks_Group Safety Checks
+ * @ingroup Eina_Tools_Group
  *
  * @warning @c eina_safety_checks.h should only be included by source
  *          files, after all other includes and before the source file
@@ -60,10 +56,6 @@
  * #include "my_functions2.h"
  *
  * @endcode
- */
-
-/**
- * @addtogroup Eina_Safety_Checks_Group Safety Checks
  *
  * Safety checks are a set of macros to check for parameters or values
  * that should never happen, it is similar in concept to assert(), but
@@ -287,10 +279,6 @@ EAPI extern Eina_Error EINA_ERROR_SAFETY_FAILED;
 
 #endif /* safety checks macros */
 #endif /* EINA_SAFETY_CHECKS_H_ */
-
-/**
- * @}
- */
 
 /**
  * @}

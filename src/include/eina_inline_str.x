@@ -28,8 +28,12 @@
 /**
  * @brief Count up to a given amount of bytes of the given string.
  *
- * @param str The string pointer.
- * @param maxlen The maximum length to allow.
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] str The string pointer.
+ * @param[in] maxlen The maximum length to allow.
  * @return the string size or (size_t)-1 if greater than @a maxlen.
  *
  * This function returns the size of @p str, up to @p maxlen
@@ -50,11 +54,15 @@ eina_strlen_bounded(const char *str, size_t maxlen)
 /**
  * @brief Join two strings of known length.
  *
- * @param dst The buffer to store the result.
- * @param size Size (in byte) of the buffer.
- * @param sep The separator character to use.
- * @param a First string to use, before @p sep.
- * @param b Second string to use, after @p sep.
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] dst The buffer to store the result.
+ * @param[in] size Size (in byte) of the buffer.
+ * @param[in] sep The separator character to use.
+ * @param[in] a First string to use, before @p sep.
+ * @param[in] b Second string to use, after @p sep.
  * @return The number of characters printed.
  *
  * This function is similar to eina_str_join_len(), but will compute

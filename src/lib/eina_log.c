@@ -28,6 +28,19 @@
 #include <assert.h>
 #include <errno.h>
 
+/*--- TIZEN_ONLY : begin ---*/
+#include <syslog.h>
+
+#ifdef HAVE_DLOG
+# include <dlog.h>
+#  ifdef LOG_TAG
+#   undef LOG_TAG
+#  endif
+# define LOG_TAG "EFL"
+# define _SECURE_LOG
+#endif
+/*--- TIZEN_ONLY : end ---*/
+
 #if defined HAVE_EXECINFO_H && defined HAVE_BACKTRACE && defined HAVE_BACKTRACE_SYMBOLS
 # include <execinfo.h>
 # define EINA_LOG_BACKTRACE
@@ -76,6 +89,13 @@
 #define EINA_LOG_ENV_FILE_DISABLE "EINA_LOG_FILE_DISABLE"
 #define EINA_LOG_ENV_FUNCTION_DISABLE "EINA_LOG_FUNCTION_DISABLE"
 #define EINA_LOG_ENV_BACKTRACE "EINA_LOG_BACKTRACE"
+/*--- TIZEN_ONLY : begin ---*/
+#define EINA_LOG_ENV_SYSLOG_ENABLE "EINA_LOG_SYSLOG_ENABLE"
+
+#ifdef HAVE_DLOG
+#define EINA_LOG_ENV_DLOG_ENABLE "EINA_LOG_DLOG_ENABLE"
+#endif
+/*--- TIZEN_ONLY : end ---*/
 
 #ifdef EINA_ENABLE_LOG
 
@@ -229,6 +249,7 @@ static size_t _log_domains_allocated = 0;
 
 // Default function for printing on domains
 static Eina_Log_Print_Cb _print_cb = eina_log_print_cb_stderr;
+
 static void *_print_cb_data = NULL;
 
 #ifdef DEBUG
@@ -252,75 +273,110 @@ static const char *_names[] = {
 };
 
 #ifdef _WIN32
+/* TODO: query win32_def_attr on eina_log_init() */
+static int win32_def_attr = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
+
+/* NOTE: can't use eina_log from inside this function */
 static int
-eina_log_win32_color_get(const char *domain_str)
+eina_log_win32_color_convert(const char *color, const char **endptr)
 {
-   char *str;
-   char *tmp;
-   char *tmp2;
-   int code = -1;
-   int lighted = 0;
-   int ret = 0;
+   const char *p;
+   int attr = 0;
 
-   str = strdup(domain_str);
-   if (!str)
-      return 0;
+   if (endptr) *endptr = color;
 
-   /* this should not append */
-   if (str[0] != '\033')
+   if (color[0] != '\033') return 0;
+   if (color[1] != '[') return 0;
+
+   p = color + 2;
+   while (1)
      {
-        free(str);
-        return 0;
-     }
+        char *end;
+        int code = strtol(p, &end, 10);
 
-   /* we skip the first char and the [ */
-   tmp = tmp2 = str + 2;
-   while (*tmp != 'm')
-     {
-        if (*tmp == ';')
+        if (p == end)
           {
-             *tmp = '\0';
-             code = atol(tmp2);
-             tmp++;
-             tmp2 = tmp;
+             //fputs("empty color string\n", stderr);
+             if (endptr) *endptr = end;
+             attr = 0; /* assume it was not color, must end with 'm' */
+             break;
           }
 
-        tmp++;
+        if (code)
+          {
+             if (code == 0) attr = win32_def_attr;
+             else if (code == 1) attr |= FOREGROUND_INTENSITY;
+             else if (code == 4) attr |= COMMON_LVB_UNDERSCORE;
+             else if (code == 7) attr |= COMMON_LVB_REVERSE_VIDEO;
+             else if ((code >= 30) && (code <= 37))
+               {
+                  /* clear foreground */
+                  attr &= ~(FOREGROUND_RED |
+                            FOREGROUND_GREEN |
+                            FOREGROUND_BLUE);
+
+                  if (code == 31)
+                    attr |= FOREGROUND_RED;
+                  else if (code == 32)
+                    attr |= FOREGROUND_GREEN;
+                  else if (code == 33)
+                    attr |= FOREGROUND_RED | FOREGROUND_GREEN;
+                  else if (code == 34)
+                    attr |= FOREGROUND_BLUE;
+                  else if (code == 35)
+                    attr |= FOREGROUND_RED | FOREGROUND_BLUE;
+                  else if (code == 36)
+                    attr |= FOREGROUND_GREEN | FOREGROUND_BLUE;
+                  else if (code == 37)
+                    attr |= FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
+               }
+             else if ((code >= 40) && (code <= 47))
+               {
+                  /* clear background */
+                  attr &= ~(BACKGROUND_RED |
+                            BACKGROUND_GREEN |
+                            BACKGROUND_BLUE);
+
+                  if (code == 41)
+                    attr |= BACKGROUND_RED;
+                  else if (code == 42)
+                    attr |= BACKGROUND_GREEN;
+                  else if (code == 43)
+                    attr |= BACKGROUND_RED | BACKGROUND_GREEN;
+                  else if (code == 44)
+                    attr |= BACKGROUND_BLUE;
+                  else if (code == 45)
+                    attr |= BACKGROUND_RED | BACKGROUND_BLUE;
+                  else if (code == 46)
+                    attr |= BACKGROUND_GREEN | BACKGROUND_BLUE;
+                  else if (code == 47)
+                    attr |= BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE;
+               }
+          }
+
+        if (*end == 'm')
+          {
+             if (endptr) *endptr = end + 1;
+             break;
+          }
+        else if (*end == ';')
+          p = end + 1;
+        else
+          {
+             //fprintf(stderr, "unexpected char in color string: %s\n", end);
+             attr = 0; /* assume it was not color */
+             if (endptr) *endptr = end;
+             break;
+          }
      }
-   *tmp = '\0';
-   if (code < 0)
-      code = atol(tmp2);
-   else
-      lighted = atol(tmp2);
 
-   free(str);
+   return attr;
+}
 
-   if (code < lighted)
-     {
-        int c;
-
-        c = code;
-        code = lighted;
-        lighted = c;
-     }
-
-   if (lighted)
-      ret = FOREGROUND_INTENSITY;
-
-   if (code == 31)
-      ret |= FOREGROUND_RED;
-   else if (code == 32)
-      ret |= FOREGROUND_GREEN;
-   else if (code == 33)
-      ret |= FOREGROUND_RED | FOREGROUND_GREEN;
-   else if (code == 34)
-      ret |= FOREGROUND_BLUE;
-   else if (code == 36)
-      ret |= FOREGROUND_GREEN | FOREGROUND_BLUE;
-   else if (code == 37)
-      ret |= FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
-
-   return ret;
+static int
+eina_log_win32_color_get(const char *color)
+{
+   return eina_log_win32_color_convert(color, NULL);
 }
 #endif
 
@@ -1250,7 +1306,14 @@ eina_log_print_unlocked(int domain,
               fmt ? fmt : "");
 
         if (_abort_on_critical)
-           abort();
+          {
+#ifdef HAVE_DLOG
+             print_log(DLOG_ERROR, LOG_TAG, "eina %s:%d ### EFL abort on errors ###", __FILE__, __LINE__);
+#else
+             fprintf(stderr, "### EFL abort on errors ###\n");
+#endif
+             abort();
+          }
 
         return;
      }
@@ -1299,7 +1362,28 @@ eina_log_print_unlocked(int domain,
 
    if (EINA_UNLIKELY(_abort_on_critical) &&
        EINA_UNLIKELY(level <= _abort_level_on_critical))
-      abort();
+     {
+#ifdef HAVE_DLOG
+        void *bt[256];
+        char **strings;
+        int btlen;
+        int i;
+
+        btlen = backtrace((void **)bt, 256);
+        strings = backtrace_symbols((void **)bt, btlen);
+        print_log(DLOG_ERROR, LOG_TAG, "%s<%u> %s:%d %s() *** Backtrace ***",
+                  d->name, eina_log_pid_get(), file, line, fnc);
+        for (i = 0; i < btlen; ++i)
+           print_log(DLOG_ERROR, LOG_TAG, "%s<%u> %s:%d %s() %s", d->name,
+                    eina_log_pid_get(), file, line, fnc, strings[i]);
+        free(strings);
+
+        print_log(DLOG_ERROR, LOG_TAG, "eina %s:%d ### EFL abort on errors ###", __FILE__, __LINE__);
+#else
+        fprintf(stderr, "### EFL abort on errors ###\n");
+#endif
+        abort();
+     }
 }
 
 #endif
@@ -1386,6 +1470,17 @@ eina_log_init(void)
 
    if ((tmp = getenv(EINA_LOG_ENV_ABORT_LEVEL)))
       _abort_level_on_critical = atoi(tmp);
+
+   /*--- TIZEN_ONLY : begin ---*/
+   if ((tmp = getenv(EINA_LOG_ENV_SYSLOG_ENABLE)) && (atoi(tmp) == 1))
+      _print_cb = eina_log_print_cb_syslog;
+
+#ifdef HAVE_DLOG
+   /* dlog has more higher priority than syslog */
+   if ((tmp = getenv(EINA_LOG_ENV_DLOG_ENABLE)) && (atoi(tmp) == 1))
+      _print_cb = eina_log_print_cb_dlog;
+#endif
+   /*--- TIZEN_ONLY : end ---*/
 
    eina_log_print_prefix_update();
 
@@ -1910,6 +2005,7 @@ eina_log_print_cb_file(const Eina_Log_Domain *d,
                        va_list args)
 {
 #ifdef EINA_ENABLE_LOG
+   EINA_SAFETY_ON_NULL_RETURN(data);
    FILE *f = data;
 #ifdef EFL_HAVE_THREADS
    if (_threads_enabled)
@@ -1944,6 +2040,162 @@ end:
    (void) args;
 #endif
 }
+
+/*--- TIZEN_ONLY : begin ---*/
+EAPI void
+eina_log_print_cb_syslog(const Eina_Log_Domain *d,
+                         Eina_Log_Level level,
+                         const char *file,
+                         const char *fnc,
+                         int line,
+                         const char *fmt,
+                         __UNUSED__ void *data,
+                         va_list args)
+{
+#ifdef EINA_ENABLE_LOG
+   int priority;
+   const char buf[512];
+
+   switch (level)
+     {
+      case EINA_LOG_LEVEL_CRITICAL:
+         priority = LOG_CRIT;
+         break;
+      case EINA_LOG_LEVEL_ERR:
+         priority = LOG_ERR;
+         break;
+      case EINA_LOG_LEVEL_WARN:
+         priority = LOG_WARNING;
+         break;
+      case EINA_LOG_LEVEL_INFO:
+         priority = LOG_INFO;
+         break;
+      case EINA_LOG_LEVEL_DBG:
+         priority = LOG_DEBUG;
+         break;
+      default:
+         priority = level + LOG_CRIT;
+         break;
+     }
+
+   vsnprintf((char *)buf, sizeof(buf), fmt, args);
+
+   syslog(priority, "%s<%u> %s:%d %s() %s", d->name, eina_log_pid_get(),
+          file, line, fnc, buf);
+
+#ifdef EINA_LOG_BACKTRACE
+   if (EINA_UNLIKELY(level < _backtrace_level))
+     {
+        void *bt[256];
+        char **strings;
+        int btlen;
+        int i;
+
+        btlen = backtrace((void **)bt, 256);
+        strings = backtrace_symbols((void **)bt, btlen);
+        syslog(priority, "%s<%u> %s:%d %s() *** Backtrace ***", d->name,
+               eina_log_pid_get(), file, line, fnc);
+        for (i = 0; i < btlen; ++i)
+           syslog(priority, "%s<%u> %s:%d %s() %s", d->name,
+                  eina_log_pid_get(), file, line, fnc, strings[i]);
+        free(strings);
+     }
+#endif
+
+#else
+   (void) d;
+   (void) file;
+   (void) fnc;
+   (void) line;
+   (void) fmt;
+   (void) data;
+   (void) args;
+#endif
+}
+
+#ifdef HAVE_DLOG
+EAPI void
+eina_log_print_cb_dlog(const Eina_Log_Domain *d,
+                         Eina_Log_Level level,
+                         const char *file,
+                         const char *fnc,
+                         int line,
+                         const char *fmt,
+                         __UNUSED__ void *data,
+                         va_list args)
+{
+#ifdef EINA_ENABLE_LOG
+   int log_level;
+   const char buf[512];
+   char tmp_log_level[512];
+
+   switch (level)
+     {
+      case EINA_LOG_LEVEL_CRITICAL:
+         log_level = DLOG_FATAL;
+         strcpy(tmp_log_level, "FATAL");
+         break;
+      case EINA_LOG_LEVEL_ERR:
+         log_level = DLOG_ERROR;
+         strcpy(tmp_log_level, "ERROR");
+         break;
+      case EINA_LOG_LEVEL_WARN:
+         log_level = DLOG_WARN;
+         strcpy(tmp_log_level, "WARNING");
+         break;
+      case EINA_LOG_LEVEL_INFO:
+         log_level = DLOG_INFO;
+         strcpy(tmp_log_level, "INFO");
+         break;
+      case EINA_LOG_LEVEL_DBG:
+         log_level = DLOG_DEBUG;
+         strcpy(tmp_log_level, "DEBUG");
+         break;
+      default:
+         log_level = DLOG_VERBOSE;
+         strcpy(tmp_log_level, "VERBOSE");
+         break;
+     }
+
+   vsnprintf((char *)buf, sizeof(buf), fmt, args);
+
+#ifdef _SECURE_LOG
+   print_log(log_level, LOG_TAG, "%s<%u> %s:%d %s() %s", d->name,
+             eina_log_pid_get(), file, line, fnc, buf);
+#endif
+
+#ifdef EINA_LOG_BACKTRACE
+   if (EINA_UNLIKELY(level < _backtrace_level))
+     {
+        void *bt[256];
+        char **strings;
+        int btlen;
+        int i;
+
+        btlen = backtrace((void **)bt, 256);
+        strings = backtrace_symbols((void **)bt, btlen);
+        print_log(log_level, LOG_TAG, "%s<%u> %s:%d %s() *** Backtrace ***",
+                  d->name, eina_log_pid_get(), file, line, fnc);
+        for (i = 0; i < btlen; ++i)
+           print_log(log_level, LOG_TAG, "%s<%u> %s:%d %s() %s", d->name,
+                    eina_log_pid_get(), file, line, fnc, strings[i]);
+        free(strings);
+     }
+#endif
+
+#else
+   (void) d;
+   (void) file;
+   (void) fnc;
+   (void) line;
+   (void) fmt;
+   (void) data;
+   (void) args;
+#endif
+}
+#endif
+
+/*--- TIZEN_ONLY : end ---*/
 
 EAPI void
 eina_log_print(int domain, Eina_Log_Level level, const char *file,
@@ -2027,3 +2279,38 @@ eina_log_vprint(int domain, Eina_Log_Level level, const char *file,
 #endif
 }
 
+EAPI void
+eina_log_console_color_set(FILE *fp, const char *color)
+{
+#ifdef EINA_ENABLE_LOG
+
+   EINA_SAFETY_ON_NULL_RETURN(fp);
+   EINA_SAFETY_ON_NULL_RETURN(color);
+   if (_disable_color) return;
+
+#ifdef _WIN32
+   int attr = eina_log_win32_color_convert(color, NULL);
+   HANDLE *handle;
+
+   if (!attr) return;
+
+   if (fp == stderr)
+     handle = GetStdHandle(STD_ERROR_HANDLE);
+   else if (fp == stdout)
+     handle = GetStdHandle(STD_OUTPUT_HANDLE);
+   else
+     {
+        /* Do we have a way to convert FILE* to HANDLE?
+         * Should we use it?
+         */
+        return;
+     }
+   SetConsoleTextAttribute(handle, attr);
+#else
+   fputs(color, fp);
+#endif
+
+#else
+   (void)color;
+#endif
+}

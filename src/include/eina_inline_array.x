@@ -44,8 +44,12 @@ EAPI Eina_Bool eina_array_grow(Eina_Array *array);
 /**
  * @brief Append a data to an array.
  *
- * @param array The array.
- * @param data The data to add.
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] array The array.
+ * @param[in] data The data to add.
  * @return #EINA_TRUE on success, #EINA_FALSE otherwise.
  *
  * This function appends @p data to @p array. For performance
@@ -73,7 +77,11 @@ eina_array_push(Eina_Array *array, const void *data)
 /**
  * @brief Remove the last data of an array.
  *
- * @param array The array.
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] array The array.
  * @return The retrieved data.
  *
  * This function removes the last data of @p array, decreases the count
@@ -99,8 +107,12 @@ eina_array_pop(Eina_Array *array)
 /**
  * @brief Return the data at a given position in an array.
  *
- * @param array The array.
- * @param idx The potition of the data to retrieve.
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] array The array.
+ * @param[in] idx The potition of the data to retrieve.
  * @return The retrieved data.
  *
  * This function returns the data at the position @p idx in @p
@@ -122,7 +134,11 @@ eina_array_data_set(const Eina_Array *array, unsigned int idx, const void *data)
 /**
  * @brief Return the number of elements in an array.
  *
- * @param array The array.
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] array The array.
  * @return The number of elements.
  *
  * This function returns the number of elements in @p array. For
@@ -140,7 +156,11 @@ eina_array_count_get(const Eina_Array *array)
 /**
  * @brief Return the number of elements in an array.
  *
- * @param array The array.
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] array The array.
  * @return The number of elements.
  *
  * This function returns the number of elements in @p array. For

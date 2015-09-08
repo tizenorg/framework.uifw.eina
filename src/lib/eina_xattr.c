@@ -90,6 +90,7 @@ _eina_xattr_value_ls_fd_iterator_next(Eina_Xattr_Iterator *it, void **data)
                                           (void *) it->attr->value,
                                           it->attr->length);
           }
+        free(tmp);
      }
 
    return EINA_TRUE;
@@ -122,6 +123,7 @@ _eina_xattr_value_ls_iterator_next(Eina_Xattr_Iterator *it, void **data)
                                          (void*) it->attr->value,
                                          it->attr->length);
           }
+        free(tmp);
      }
 
    return EINA_TRUE;
@@ -198,6 +200,7 @@ eina_xattr_value_fd_ls(int fd)
    it->length = flistxattr(fd, it->xattr, length);
    if (it->length != length)
      {
+        free(it->attr);
         free(it);
 	return NULL;
      }

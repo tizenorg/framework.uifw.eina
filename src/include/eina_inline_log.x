@@ -20,7 +20,7 @@
 #define EINA_LOG_INLINE_H_
 
 /**
- * @addtogroup Eina_Log_Group Log
+ * @ingroup Eina_Log_Group Log
  *
  * @{
  */
@@ -28,7 +28,11 @@
 /**
  * @brief Checks whenever the given level should be printed out.
  *
- * @param level The level to print
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] level The level to print
  *
  * This is useful to enable certain blocks of code just when given
  * level is to be used.
@@ -57,8 +61,12 @@ eina_log_level_check(int level)
 /**
  * @brief Checks whenever the given level should be printed out.
  *
- * @param domain The domain to check
- * @param level The level to print
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] domain The domain to check
+ * @param[in] level The level to print
  *
  * This is useful to enable certain blocks of code just when given
  * level is to be used.
@@ -101,7 +109,11 @@ eina_log_domain_level_check(int domain, int level)
  * part. This is so uncommon that users should handle this in their
  * code.
  *
- * @param level what level value to use.
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] level what level value to use.
  * @param name where to write the actual value.
  *
  * @return pointer to @p name.
@@ -149,7 +161,11 @@ eina_log_level_name_get(int level, char name[4])
  * returning the level color. If you desire such check, use
  * eina_log_level_color_if_enabled_get().
  *
- * @param level what level value to use.
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] level what level value to use.
  *
  * @return pointer to null byte terminated ANSI color string to be
  *         used in virtual terminals supporting VT100 color codes.
@@ -181,7 +197,11 @@ eina_log_level_color_get(int level)
  * returning the level color. If colors are disabled, then empty
  * string is returned.
  *
- * @param level what level value to use.
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] level what level value to use.
  *
  * @return pointer to null byte terminated ANSI color string to be
  *         used in virtual terminals supporting VT100 color codes. If

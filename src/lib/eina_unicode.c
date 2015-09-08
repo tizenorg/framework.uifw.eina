@@ -163,7 +163,7 @@ eina_unicode_escape(const Eina_Unicode *str)
 
    EINA_SAFETY_ON_NULL_RETURN_VAL(str, NULL);
 
-   s2 = malloc((eina_unicode_strlen(str) * 2) + 1);
+   s2 = malloc(((eina_unicode_strlen(str) * 2) + 1) * sizeof(Eina_Unicode));
    if (!s2)
       return NULL;
 
@@ -193,12 +193,14 @@ eina_unicode_escape(const Eina_Unicode *str)
 EAPI Eina_Unicode
 eina_unicode_utf8_get_next(const char *buf, int *iindex)
 {
-   int ind = *iindex;
+   int ind;
    Eina_Unicode r;
    unsigned char d;
 
    EINA_SAFETY_ON_NULL_RETURN_VAL(buf, 0);
    EINA_SAFETY_ON_NULL_RETURN_VAL(iindex, 0);
+
+   ind = *iindex;
 
    /* if this char is the null terminator, exit */
    if ((d = buf[ind++]) == 0) return 0;

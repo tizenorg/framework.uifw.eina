@@ -305,7 +305,7 @@
 
 2012-07-01  Vincent Torri
 
-        * Remove --enable-coverage from configure options,
+        * Remove --enable-coverage from configure options.
 
 2012-07-04  Vincent Torri
 
@@ -314,3 +314,86 @@
 2012-07-05  Raphael Kubo da Costa
 
 	* Handle NULL in all eina_*_free function.
+
+2012-08-01 Carsten Haitzler (The Rasterman)
+
+        * Modify eina_prefix to deal with debian's fun new
+        multiarch... if you are a shared library.
+
+2012-08-01 Gustavo Sverzut Barbieri (k-s)
+
+	* added eina_log_console_color_set() for cross platform console
+	color set.
+
+2012-08-14  Lucas De Marchi
+
+        * Add EINA_SENTINEL macro to protect variadic functions
+
+2012-08-30  Carsten Haitzler (The Rasterman)
+
+        1.7.0 release
+
+2012-09-04  Roberto de Souza <zehortigoza@profusion.mobi>
+
+        * Fix EINA_INLIST_FOREACH_SAFE macro to work when inlist is not the
+        first item in the struct.
+
+2012-09-11  Cedric Bail
+
+	* Speedup Eina Rbtree Iterator by recycling memory instead of massively calling malloc/free.
+
+2012-09-12 Patryk Kaczmarek <patryk.k@samsung.com>
+
+        * Add EINA_SAFETY checks for proper function arguments.
+        * Add check if given arguments (distance and coordinates) in eina_tiler
+        and eina_rectangle are not below zero
+        * Documentation for eina list specified and eina stringshare fixed
+
+2012-09-15  Vincent Torri
+
+        * Add DOCTYPE children to be parse in eina_simple_xml.
+
+2012-09-27  Carsten Haitzler (The Rasterman)
+
+        * Fix return value of eina_mmap_safety_enabled_set() and
+        ensure future eina_mmap_safety_enabled_get() return right value
+        on success.
+
+2012-10-17  Carsten Haitzler (The Rasterman)
+
+        * Add eina_tmpstr_add() and eina_tmpstr_del().
+
+2012-10-19  Patryk Kaczmarek
+
+	* eina_stringshare_add_length return NULL when func args are wrong.
+
+2012-10-20  Cedric Bail
+
+	1.7.1 release
+
+2012-11-23 Luis Felipe Strano Moraes
+
+        1.7.2 release
+
+2012-11-29  Vincent Torri
+
+        * Do not use -pthread anymore, but instead pass _REENTRANT to the
+	preprocessor and -lpthread to the linker.
+	* On Solaris OS, -mt is passed by default and same flags than
+	linux must be passed.
+
+2012-12-07  Cedric Bail
+
+	* Don't leak fd after exec.
+
+2012-12-07  Luis Felipe Strano Moraes
+
+	* 1.7.3 release
+
+2012-12-12  Nicolas Aguirre
+
+	* Fix define EINA_UNUSED for win32 builds
+
+2012-12-13  Lucas De Marchi
+
+    * Fix EINA_INLIST_FOREACH_SAFE macro

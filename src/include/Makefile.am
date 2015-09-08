@@ -64,7 +64,8 @@ eina_refcount.h \
 eina_mmap.h \
 eina_xattr.h \
 eina_value.h \
-eina_inline_value.x
+eina_inline_value.x \
+eina_tmpstr.h
 
 # Will be back for developper after 1.2.
 # eina_model.h

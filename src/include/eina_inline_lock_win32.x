@@ -19,7 +19,11 @@
 #ifndef EINA_INLINE_LOCK_WIN32_X_
 #define EINA_INLINE_LOCK_WIN32_X_
 
+#ifndef WIN32_LEAN_AND_MEAN
+# define WIN32_LEAN_AND_MEAN
+#endif
 #include <windows.h>
+#undef WIN32_LEAN_AND_MEAN
 
 typedef CRITICAL_SECTION       Eina_Lock;
 typedef struct _Eina_Condition Eina_Condition;

@@ -22,7 +22,11 @@
 /**
  * @brief Initialize a trash before using it.
  *
- * @param trash The trash.
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[out] trash The trash.
  *
  * This function just set to zero the trash to correctly
  * initialize it.
@@ -39,8 +43,12 @@ eina_trash_init(Eina_Trash **trash)
 /**
  * @brief Push an unused pointer in the trash instead of freeing it.
  *
- * @param trash A pointer to an Eina_Trash.
- * @param data An unused pointer big enougth to put a (void*).
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[out] trash A pointer to an Eina_Trash.
+ * @param[in] data An unused pointer big enougth to put a (void*).
  *
  * Instead of freeing a pointer and put pressure on malloc/free
  * you can push it in a trash for a later use. This function just
@@ -65,7 +73,11 @@ eina_trash_push(Eina_Trash **trash, void *data)
 /**
  * @brief Pop an available pointer from the trash if possible.
  *
- * @param trash A pointer to an Eina_Trash.
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[out] trash A pointer to an Eina_Trash.
  *
  * Instead of calling malloc, and putting pressure on malloc/free
  * you can recycle the content of the trash, if it's not empty.

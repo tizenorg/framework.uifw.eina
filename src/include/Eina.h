@@ -1,5 +1,5 @@
 /* EINA - EFL data type library
- * Copyright (C) 2008-2012 Enlightenment Developers:
+ * Copyright (C) 2008-2013 Enlightenment Developers:
  *           Albin "Lutin" Tonnerre <albin.tonnerre@gmail.com>
  *           Alexandre "diaxen" Becoulet <diaxen@free.fr>
  *           Andre Dieb <andre.dieb@gmail.com>
@@ -44,12 +44,27 @@
  */
 
 /**
- * @mainpage Eina
+ * @defgroup Eina_Group Eina
+ * @ingroup EFL_Group
+ * @brief Eina provides data types and useful tools.
+ * @details The Eina library is a library that implements an API for data types
+ *        in an efficient way. It also provides some useful tools like
+ *        opening shared libraries, errors management, type conversion,
+ *        time accounting and memory pool.
  *
- * @version 1.2
- * @date 2008-2012
+ * See @ref eina_main for more details.
  *
- * @section eina_intro_sec Introduction
+ * @page eina_main Eina
+ *
+ * @date 2008 (created)
+ *
+ * @section toc Table of Contents
+ *
+ * @li @ref eina_main_intro
+ * @li @ref eina_main_compiling
+ * @li @ref eina_main_next_steps
+ *
+ * @section eina_main_intro Introduction
  *
  * The Eina library is a library that implements an API for data types
  * in an efficient way. It also provides some useful tools like
@@ -73,43 +88,76 @@
  * @li @ref Eina_Stringshare_Group saves memory by sharing read-only string references.
  * @li @ref Eina_Tiler_Group split, merge and navigates into 2D tiled regions.
  * @li @ref Eina_Trash_Group container of unused but allocated data.
+ * @internal
  * @li @ref Eina_Value_Group container for generic value storage and access.
- * @li @ref Eina_Model_Group container for data with user defined hierarchy/structure.
+ * @endinternal
  *
  * The tools that are available are (see @ref Eina_Tools_Group):
+ * @internal
  * @li @ref Eina_Benchmark_Group helper to write benchmarks.
+ * @endinternal
  * @li @ref Eina_Convert_Group faster conversion from strings to integers, double, etc.
  * @li @ref Eina_Counter_Group measures number of calls and their time.
  * @li @ref Eina_Error_Group error identifiers.
+ * @internal
  * @li @ref Eina_File_Group simple file list and path split.
+ * @endinternal
  * @li @ref Eina_Lalloc_Group simple lazy allocator.
+ * @internal
  * @li @ref Eina_Log_Group full-featured logging system.
  * @li @ref Eina_Magic_Group provides runtime type checking.
  * @li @ref Eina_Memory_Pool_Group abstraction for various memory allocators.
+ * @endinternal
  * @li @ref Eina_Module_Group lists, loads and share modules using Eina_Module standard.
  * @li @ref Eina_Rectangle_Group rectangle structure and standard manipulation methods.
+ * @internal
  * @li @ref Eina_Safety_Checks_Group extra checks that will report unexpected conditions and can be disabled at compile time.
+ * @endinternal
  * @li @ref Eina_String_Group a set of functions that manages C strings.
- * 
- * Please see the @ref authors page for contact details.
+ *
+ * @section eina_main_compiling How to compile
+ *
+ * Eina is a library your application links to. The procedure for this is
+ * very simple. You simply have to compile your application with the
+ * appropriate compiler flags that the @c pkg-config script outputs. For
+ * example:
+ *
+ * @section eina_main_next_steps Next Steps
+ *
+ * After you understood what Eina is and installed it in your system
+ * you should proceed understanding the programming interface.
+ *
+ * Recommended reading:
+ *
+ * @li @ref Eina_Data_Types_Group to find about implemented types and
+ *     how to use them.
+ * @li @ref Eina_Tools_Group to find about helper tools provided by eina.
+ *
  *
  * @defgroup Eina_Data_Types_Group Data Types
+ * @brief Eina provides an easy to use and optimized data types and structures.
+ * @ingroup Eina_Group
  *
- * Eina provide easy to use and optimized data types and structures.
  *
+ * @defgroup Eina_Content_Access_Group Content Access
+ * @brief Eina provides an uniform way to access elements of a container,
+ *        either sequential or indexed.
+ * @ingroup Eina_Data_Types_Group
  *
  * @defgroup Eina_Containers_Group Containers
+ * @brief Data types that contains other types. Examples: list, array and hash.
+ * @ingroup Eina_Data_Types_Group
  *
- * @section Intro Introduction
+ * @section eina_main_Intro Introduction
  * Containers are data types that hold data and allow iteration over
  * their elements with an @ref Eina_Iterator_Group, or eventually an
  * @ref Eina_Accessor_Group.
  *
  * The containers in eina are designed with performance in mind, one consequence
  * of this is that they @b don't check the validity of data structures given to
- * them(@ref Eina_Magic_Group).
+ * them @internal (@ref Eina_Magic_Group). @endinternal
  *
- * @section Choice Choosing container type
+ * @section eina_main_Choice Choosing container type
  *
  * The choice of which container to use in each situation is very important in
  * achieving good performance and readable code. The most common container types
@@ -133,7 +181,7 @@
  * @warning These are general considerations, every situation is different,
  * don't follow these recommendations blindly.
  *
- * @section Creation Creating custom container types
+ * @section eina_main_Creation Creating custom container types
  *
  * @note Before creating a custom container check if one of the existing ones
  * doesn't suit your needs. For example, while there is no stack type @ref
@@ -147,42 +195,13 @@
  * should return properly populated @ref _Eina_Iterator and @ref _Eina_Accessor.
  *
  * @defgroup Eina_Tools_Group Tools
+ * @brief Eina tools aims to help application development, providing ways to
+ *        make it safer, log errors, manage memory more efficiently and more.
+ * @ingroup Eina_Group
  *
- * Eina tools aims to help application development, providing ways to
- * make it safer, log errors, manage memory more efficiently and more.
- * 
- */
-
-/**
- * 
- * @page authors Authors
- * 
- * @author Albin "Lutin" Tonnerre <albin.tonnerre@@gmail.com>
- * @author Alexandre "diaxen" Becoulet <diaxen@@free.fr>
- * @author Andre Dieb <andre.dieb@@gmail.com>
- * @author Arnaud de Turckheim "quarium" <quarium@@gmail.com>
- * @author Carsten Haitzler <raster@@rasterman.com>
- * @author Cedric Bail <cedric.bail@@free.fr>
- * @author Corey "atmos" Donohoe <atmos@@atmos.org>
- * @author Vincent "caro" Torri  <vtorri at univ-evry dot fr>
- * @author Fabiano Fidêncio <fidencio@@profusion.mobi>
- * @author Gustavo Chaves <glima@@profusion.mobi>
- * @author Gustavo Sverzut Barbieri <barbieri@@profusion.mobi>
- * @author Jorge Luis "turran" Zapata <jorgeluis.zapata@@gmail.com>
- * @author Tilman Sauerbeck <tilman@@code-monkey.de>
- * @author Peter "pfritz" Wehrfritz <peter.wehrfritz@@web.de>
- * @author Raphael Kubo da Costa <kubo@@profusion.mobi>
- * @author Tom Hacohen <tom@@stosb.com>
- * @author Brett Nash <nash@@nash.id.au>
- * @author Sebastian Dransfeld <sd@@tango.flipp.net>
- * @author Myungjae Lee <mjae.lee@@samsung.com>
- * @author Youness Alaoui <kakaroto@@kakaroto.homelinux.net>
- * @author Boris "billiob" Faure <billiob@@gmail.com>
- * @author Sung W. Park <sungwoo@@gmail.com>
- * @author Guillaume Friloux <guillaume.friloux@@asp64.com>
- *
- * Please contact <enlightenment-devel@lists.sourceforge.net> to get in
- * contact with the developers and maintainers.
+ * @defgroup Eina_Core_Group Core
+ * @brief This group provides general functions and basic types, etc.
+ * @ingroup Eina_Group
  *
  */
 
@@ -240,6 +259,7 @@ extern "C" {
 #include "eina_mmap.h"
 #include "eina_xattr.h"
 #include "eina_value.h"
+#include "eina_tmpstr.h"
 
 #ifdef __cplusplus
 }

@@ -19,15 +19,6 @@
 #ifndef EINA_INLINE_LOCK_POSIX_X_
 #define EINA_INLINE_LOCK_POSIX_X_
 
-#ifdef EINA_UNUSED
-# undef EINA_UNUSED
-#endif
-#ifdef __GNUC__
-# define EINA_UNUSED __attribute__((unused))
-#else
-# define EINA_UNUSED
-#endif
-
 #include <errno.h>
 #ifndef __USE_UNIX98
 # define __USE_UNIX98
@@ -53,7 +44,13 @@ typedef void (*Eina_Lock_Bt_Func) ();
 #include "eina_inlist.h"
 #endif
 
+/**
+ * @typedef Eina_Lock
+ * @brief typedef to struct _Eina_Lock
+ * @ingroup Eina_Lock_Group
+ */
 typedef struct _Eina_Lock Eina_Lock;
+
 typedef struct _Eina_RWLock Eina_RWLock;
 typedef struct _Eina_Condition Eina_Condition;
 typedef pthread_key_t Eina_TLS;

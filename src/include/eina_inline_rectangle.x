@@ -30,10 +30,14 @@
 /**
  * @brief Check if the given spans intersect.
  *
- * @param c1 The column of the first span.
- * @param l1 The length of the first span.
- * @param c2 The column of the second span.
- * @param l2 The length of the second span.
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] c1 The column of the first span.
+ * @param[in] l1 The length of the first span.
+ * @param[in] c2 The column of the second span.
+ * @param[in] l2 The length of the second span.
  * @return #EINA_TRUE on success, #EINA_FALSE otherwise.
  *
  * This function returns #EINA_TRUE if the  given spans intersect, #EINA_FALSE
@@ -48,7 +52,11 @@ eina_spans_intersect(int c1, int l1, int c2, int l2)
 /**
  * @brief Check if the given rectangle is empty.
  *
- * @param r The rectangle to check.
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] r The rectangle to check.
  * @return #EINA_TRUE if the rectangle is empty, #EINA_FALSE otherwise.
  *
  * This function returns #EINA_TRUE if @p r is empty, #EINA_FALSE
@@ -64,11 +72,15 @@ eina_rectangle_is_empty(const Eina_Rectangle *r)
 /**
  * @brief Set the coordinates and size of the given rectangle.
  *
- * @param r The rectangle.
- * @param x The top-left x coordinate of the rectangle.
- * @param y The top-left y coordinate of the rectangle.
- * @param w The width of the rectangle.
- * @param h The height of the rectangle.
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] r The rectangle.
+ * @param[in] x The top-left x coordinate of the rectangle.
+ * @param[in] y The top-left y coordinate of the rectangle.
+ * @param[in] w The width of the rectangle.
+ * @param[in] h The height of the rectangle.
  *
  * This function sets its top-left x coordinate to @p x, its top-left
  * y coordinate to @p y, its width to @p w and its height to @p h. No
@@ -86,8 +98,12 @@ eina_rectangle_coords_from(Eina_Rectangle *r, int x, int y, int w, int h)
 /**
  * @brief Check if the given rectangles intersect.
  *
- * @param r1 The first rectangle.
- * @param r2 The second rectangle.
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] r1 The first rectangle.
+ * @param[in] r2 The second rectangle.
  * @return #EINA_TRUE if the rectangles intersect, #EINA_FALSE otherwise.
  *
  * This function returns #EINA_TRUE if @p r1 and @p r2 intersect, #EINA_FALSE
@@ -103,8 +119,12 @@ eina_rectangles_intersect(const Eina_Rectangle *r1, const Eina_Rectangle *r2)
 /**
  * @brief Check if the given x-coordinate is in the rectangle .
  *
- * @param r The rectangle.
- * @param x The x coordinate.
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] r The rectangle.
+ * @param[in] x The x coordinate.
  * @return #EINA_TRUE on success, #EINA_FALSE otherwise.
  *
  * This function returns #EINA_TRUE if @p x is in @p r with respect to
@@ -120,8 +140,12 @@ eina_rectangle_xcoord_inside(const Eina_Rectangle *r, int x)
 /**
  * @brief Check if the given y-coordinate is in the rectangle .
  *
- * @param r The rectangle.
- * @param y The y coordinate.
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] r The rectangle.
+ * @param[in] y The y coordinate.
  * @return #EINA_TRUE on success, #EINA_FALSE otherwise.
  *
  * This function returns #EINA_TRUE if @p y is in @p r with respect to
@@ -137,9 +161,13 @@ eina_rectangle_ycoord_inside(const Eina_Rectangle *r, int y)
 /**
  * @brief Check if the given point is in the rectangle .
  *
- * @param r The rectangle.
- * @param x The x coordinate of the point.
- * @param y The y coordinate of the point.
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] r The rectangle.
+ * @param[in] x The x coordinate of the point.
+ * @param[in] y The y coordinate of the point.
  * @return #EINA_TRUE on success, #EINA_FALSE otherwise.
  *
  * This function returns #EINA_TRUE if the point of coordinate (@p x,
@@ -155,8 +183,12 @@ eina_rectangle_coords_inside(const Eina_Rectangle *r, int x, int y)
 /**
  * @brief Get the union of two rectangles.
  *
- * @param dst The first rectangle.
- * @param src The second rectangle.
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] dst The first rectangle.
+ * @param[in] src The second rectangle.
  *
  * This function get the union of the rectangles @p dst and @p src. The
  * result is stored in @p dst. No check is done on @p dst or @p src,
@@ -188,8 +220,12 @@ eina_rectangle_union(Eina_Rectangle *dst, const Eina_Rectangle *src)
 /**
  * @brief Get the intersection of two rectangles.
  *
- * @param dst The first rectangle.
- * @param src The second rectangle.
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] dst The first rectangle.
+ * @param[in] src The second rectangle.
  * @return #EINA_TRUE if the rectangles intersect, #EINA_FALSE
  * otherwise.
  *

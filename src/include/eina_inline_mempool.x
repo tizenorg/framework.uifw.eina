@@ -22,7 +22,7 @@
 #include <string.h>
 
 /**
- * @addtogroup Eina_Memory_Pool_Group Memory Pool
+ * @ingroup Eina_Memory_Pool_Group Memory Pool
  *
  * @{
  */
@@ -71,9 +71,13 @@ struct _Eina_Mempool
 /**
  * @brief Re-allocate an amount memory by the given mempool.
  *
- * @param mp The mempool.
- * @param element The element to re-allocate.
- * @param size The size in bytes to re-allocate.
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] mp The mempool.
+ * @param[in] element The element to re-allocate.
+ * @param[in] size The size in bytes to re-allocate.
  * @return The newly re-allocated data.
  *
  * This function re-allocates and returns @p element with @p size bytes using the
@@ -89,8 +93,12 @@ eina_mempool_realloc(Eina_Mempool *mp, void *element, unsigned int size)
 /**
  * @brief Allocate memory using the given mempool.
  *
- * @param mp The mempool.
- * @param size The size in bytes to allocate.
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] mp The mempool.
+ * @param[in] size The size in bytes to allocate.
  * @return The newly allocated data.
  *
  * This function allocates and returns @p size bytes using the mempool @p mp.
@@ -106,8 +114,12 @@ eina_mempool_malloc(Eina_Mempool *mp, unsigned int size)
 /**
  * @brief Allocate and zero memory using the given mempool.
  *
- * @param mp The mempool.
- * @param size The size in bytes to allocate.
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] mp The mempool.
+ * @param[in] size The size in bytes to allocate.
  * @return The newly allocated data.
  *
  * This function allocates, zeroes, and returns @p size bytes using the mempool @p mp.
@@ -127,8 +139,12 @@ eina_mempool_calloc(Eina_Mempool *mp, unsigned int size)
 /**
  * @brief Free resources previously allocated by the given mempool.
  *
- * @param mp The mempool.
- * @param element The data to free.
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] mp The mempool.
+ * @param[in] element The data to free.
  *
  * This function frees @p element allocated by @p mp. @p element must
  * have been obtained from eina_mempool_malloc(), eina_mempool_calloc(), or

@@ -1,4 +1,36 @@
-Eina 1.3.0
+Eina 1.8.0
+
+
+Eina 1.7.4
+
+Changes since Eina 1.7.3:
+-------------------------
+
+    * Fix EINA_INLIST_FOREACH_SAFE macro
+
+Eina 1.7.3
+
+Changes since Eina 1.7.2:
+-------------------------
+
+    * Fix Solaris build.
+    * Don't leak fd after exec.
+
+Changes since Eina 1.7.0:
+-------------------------
+
+Additions:
+    * Add DOCTYPE children parsing in eina_simple_xml
+    * Add eina_tmpstr_add() and eina_tmpstr_del()
+
+Improvements:
+    * Speedup Eina Rbtree Iterator by recycling memory instead of massively calling malloc/free.
+
+Fixes:
+    * Fix return value of eina_mmap_safety_enabled_set() and future 
+    eina_mmap_safety_enabled_get() returns after success
+
+Eina 1.7.0
 
 Changes since Eina 1.2.0:
 -------------------------
@@ -6,6 +38,10 @@ Changes since Eina 1.2.0:
 Additions:
     * Add backtrace support to Eina_Log, use EINA_LOG_BACKTRACE to enable it.
     * Add an helper to iterate over line in a mapped file.
+    * Add EINA_SENTINEL to protect variadic functions
+    * Add EINA_SAFETY checks for proper function arguments.
+    * Add check if given arguments (distance and coordinates) in eina_tiler
+    and eina_rectangle are not below zero
 
 Fixes:
     * Add missing files in the tarball.
@@ -17,6 +53,9 @@ Fixes:
     * Fix issue in the XML parser when a tag was in a comment or a CDATA.
     * Implement eina_file_map_lines() on Windows.
     * Handle NULL in all eina_*_free function.
+    * eina_log_console_color_set()
+    * Documentation for eina list specified and eina stringshare fixed.
+    * eina_convert_atofp wrong return value if fp is NULL.
 
 Removal:
     * configure options: --disable-posix-threads, --disable-win32-threads,

@@ -1,14 +1,14 @@
 /* EINA - EFL data type library
  * Copyright (C) 2011 Vincent Torri
  *
- * This library is free software; you can redistribute it and/or
+ * This library is a free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
@@ -24,13 +24,9 @@
 #include "eina_error.h"
 
 /**
- * @addtogroup Eina_Tools_Group Tools
- *
- * @{
- */
-
-/**
+ * @internal
  * @defgroup Eina_Lock_Group Lock
+ * @ingroup Eina_Tools_Group
  *
  * @{
  */
@@ -56,58 +52,115 @@ typedef enum
 
 EAPI extern Eina_Error EINA_ERROR_NOT_MAIN_LOOP;
 
-/** @relates static Eina_Bool eina_lock_new(_Eina_Lock *mutex) */
+/**
+ * @brief Create a new #Eina_Lock.
+ *
+ * @details This function creates a new #Eina_Lock object and stores it in the
+ *          @p mutex buffer. On success, this function returns #EINA_TRUE
+ *          and #EINA_FALSE otherwise. To free the resources allocated by this
+ *          function, use eina_lock_free(). For performance reasons, no check
+ *          is done on @p mutex.
+ *
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] mutex A pointer to the lock object.
+ * @return #EINA_TRUE on success, #EINA_FALSE otherwise.
+ */
 static inline Eina_Bool eina_lock_new(Eina_Lock *mutex);
-/** @relates static void eina_lock_free(_Eina_Lock *mutex) */
-static inline void eina_lock_free(Eina_Lock *mutex);
-/** @relates static Eina_Lock_Result eina_lock_take(_Eina_Lock *mutex) */
-static inline Eina_Lock_Result eina_lock_take(Eina_Lock *mutex);
-/** @relates static Eina_Lock_Result eina_lock_take_try(_Eina_Lock *mutex) */
-static inline Eina_Lock_Result eina_lock_take_try(Eina_Lock *mutex);
-/** @relates static Eina_Lock_Result eina_lock_release(_Eina_Lock *mutex) */
-static inline Eina_Lock_Result eina_lock_release(Eina_Lock *mutex);
-/** @relates static void eina_lock_debug(const _Eina_Lock *mutex) */
-static inline void eina_lock_debug(const Eina_Lock *mutex);
 
-/** @relates static Eina_Bool eina_condition_new(_Eina_Condition *cond, _Eina_Lock *mutex) */
+/**
+ * @brief Free the ressources of the given lock object.
+ *
+ * @details This function frees the resources of @p mutex allocated by
+ *          eina_lock_new(). For performance reasons, no check is done on
+ *          @p mutex.
+ *
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] mutex The lock object to free.
+ */
+static inline void eina_lock_free(Eina_Lock *mutex);
+
+/**
+ * @brief Lock the given mutual exclusion object.
+ *
+ * @details This function locks @p mutex. @p mutex must have been created by
+ *          eina_lock_new(). On success, this function returns #EINA_TRUE
+ *          and #EINA_FALSE otherwise. For performance reasons, no check is done on
+ *          @p mutex.
+ *
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] mutex The lock object to lock.
+ * @return #EINA_TRUE on success, #EINA_FALSE otherwise.
+ */
+static inline Eina_Lock_Result eina_lock_take(Eina_Lock *mutex);
+
+/**
+ * @brief Try to lock the given mutual exclusion object.
+ *
+ * @details This function tries to lock @p mutex. @p mutex must have been created by
+ *          eina_lock_new(). If @p mutex can be locked, this function returns #EINA_TRUE;
+ *          if @p mutex can not be locked, or is already locked, it
+ *          returns #EINA_FALSE. This function does not block and returns
+ *          immediately. For performance reasons, no check is done on
+ *          @p mutex.
+ *
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @remarks On Windows CE, this function is actually eina_lock_take().
+ *
+ * @param[in] mutex The lock object to try to lock.
+ * @return #EINA_TRUE on success, #EINA_FALSE otherwise.
+ */
+static inline Eina_Lock_Result eina_lock_take_try(Eina_Lock *mutex);
+
+/**
+ * @brief Unlock the given mutual exclusion object.
+ *
+ * @details This function unlocks @p mutex. @p mutex must have been created by
+ *          eina_lock_new(). On success, this function returns #EINA_TRUE
+ *          and #EINA_FALSE otherwise. For performance reasons, no check is
+ *          done on @p mutex.
+ *
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[in] mutex The lock object to unlock.
+ * @return #EINA_TRUE on success, #EINA_FALSE otherwise.
+ */
+static inline Eina_Lock_Result eina_lock_release(Eina_Lock *mutex);
+
+static inline void eina_lock_debug(const Eina_Lock *mutex);
 static inline Eina_Bool eina_condition_new(Eina_Condition *cond, Eina_Lock *mutex);
-/** @relates static void eina_condition_free(_Eina_Condition *cond) */
 static inline void eina_condition_free(Eina_Condition *cond);
-/** @relates static Eina_Bool eina_condition_wait(_Eina_Condition *cond) */
 static inline Eina_Bool eina_condition_wait(Eina_Condition *cond);
-/** @relates static Eina_Bool eina_condition_timedwait(_Eina_Condition *cond, double t) */
 static inline Eina_Bool eina_condition_timedwait(Eina_Condition *cond, double t);
-/** @relates static Eina_Bool eina_condition_broadcast(_Eina_Condition *cond) */
 static inline Eina_Bool eina_condition_broadcast(Eina_Condition *cond);
-/** @relates static Eina_Bool eina_condition_signal(_Eina_Condition *cond) */
 static inline Eina_Bool eina_condition_signal(Eina_Condition *cond);
 
-/** @relates static Eina_Bool eina_rwlock_new(_Eina_RWLock *mutex) */
 static inline Eina_Bool eina_rwlock_new(Eina_RWLock *mutex);
-/** @relates static void eina_rwlock_free(_Eina_RWLock *mutex) */
 static inline void eina_rwlock_free(Eina_RWLock *mutex);
-/** @relates static Eina_Lock_Result eina_rwlock_take_read(_Eina_RWLock *mutex) */
 static inline Eina_Lock_Result eina_rwlock_take_read(Eina_RWLock *mutex);
-/** @relates static Eina_Lock_Result eina_rwlock_take_write(_Eina_RWLock *mutex) */
 static inline Eina_Lock_Result eina_rwlock_take_write(Eina_RWLock *mutex);
-/** @relates static Eina_Lock_Result eina_rwlock_release(_Eina_RWLock *mutex) */
 static inline Eina_Lock_Result eina_rwlock_release(Eina_RWLock *mutex);
 
-/** @relates static Eina_Bool eina_tls_new(pthread_key_t *key) */
 static inline Eina_Bool eina_tls_new(Eina_TLS *key);
-/** @relates static void eina_tls_free(pthread_key_t key) */
 static inline void eina_tls_free(Eina_TLS key);
-/** @relates static void eina_tls_get(pthread_key_t key) */
 static inline void *eina_tls_get(Eina_TLS key);
-/** @relates static Eina_Bool eina_tls_set(pthread_key_t key, const void *data) */
 static inline Eina_Bool eina_tls_set(Eina_TLS key, const void *data);
-/** @relates static Eina_Bool eina_semaphore_new(sem_t *sem, int count_init) */
 static inline Eina_Bool eina_semaphore_new(Eina_Semaphore *sem, int count_init);
-/** @relates static Eina_Bool eina_semaphore_free(sem_t *sem) */
 static inline Eina_Bool eina_semaphore_free(Eina_Semaphore *sem);
-/** @relates static Eina_Bool eina_semaphore_lock(sem_t *sem) */
 static inline Eina_Bool eina_semaphore_lock(Eina_Semaphore *sem);
-/** @relates static Eina_Bool eina_semaphore_release(sem_t *sem, int count_release) */
 static inline Eina_Bool eina_semaphore_release(Eina_Semaphore *sem, int count_release);
 
 #ifdef EINA_HAVE_DEBUG_THREADS
@@ -140,20 +193,26 @@ static inline Eina_Bool eina_semaphore_release(Eina_Semaphore *sem, int count_re
 #else
 /**
  * @def EINA_MAIN_LOOP_CHECK_RETURN_VAL
- * @brief The macro doesn't do anything unless EINA_HAVE_DEBUG_THREADS is defined.
- * @param val The value to be returned.
+ * @brief Definition of the macro that doesn't do anything unless EINA_HAVE_DEBUG_THREADS is defined.
+ *
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param val The value to be returned
  */
 # define EINA_MAIN_LOOP_CHECK_RETURN_VAL(val)
 /**
  * @def EINA_MAIN_LOOP_CHECK_RETURN
- * @brief The macro doesn't do anything unless EINA_HAVE_DEBUG_THREADS is defined.
+ * @brief Definition of the macro that doesn't do anything unless EINA_HAVE_DEBUG_THREADS is defined.
+ *
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
  */
 # define EINA_MAIN_LOOP_CHECK_RETURN
 #endif
-
-/**
- * @}
- */
 
 /**
  * @}

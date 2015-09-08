@@ -2549,9 +2549,12 @@ _eina_value_type_array_convert_to(const Eina_Value_Type *type __UNUSED__, const 
                          {
                             if (first) first = EINA_FALSE;
                             else eina_strbuf_append_length(str, ", ", 2);
-                            eina_strbuf_append(str, tmp.value.ptr);
-                            free(tmp.value.ptr);
-                            tmp.value.ptr = NULL;
+                            if (tmp.value.ptr)
+                              {
+                                 eina_strbuf_append(str, tmp.value.ptr);
+                                 free(tmp.value.ptr);
+                                 tmp.value.ptr = NULL;
+                              }
                          }
                     }
 
@@ -2873,9 +2876,12 @@ _eina_value_type_list_convert_to(const Eina_Value_Type *type __UNUSED__, const E
                          {
                             if (first) first = EINA_FALSE;
                             else eina_strbuf_append_length(str, ", ", 2);
-                            eina_strbuf_append(str, tmp.value.ptr);
-                            free(tmp.value.ptr);
-                            tmp.value.ptr = NULL;
+                            if (tmp.value.ptr)
+                              {
+                                 eina_strbuf_append(str, tmp.value.ptr);
+                                 free(tmp.value.ptr);
+                                 tmp.value.ptr = NULL;
+                              }
                          }
                     }
 

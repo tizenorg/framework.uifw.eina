@@ -24,6 +24,10 @@
  *
  * @brief These functions provide Red-Black trees management.
  *
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
  * @{
  */
 

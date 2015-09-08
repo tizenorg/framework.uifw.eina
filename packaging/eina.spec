@@ -1,13 +1,14 @@
 Name:       eina
 Summary:    Data Type Library
-Version:    1.6.0+svn.74624slp2+build02
+Version:    1.7.1+svn.77445+build35
 Release:    1
 Group:      System/Libraries
-License:    LGPLv2
+License:    LGPL-2.1+
 URL:        http://www.enlightenment.org/
 Source0:    %{name}-%{version}.tar.gz
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
+BuildRequires:  pkgconfig(dlog)
 
 
 %description
@@ -32,25 +33,36 @@ Requires:   %{name} = %{version}-%{release}
 %description devel
 Enlightenment Foundation Library providing optimized data types (devel)
 
+%package tools
+Summary:    Enlightenment Foundation Library providing optimized data types (tools)
+Group:      Development/Tools
+Requires:   %{name} = %{version}-%{release}
+Provides:   %{name}-bin
+Obsoletes:  %{name}-bin
+
+%description tools
+Enlightenment Foundation Library providing optimized data types (tools)
+
 
 %prep
 %setup -q
 
 
 %build
-export CFLAGS+=" -fvisibility=hidden"
-export LDFLAGS+=" -fvisibility=hidden"
+export CFLAGS+=" -fvisibility=hidden -fPIC -Wall"
+export LDFLAGS+=" -fvisibility=hidden -Wl,--hash-style=both -Wl,--as-needed"
 
-%autogen --disable-static
-%configure --disable-static \
-    --disable-rpath --enable-static-chained-pool --enable-magic-debug
+%autogen --disable-static\
+         --enable-magic-debug
 
 make %{?jobs:-j%jobs}
 
 
 %install
-rm -rf %{buildroot}
 %make_install
+mkdir -p %{buildroot}/%{_datadir}/license
+cp %{_builddir}/%{buildsubdir}/COPYING %{buildroot}/%{_datadir}/license/%{name}
+cp %{_builddir}/%{buildsubdir}/COPYING %{buildroot}/%{_datadir}/license/%{name}-tools
 
 
 %post -p /sbin/ldconfig
@@ -62,6 +74,8 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root,-)
 %{_libdir}/libeina.so.*
+%{_datadir}/license/%{name}
+%manifest %{name}.manifest
 
 
 %files devel
@@ -69,3 +83,10 @@ rm -rf %{buildroot}
 %{_includedir}/eina-1
 %{_libdir}/*.so
 %{_libdir}/pkgconfig/eina.pc
+
+
+%files tools
+%defattr(-,root,root,-)
+%{_bindir}/*
+%{_datadir}/license/%{name}-tools
+%manifest %{name}-tools.manifest

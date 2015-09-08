@@ -36,10 +36,14 @@
  * @c NULL and it will be eina_ustringshare_del(). The new string will
  * be passed to eina_ustringshare_add() and then assigned to @c *p_str.
  *
- * @param p_str pointer to the stringhare to be replaced. Must not be
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[out] p_str pointer to the stringhare to be replaced. Must not be
  *        @c NULL, but @c *p_str may be @c NULL as it is a valid
  *        stringshare handle.
- * @param news new string to be stringshared, may be @c NULL.
+ * @param[out] news new string to be stringshared, may be @c NULL.
  *
  * @return #EINA_TRUE if the strings were different and thus replaced, #EINA_FALSE
  * if the strings were the same after shared.
@@ -64,11 +68,15 @@ eina_ustringshare_replace(const Eina_Unicode **p_str, const Eina_Unicode *news)
  * @c NULL and it will be eina_ustringshare_del(). The new string will
  * be passed to eina_ustringshare_add_length() and then assigned to @c *p_str.
  *
- * @param p_str pointer to the stringhare to be replaced. Must not be
+ * @if MOBILE @since_tizen 2.3
+ * @elseif WEARABLE @since_tizen 2.3.1
+ * @endif
+ *
+ * @param[out] p_str pointer to the stringhare to be replaced. Must not be
  *        @c NULL, but @c *p_str may be @c NULL as it is a valid
  *        stringshare handle.
- * @param news new string to be stringshared, may be @c NULL.
- * @param slen The string size (<= strlen(str)).
+ * @param[out] news new string to be stringshared, may be @c NULL.
+ * @param[in] slen The string size (<= strlen(str)).
  *
  * @return #EINA_TRUE if the strings were different and thus replaced, #EINA_FALSE
  * if the strings were the same after shared.

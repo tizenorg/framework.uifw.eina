@@ -20,12 +20,6 @@
  * if not, see <http://www.gnu.org/licenses/>.
 
  */
-/**
- * @page tutorial_ustringshare_page UStringshare Tutorial
- *
- * to be written...
- *
- */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
